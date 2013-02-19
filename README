@@ -1,0 +1,91 @@
+PACKAGE
+
+package rest
+
+    A quick and easy way to setup a RESTful JSON API
+
+    Go-JSON-REST is a thin layer on top of net/http that helps building
+    RESTful JSON APIs easily. It provides fast URL routing using
+    go-urlrouter, and helpers to deal with JSON requests and responses. It
+    is not a high-level REST framework that transparently maps HTTP requests
+    to language procedure calls, on the opposite, you constantly have access
+    to the underlying net/http objects.
+
+    Example:
+
+	     package main
+	     import (
+		        "github.com/ant0ine/go-json-rest"
+		        "net/http"
+	     )
+	     type User struct {
+		        Id   string
+		        Name string
+	     }
+	     func GetUser(w *rest.ResponseWriter, req *rest.Request) {
+		        user := User{
+			        Id:   req.PathParam("id"),
+			        Name: "Antoine",
+		        }
+		        w.WriteJSON(&user)
+	     }
+	     func main() {
+	     	handler := rest.NewResourceHandler(
+		        	rest.Route{"GET", "/users/:id", GetUser},
+	     	)
+	     	http.ListenAndServe(":8080", handler)
+	     }
+
+TYPES
+
+type Request struct {
+    *http.Request
+    // map of parameters that have been matched in the URL Path.
+    PathParams map[string]string
+}
+    Inherit from http.Request, and provide additional methods.
+
+func (self *Request) DecodeJSONPayload(v interface{}) error
+    Read the request body and decode the JSON using json.Unmarshal
+
+func (self *Request) PathParam(name string) string
+    Provide a convenient access to the PathParams map
+
+type ResourceHandler struct {
+    // contains filtered or unexported fields
+}
+    Implement the http.Handler interface and act as a router for the defined
+    Routes.
+
+func NewResourceHandler(routes ...Route) *ResourceHandler
+    Instanciate a new ResourceHandler. The order the Routes matters, if a
+    request matches multiple Routes, the first one will be used. Note that
+    the underlying router is go-urlrouter.
+
+func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
+    This makes ResourceHandler implement the http.Handler interface
+
+type ResponseWriter struct {
+    http.ResponseWriter
+}
+    Inherit from a http.ResponseWriter interface, and provide additional
+    methods.
+
+func (self *ResponseWriter) WriteJSON(v interface{}) error
+    Encode the object in JSON using json.Marshal, set the content-type
+    header, and write the response.
+
+type Route struct {
+    Method  string
+    PathExp string
+    Dest    func(*ResponseWriter, *Request)
+}
+    Used during the instanciation of the ResourceHandler to define the
+    Routes.
+
+
+SUBDIRECTORIES
+
+	examples
+	ideas
+
