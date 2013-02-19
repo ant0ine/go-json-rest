@@ -60,7 +60,7 @@ type ResourceHandler struct {
 	router urlrouter.Router
 }
 
-// Used during the instanciation of the ResourceHandler to define the Routes.
+// Used during the instantiation of the ResourceHandler to define the Routes.
 type Route struct {
 	Method  string
 	PathExp string
