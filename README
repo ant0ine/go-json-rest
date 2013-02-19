@@ -30,10 +30,11 @@ package rest
 	        w.WriteJSON(&user)
 	}
 	func main() {
-	        handler := rest.NewResourceHandler(
+	        handler := ResourceHandler{}
+	        handler.SetRoutes(
 	                rest.Route{"GET", "/users/:id", GetUser},
 	        )
-	        http.ListenAndServe(":8080", handler)
+	        http.ListenAndServe(":8080", &handler)
 	}
 
 TYPES
@@ -57,13 +58,13 @@ type ResourceHandler struct {
     Implement the http.Handler interface and act as a router for the defined
     Routes.
 
-func NewResourceHandler(routes ...Route) *ResourceHandler
-    Instanciate a new ResourceHandler. The order the Routes matters, if a
-    request matches multiple Routes, the first one will be used. Note that
-    the underlying router is https://github.com/ant0ine/go-urlrouter.
-
 func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
     This makes ResourceHandler implement the http.Handler interface
+
+func (self *ResourceHandler) SetRoutes(routes ...Route) error
+    Define the Routes. The order the Routes matters, if a request matches
+    multiple Routes, the first one will be used. Note that the underlying
+    router is https://github.com/ant0ine/go-urlrouter.
 
 type ResponseWriter struct {
     http.ResponseWriter
@@ -80,8 +81,7 @@ type Route struct {
     PathExp string
     Dest    func(*ResponseWriter, *Request)
 }
-    Used during the instanciation of the ResourceHandler to define the
-    Routes.
+    Used with SetRoutes.
 
 
 SUBDIRECTORIES
