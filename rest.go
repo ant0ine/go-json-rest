@@ -1,9 +1,10 @@
 // A quick and easy way to setup a RESTful JSON API
 //
 // Go-JSON-REST is a thin layer on top of net/http that helps building RESTful JSON APIs easily.
-// It provides fast URL routing using go-urlrouter, and helpers to deal with JSON requests and responses.
-// It is not a high-level REST framework that transparently maps HTTP requests to language procedure calls,
-// on the opposite, you constantly have access to the underlying net/http objects.
+// It provides fast URL routing using https://github.com/ant0ine/go-urlrouter, and helpers to deal
+// with JSON requests and responses. It is not a high-level REST framework that transparently maps
+// HTTP requests to language procedure calls, on the opposite, you constantly have access to the
+// underlying net/http objects.
 //
 // Example:
 //
@@ -47,6 +48,7 @@ import (
 // TODO
 // * concatenating the method and the path in the router is kind of hacky,
 //   maybe url-router should evolve to take the method
+// * tests
 
 // NICETOHAVE
 // * more friendly log or output
@@ -67,7 +69,7 @@ type Route struct {
 
 // Instanciate a new ResourceHandler. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
-// Note that the underlying router is go-urlrouter.
+// Note that the underlying router is https://github.com/ant0ine/go-urlrouter.
 func NewResourceHandler(routes ...Route) *ResourceHandler {
 	self := ResourceHandler{
 		router: urlrouter.Router{
