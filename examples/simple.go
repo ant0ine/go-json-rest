@@ -19,8 +19,9 @@ func GetUser(w *rest.ResponseWriter, req *rest.Request) {
 }
 
 func main() {
-	handler := rest.NewResourceHandler(
+	handler := rest.ResourceHandler{}
+	handler.SetRoutes(
 		rest.Route{"GET", "/users/:id", GetUser},
 	)
-	http.ListenAndServe(":8080", handler)
+	http.ListenAndServe(":8080", &handler)
 }

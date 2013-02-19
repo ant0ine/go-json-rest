@@ -29,10 +29,11 @@
 //      }
 //
 //      func main() {
-//              handler := rest.NewResourceHandler(
+//              handler := ResourceHandler{}
+//              handler.SetRoutes(
 //                      rest.Route{"GET", "/users/:id", GetUser},
 //              )
-//              http.ListenAndServe(":8080", handler)
+//              http.ListenAndServe(":8080", &handler)
 //      }
 //
 package rest
@@ -60,21 +61,19 @@ type ResourceHandler struct {
 	router urlrouter.Router
 }
 
-// Used during the instantiation of the ResourceHandler to define the Routes.
+// Used with SetRoutes.
 type Route struct {
 	Method  string
 	PathExp string
 	Dest    func(*ResponseWriter, *Request)
 }
 
-// Instanciate a new ResourceHandler. The order the Routes matters,
+// Define the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 // Note that the underlying router is https://github.com/ant0ine/go-urlrouter.
-func NewResourceHandler(routes ...Route) *ResourceHandler {
-	self := ResourceHandler{
-		router: urlrouter.Router{
-			Routes: []urlrouter.Route{},
-		},
+func (self *ResourceHandler) SetRoutes(routes ...Route) error {
+	self.router = urlrouter.Router{
+                Routes: []urlrouter.Route{},
 	}
 	for _, route := range routes {
 		// make sure the method is uppercase
@@ -88,8 +87,7 @@ func NewResourceHandler(routes ...Route) *ResourceHandler {
 			},
 		)
 	}
-	self.router.Start()
-	return &self
+	return self.router.Start()
 }
 
 // This makes ResourceHandler implement the http.Handler interface
