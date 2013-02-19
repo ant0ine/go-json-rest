@@ -46,16 +46,6 @@ import (
 	"strings"
 )
 
-// TODO
-// * concatenating the method and the path in the router is kind of hacky,
-//   maybe url-router should evolve to take the method
-// * tests
-
-// NICETOHAVE
-// * more friendly log or output
-// * offer option for JSON indentation
-// * offer option for gzipped output
-
 // Implement the http.Handler interface and act as a router for the defined Routes.
 type ResourceHandler struct {
 	router urlrouter.Router
@@ -96,7 +86,7 @@ func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		strings.ToUpper(r.Method) + r.URL.Path,
 	)
 	if err != nil {
-		// should never happend has the URL has already been parsed
+		// should never happen has the URL has already been parsed
 		panic(err)
 	}
 	if route == nil {
