@@ -27,7 +27,7 @@ package rest
 	                Id:   req.PathParam("id"),
 	                Name: "Antoine",
 	        }
-	        w.WriteJSON(&user)
+	        w.WriteJson(&user)
 	}
 	func main() {
 	        handler := ResourceHandler{}
@@ -46,7 +46,7 @@ type Request struct {
 }
     Inherit from http.Request, and provide additional methods.
 
-func (self *Request) DecodeJSONPayload(v interface{}) error
+func (self *Request) DecodeJsonPayload(v interface{}) error
     Read the request body and decode the JSON using json.Unmarshal
 
 func (self *Request) PathParam(name string) string
@@ -85,13 +85,13 @@ func (self *ResponseWriter) Write(b []byte) (int, error)
     Overloading of the http.ResponseWriter method. Provide additional
     capabilities, like transparent gzip encoding.
 
-func (self *ResponseWriter) WriteJSON(v interface{}) error
+func (self *ResponseWriter) WriteJson(v interface{}) error
     Encode the object in JSON, set the content-type header, and call Write
 
 type Route struct {
     Method  string
     PathExp string
-    Dest    func(*ResponseWriter, *Request)
+    Func    func(*ResponseWriter, *Request)
 }
     Used with SetRoutes.
 

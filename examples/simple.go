@@ -15,7 +15,7 @@ func GetUser(w *rest.ResponseWriter, req *rest.Request) {
 		Id:   req.PathParam("id"),
 		Name: "Antoine",
 	}
-	w.WriteJSON(&user)
+	w.WriteJson(&user)
 }
 
 func main() {

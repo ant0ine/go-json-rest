@@ -25,7 +25,7 @@
 //                      Id:   req.PathParam("id"),
 //                      Name: "Antoine",
 //              }
-//              w.WriteJSON(&user)
+//              w.WriteJson(&user)
 //      }
 //
 //      func main() {
@@ -140,7 +140,7 @@ func (self *Request) PathParam(name string) string {
 }
 
 // Read the request body and decode the JSON using json.Unmarshal
-func (self *Request) DecodeJSONPayload(v interface{}) error {
+func (self *Request) DecodeJsonPayload(v interface{}) error {
 	content, err := ioutil.ReadAll(self.Body)
 	self.Body.Close()
 	if err != nil {
@@ -174,7 +174,7 @@ func (self *ResponseWriter) Write(b []byte) (int, error) {
 
 // Encode the object in JSON, set the content-type header,
 // and call Write
-func (self *ResponseWriter) WriteJSON(v interface{}) error {
+func (self *ResponseWriter) WriteJson(v interface{}) error {
 	self.Header().Set("content-type", "application/json")
 	var b []byte
 	var err error
