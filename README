@@ -53,12 +53,16 @@ func (self *Request) PathParam(name string) string
     Provide a convenient access to the PathParams map
 
 type ResourceHandler struct {
+
+    // If the client accepts the Gzip encoding, the responses payload will be compressed
+    // using gzip, and the corresponding response header will set.
+    EnableGzip bool
     // contains filtered or unexported fields
 }
     Implement the http.Handler interface and act as a router for the defined
     Routes.
 
-func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
+func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request)
     This makes ResourceHandler implement the http.Handler interface
 
 func (self *ResourceHandler) SetRoutes(routes ...Route) error
@@ -68,9 +72,12 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error
 
 type ResponseWriter struct {
     http.ResponseWriter
+    // contains filtered or unexported fields
 }
     Inherit from a http.ResponseWriter interface, and provide additional
     methods.
+
+func (self *ResponseWriter) Write(b []byte) (int, error)
 
 func (self *ResponseWriter) WriteJSON(v interface{}) error
     Encode the object in JSON using json.Marshal, set the content-type

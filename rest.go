@@ -39,6 +39,7 @@
 package rest
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"github.com/ant0ine/go-urlrouter"
 	"io/ioutil"
@@ -49,6 +50,9 @@ import (
 // Implement the http.Handler interface and act as a router for the defined Routes.
 type ResourceHandler struct {
 	router urlrouter.Router
+	// If the client accepts the Gzip encoding, the responses payload will be compressed
+	// using gzip, and the corresponding response header will set.
+	EnableGzip bool
 }
 
 // Used with SetRoutes.
@@ -63,7 +67,7 @@ type Route struct {
 // Note that the underlying router is https://github.com/ant0ine/go-urlrouter.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	self.router = urlrouter.Router{
-                Routes: []urlrouter.Route{},
+		Routes: []urlrouter.Route{},
 	}
 	for _, route := range routes {
 		// make sure the method is uppercase
@@ -81,9 +85,11 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 }
 
 // This makes ResourceHandler implement the http.Handler interface
-func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
+
+	// find the route
 	route, params, err := self.router.FindRoute(
-		strings.ToUpper(r.Method) + r.URL.Path,
+		strings.ToUpper(orig_request.Method) + orig_request.URL.Path,
 	)
 	if err != nil {
 		// should never happen has the URL has already been parsed
@@ -91,11 +97,25 @@ func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if route == nil {
 		// no route found
-		http.NotFound(w, r)
+		http.NotFound(orig_writer, orig_request)
 		return
 	}
-	request := Request{r, params}
-	writer := ResponseWriter{w}
+
+	// determine if gzip is needed
+	is_gzipped := self.EnableGzip == true &&
+		strings.Contains(orig_request.Header.Get("Accept-Encoding"), "gzip")
+
+	request := Request{
+		orig_request,
+		params,
+	}
+
+	writer := ResponseWriter{
+		orig_writer,
+		is_gzipped,
+	}
+
+	// run the user code
 	handler := route.Dest.(func(*ResponseWriter, *Request))
 	handler(&writer, &request)
 }
@@ -129,6 +149,17 @@ func (self *Request) DecodeJSONPayload(v interface{}) error {
 // Inherit from a http.ResponseWriter interface, and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
+	is_gzipped bool
+}
+
+func (self *ResponseWriter) Write(b []byte) (int, error) {
+	if self.is_gzipped {
+		self.Header().Set("Content-Encoding", "gzip")
+		gzip_writer := gzip.NewWriter(self.ResponseWriter)
+		defer gzip_writer.Close()
+		return gzip_writer.Write(b)
+	}
+	return self.ResponseWriter.Write(b)
 }
 
 // Encode the object in JSON using json.Marshal, set the content-type header,
