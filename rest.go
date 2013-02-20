@@ -63,7 +63,7 @@ type ResourceHandler struct {
 type Route struct {
 	Method  string
 	PathExp string
-	Dest    func(*ResponseWriter, *Request)
+	Func    func(*ResponseWriter, *Request)
 }
 
 // Define the Routes. The order the Routes matters,
@@ -81,7 +81,7 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 			self.router.Routes,
 			urlrouter.Route{
 				PathExp: method + route.PathExp,
-				Dest:    route.Dest,
+				Dest:    route.Func,
 			},
 		)
 	}
