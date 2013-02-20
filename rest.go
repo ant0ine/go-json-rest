@@ -52,7 +52,7 @@ import (
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
 	router urlrouter.Router
-	// If true and if the client accepts the Gzip encoding, the responses payload
+	// If true and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
 	EnableGzip bool
 	// If true the JSON payload will be written in one line with no space.
@@ -153,13 +153,15 @@ func (self *Request) DecodeJSONPayload(v interface{}) error {
 	return nil
 }
 
-// Inherit from a http.ResponseWriter interface, and provide additional methods.
+// Inherit from an object implementing the http.ResponseWriter interface, and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
 	is_gzipped  bool
 	is_indented bool
 }
 
+// Overloading of the http.ResponseWriter method.
+// Provide additional capabilities, like transparent gzip encoding.
 func (self *ResponseWriter) Write(b []byte) (int, error) {
 	if self.is_gzipped {
 		self.Header().Set("Content-Encoding", "gzip")
@@ -170,8 +172,8 @@ func (self *ResponseWriter) Write(b []byte) (int, error) {
 	return self.ResponseWriter.Write(b)
 }
 
-// Encode the object in JSON using json.Marshal, set the content-type header,
-// and write the response.
+// Encode the object in JSON, set the content-type header,
+// and call Write
 func (self *ResponseWriter) WriteJSON(v interface{}) error {
 	self.Header().Set("content-type", "application/json")
 	var b []byte

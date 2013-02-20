@@ -54,7 +54,7 @@ func (self *Request) PathParam(name string) string
 
 type ResourceHandler struct {
 
-    // If true and if the client accepts the Gzip encoding, the responses payload
+    // If true and if the client accepts the Gzip encoding, the response payloads
     // will be compressed using gzip, and the corresponding response header will set.
     EnableGzip bool
     // If true the JSON payload will be written in one line with no space.
@@ -78,14 +78,15 @@ type ResponseWriter struct {
     http.ResponseWriter
     // contains filtered or unexported fields
 }
-    Inherit from a http.ResponseWriter interface, and provide additional
-    methods.
+    Inherit from an object implementing the http.ResponseWriter interface,
+    and provide additional methods.
 
 func (self *ResponseWriter) Write(b []byte) (int, error)
+    Overloading of the http.ResponseWriter method. Provide additional
+    capabilities, like transparent gzip encoding.
 
 func (self *ResponseWriter) WriteJSON(v interface{}) error
-    Encode the object in JSON using json.Marshal, set the content-type
-    header, and write the response.
+    Encode the object in JSON, set the content-type header, and call Write
 
 type Route struct {
     Method  string
