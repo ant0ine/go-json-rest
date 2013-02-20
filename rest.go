@@ -48,11 +48,15 @@ import (
 )
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
+// The defaults are intended to be developemnt friendly, for production you may want
+// to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
 	router urlrouter.Router
-	// If the client accepts the Gzip encoding, the responses payload will be compressed
-	// using gzip, and the corresponding response header will set.
+	// If true and if the client accepts the Gzip encoding, the responses payload
+	// will be compressed using gzip, and the corresponding response header will set.
 	EnableGzip bool
+	// If true the JSON payload will be written in one line with no space.
+	DisableJsonIndent bool
 }
 
 // Used with SetRoutes.
@@ -105,6 +109,8 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	is_gzipped := self.EnableGzip == true &&
 		strings.Contains(orig_request.Header.Get("Accept-Encoding"), "gzip")
 
+	is_indented := !self.DisableJsonIndent
+
 	request := Request{
 		orig_request,
 		params,
@@ -113,6 +119,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	writer := ResponseWriter{
 		orig_writer,
 		is_gzipped,
+		is_indented,
 	}
 
 	// run the user code
@@ -149,7 +156,8 @@ func (self *Request) DecodeJSONPayload(v interface{}) error {
 // Inherit from a http.ResponseWriter interface, and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
-	is_gzipped bool
+	is_gzipped  bool
+	is_indented bool
 }
 
 func (self *ResponseWriter) Write(b []byte) (int, error) {
@@ -166,7 +174,13 @@ func (self *ResponseWriter) Write(b []byte) (int, error) {
 // and write the response.
 func (self *ResponseWriter) WriteJSON(v interface{}) error {
 	self.Header().Set("content-type", "application/json")
-	b, err := json.Marshal(v)
+	var b []byte
+	var err error
+	if self.is_indented {
+		b, err = json.MarshalIndent(v, "", "  ")
+	} else {
+		b, err = json.Marshal(v)
+	}
 	if err != nil {
 		return err
 	}
