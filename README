@@ -95,6 +95,11 @@ type Route struct {
 }
     Used with SetRoutes.
 
+func RouteObjectMethod(http_method string, path_exp string, object_instance interface{}, object_method string) Route
+    Create a Route that points to an object method. It can be convenient to
+    point to an object method instead of a function, this helper makes it
+    easy by passing the object instance and the method name as parameters.
+
 
 SUBDIRECTORIES
 
