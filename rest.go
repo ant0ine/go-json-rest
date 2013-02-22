@@ -41,9 +41,11 @@ package rest
 import (
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"github.com/ant0ine/go-urlrouter"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -64,6 +66,33 @@ type Route struct {
 	Method  string
 	PathExp string
 	Func    func(*ResponseWriter, *Request)
+}
+
+// Create a Route that points to an object method. It can be convenient to point to an object method instead
+// of a function, this helper makes it easy by passing the object instance and the method name as parameters.
+func RouteObjectMethod(http_method string, path_exp string, object_instance interface{}, object_method string) Route {
+
+	value := reflect.ValueOf(object_instance)
+	func_value := value.MethodByName(object_method)
+	if func_value.IsValid() == false {
+		panic(fmt.Sprintf(
+			"Cannot find the object method %s on %s",
+			object_method,
+			value,
+		))
+	}
+	route_func := func(w *ResponseWriter, r *Request) {
+		func_value.Call([]reflect.Value{
+			reflect.ValueOf(w),
+			reflect.ValueOf(r),
+		})
+	}
+
+	return Route{
+		Method:  http_method,
+		PathExp: path_exp,
+		Func:    route_func,
+	}
 }
 
 // Define the Routes. The order the Routes matters,
