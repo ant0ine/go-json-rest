@@ -89,9 +89,9 @@ func (self *ResponseWriter) WriteJson(v interface{}) error
     Encode the object in JSON, set the content-type header, and call Write
 
 type Route struct {
-    Method  string
-    PathExp string
-    Func    func(*ResponseWriter, *Request)
+    HttpMethod string
+    PathExp    string
+    Func       func(*ResponseWriter, *Request)
 }
     Used with SetRoutes.
 

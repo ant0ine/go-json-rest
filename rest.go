@@ -63,9 +63,9 @@ type ResourceHandler struct {
 
 // Used with SetRoutes.
 type Route struct {
-	Method  string
-	PathExp string
-	Func    func(*ResponseWriter, *Request)
+	HttpMethod string
+	PathExp    string
+	Func       func(*ResponseWriter, *Request)
 }
 
 // Create a Route that points to an object method. It can be convenient to point to an object method instead
@@ -89,9 +89,9 @@ func RouteObjectMethod(http_method string, path_exp string, object_instance inte
 	}
 
 	return Route{
-		Method:  http_method,
-		PathExp: path_exp,
-		Func:    route_func,
+		HttpMethod: http_method,
+		PathExp:    path_exp,
+		Func:       route_func,
 	}
 }
 
@@ -104,12 +104,12 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	}
 	for _, route := range routes {
 		// make sure the method is uppercase
-		method := strings.ToUpper(route.Method)
+		http_method := strings.ToUpper(route.HttpMethod)
 
 		self.router.Routes = append(
 			self.router.Routes,
 			urlrouter.Route{
-				PathExp: method + route.PathExp,
+				PathExp: http_method + route.PathExp,
 				Dest:    route.Func,
 			},
 		)
