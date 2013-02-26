@@ -126,7 +126,7 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 }
 
 // This makes ResourceHandler implement the http.Handler interface.
-// You probably don't want to user it directly.
+// You probably don't want to use it directly.
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
 
 	// catch user code's panic, and convert to http response
