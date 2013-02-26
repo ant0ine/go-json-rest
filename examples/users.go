@@ -6,6 +6,9 @@
 // The Curl Demo:
 // curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
 // curl -i http://127.0.0.1:8080/users/0
+// curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+// curl -i -X DELETE http://127.0.0.1:8080/users/0
+// curl -i http://127.0.0.1:8080/users
 //
 package main
 
@@ -22,6 +25,14 @@ type User struct {
 
 type Users struct {
 	Store map[string]*User
+}
+
+func (self *Users) GetAllUsers(w *rest.ResponseWriter, r *rest.Request) {
+	users := []*User{}
+	for _, user := range self.Store {
+		users = append(users, user)
+	}
+	w.WriteJson(&users)
 }
 
 func (self *Users) GetUser(w *rest.ResponseWriter, r *rest.Request) {
@@ -47,6 +58,28 @@ func (self *Users) PostUser(w *rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&user)
 }
 
+func (self *Users) PutUser(w *rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	if self.Store[id] == nil {
+		http.NotFound(w, r.Request)
+		return
+	}
+	user := User{}
+	err := r.DecodeJsonPayload(&user)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	user.Id = id
+	self.Store[id] = &user
+	w.WriteJson(&user)
+}
+
+func (self *Users) DeleteUser(w *rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	delete(self.Store, id)
+}
+
 func main() {
 
 	users := Users{
@@ -55,8 +88,11 @@ func main() {
 
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
+		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
 		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
+		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
+		rest.RouteObjectMethod("PUT", "/users/:id", &users, "PutUser"),
+		rest.RouteObjectMethod("DELETE", "/users/:id", &users, "DeleteUser"),
 	)
 	http.ListenAndServe(":8080", &handler)
 }
