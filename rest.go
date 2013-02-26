@@ -44,6 +44,7 @@ import (
 	"fmt"
 	"github.com/ant0ine/go-urlrouter"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"reflect"
 	"runtime/debug"
@@ -130,9 +131,13 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	// catch user code's panic, and convert to http response
 	defer func() {
 		if r := recover(); r != nil {
+			trace := debug.Stack()
+			log.Printf("%s\n%s", r, trace)
+
+			// 500 response
 			message := "Internal Server Error"
 			if self.EnableResponseStackTrace {
-				message = fmt.Sprintf("%s\n\n%s", r, debug.Stack())
+				message = fmt.Sprintf("%s\n\n%s", r, trace)
 			}
 			http.Error(orig_writer, message, http.StatusInternalServerError)
 		}
@@ -148,6 +153,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	}
 	if route == nil {
 		// no route found
+		log.Printf("%s %s => No Route Found (404)", orig_request.Method, orig_request.URL)
 		http.NotFound(orig_writer, orig_request)
 		return
 	}
@@ -171,6 +177,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 
 	// run the user code
 	handler := route.Dest.(func(*ResponseWriter, *Request))
+	log.Printf("%s %s => Dispatching...", orig_request.Method, orig_request.URL)
 	handler(&writer, &request)
 }
 
