@@ -46,6 +46,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"runtime/debug"
 	"strings"
 )
 
@@ -54,11 +55,17 @@ import (
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
 	router urlrouter.Router
+
 	// If true and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
 	EnableGzip bool
+
 	// If true the JSON payload will be written in one line with no space.
 	DisableJsonIndent bool
+
+	// If true, when a "panic" happens, the error string and the stack trace will be
+	// printed in the 500 response body.
+	EnableResponseStackTrace bool
 }
 
 // Used with SetRoutes.
@@ -119,6 +126,17 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
 // This makes ResourceHandler implement the http.Handler interface
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
+
+	// catch user code's panic, and convert to http response
+	defer func() {
+		if r := recover(); r != nil {
+			message := "Internal Server Error"
+			if self.EnableResponseStackTrace {
+				message = fmt.Sprintf("%s\n\n%s", r, debug.Stack())
+			}
+			http.Error(orig_writer, message, http.StatusInternalServerError)
+		}
+	}()
 
 	// find the route
 	route, params, err := self.router.FindRoute(

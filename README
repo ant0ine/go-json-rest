@@ -57,8 +57,13 @@ type ResourceHandler struct {
     // If true and if the client accepts the Gzip encoding, the response payloads
     // will be compressed using gzip, and the corresponding response header will set.
     EnableGzip bool
+
     // If true the JSON payload will be written in one line with no space.
     DisableJsonIndent bool
+
+    // If true, when a "panic" happens, the error string and the stack trace will be
+    // printed in the 500 response body.
+    EnableResponseStackTrace bool
     // contains filtered or unexported fields
 }
     Implement the http.Handler interface and act as a router for the defined
