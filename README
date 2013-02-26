@@ -8,8 +8,8 @@ package rest
     RESTful JSON APIs easily. It provides fast URL routing using
     https://github.com/ant0ine/go-urlrouter, and helpers to deal with JSON
     requests and responses. It is not a high-level REST framework that
-    transparently maps HTTP requests to language procedure calls, on the
-    opposite, you constantly have access to the underlying net/http objects.
+    transparently maps HTTP requests to procedure calls, on the opposite,
+    you constantly have access to the underlying net/http objects.
 
     Example:
 
@@ -54,11 +54,11 @@ func (self *Request) PathParam(name string) string
 
 type ResourceHandler struct {
 
-    // If true and if the client accepts the Gzip encoding, the response payloads
+    // If true, and if the client accepts the Gzip encoding, the response payloads
     // will be compressed using gzip, and the corresponding response header will set.
     EnableGzip bool
 
-    // If true the JSON payload will be written in one line with no space.
+    // If true, the JSON payload will be written in one line with no space.
     DisableJsonIndent bool
 
     // If true, when a "panic" happens, the error string and the stack trace will be
@@ -72,7 +72,8 @@ type ResourceHandler struct {
     indentation.
 
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request)
-    This makes ResourceHandler implement the http.Handler interface
+    This makes ResourceHandler implement the http.Handler interface. You
+    probably don't want to user it directly.
 
 func (self *ResourceHandler) SetRoutes(routes ...Route) error
     Define the Routes. The order the Routes matters, if a request matches

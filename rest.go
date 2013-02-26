@@ -3,8 +3,8 @@
 // Go-JSON-REST is a thin layer on top of net/http that helps building RESTful JSON APIs easily.
 // It provides fast URL routing using https://github.com/ant0ine/go-urlrouter, and helpers to deal
 // with JSON requests and responses. It is not a high-level REST framework that transparently maps
-// HTTP requests to language procedure calls, on the opposite, you constantly have access to the
-// underlying net/http objects.
+// HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
+// net/http objects.
 //
 // Example:
 //
@@ -57,11 +57,11 @@ import (
 type ResourceHandler struct {
 	router urlrouter.Router
 
-	// If true and if the client accepts the Gzip encoding, the response payloads
+	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
 	EnableGzip bool
 
-	// If true the JSON payload will be written in one line with no space.
+	// If true, the JSON payload will be written in one line with no space.
 	DisableJsonIndent bool
 
 	// If true, when a "panic" happens, the error string and the stack trace will be
@@ -125,7 +125,8 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	return self.router.Start()
 }
 
-// This makes ResourceHandler implement the http.Handler interface
+// This makes ResourceHandler implement the http.Handler interface.
+// You probably don't want to user it directly.
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
 
 	// catch user code's panic, and convert to http response
