@@ -37,7 +37,7 @@ func TestHandler(t *testing.T) {
 		t.Error("code 200 expected")
 	}
 	if recorder.Body.String() != `{"Id":"123"}` {
-		t.Error("wrong body")
+		t.Errorf("wrong body, got: %s", recorder.Body.String())
 	}
 
 }
