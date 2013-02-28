@@ -64,6 +64,9 @@ type ResourceHandler struct {
     // If true, when a "panic" happens, the error string and the stack trace will be
     // printed in the 500 response body.
     EnableResponseStackTrace bool
+
+    // Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
+    Logger *log.Logger
     // contains filtered or unexported fields
 }
     Implement the http.Handler interface and act as a router for the defined

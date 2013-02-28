@@ -46,6 +46,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"runtime/debug"
 	"strings"
@@ -67,6 +68,9 @@ type ResourceHandler struct {
 	// If true, when a "panic" happens, the error string and the stack trace will be
 	// printed in the 500 response body.
 	EnableResponseStackTrace bool
+
+	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
+	Logger *log.Logger
 }
 
 // Used with SetRoutes.
@@ -129,11 +133,16 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 // You probably don't want to use it directly.
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
 
+	// set a default Logger
+	if self.Logger == nil {
+		self.Logger = log.New(os.Stderr, "", log.LstdFlags)
+	}
+
 	// catch user code's panic, and convert to http response
 	defer func() {
 		if r := recover(); r != nil {
 			trace := debug.Stack()
-			log.Printf("%s\n%s", r, trace)
+			self.Logger.Printf("%s\n%s", r, trace)
 
 			// 500 response
 			message := "Internal Server Error"
@@ -154,7 +163,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	}
 	if route == nil {
 		// no route found
-		log.Printf("%s %s => No Route Found (404)", orig_request.Method, orig_request.URL)
+		self.Logger.Printf("%s %s => No Route Found (404)", orig_request.Method, orig_request.URL)
 		http.NotFound(orig_writer, orig_request)
 		return
 	}
@@ -178,7 +187,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 
 	// run the user code
 	handler := route.Dest.(func(*ResponseWriter, *Request))
-	log.Printf("%s %s => Dispatching...", orig_request.Method, orig_request.URL)
+	self.Logger.Printf("%s %s => Dispatching ...", orig_request.Method, orig_request.URL)
 	handler(&writer, &request)
 }
 
