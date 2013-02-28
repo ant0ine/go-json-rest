@@ -55,10 +55,11 @@ More Examples
 Documentation
 -------------
 
-[Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
+- [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
 
 
 Copyright (c) 2013 Antoine Imbert
+
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
 
