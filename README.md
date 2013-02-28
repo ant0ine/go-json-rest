@@ -6,8 +6,8 @@ Go-Json-Rest
 
 [![Build Status](https://travis-ci.org/ant0ine/go-json-rest.png?branch=master)](https://travis-ci.org/ant0ine/go-json-rest)
 
-Go-Json-Rest is a thin layer on top of net/http that helps building RESTful JSON APIs easily. It provides fast URL routing using [Go-UrlRouter](https://github.com/ant0ine/go-urlrouter), and helpers to deal with JSON requests and responses. It is not a high-level REST framework that transparently maps HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
-net/http objects.
+**Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using [Go-UrlRouter](https://github.com/ant0ine/go-urlrouter), and helpers to deal with JSON requests and responses. It is not a high-level REST framework that transparently maps HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
+`net/http` objects.
 
 Install
 -------
@@ -47,18 +47,18 @@ Example
 More Examples
 -------------
 
-- [Countries](https://github.com/ant0ine/go-json-rest/blob/master/examples/countries.go)
-- [Users](https://github.com/ant0ine/go-json-rest/blob/master/examples/users.go)
-- [SPDY](https://github.com/ant0ine/go-json-rest/blob/master/examples/spdy.go)
+- [Countries](https://github.com/ant0ine/go-json-rest/blob/master/examples/countries.go) Demo very simple GET, POST, DELETE operations
+- [Users](https://github.com/ant0ine/go-json-rest/blob/master/examples/users.go) Demo the mapping to object methods
+- [SPDY](https://github.com/ant0ine/go-json-rest/blob/master/examples/spdy.go) Demo SPDY using github.com/shykes/spdy-go
 
 
 Documentation
 -------------
 
-[online documentation](go.pkgdoc.org/github.com/ant0ine/go-json-rest)
+[Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
+
 
 Copyright (c) 2013 Antoine Imbert
-
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
 
