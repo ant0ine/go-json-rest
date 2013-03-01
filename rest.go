@@ -129,6 +129,16 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	return self.router.Start()
 }
 
+type response_log_record struct {
+	StatusCode int
+	HttpMethod string
+	RequestURI string
+}
+
+func (self *ResourceHandler) log_response(record *response_log_record) {
+	self.Logger.Printf("%+v", record)
+}
+
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
@@ -142,14 +152,23 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	defer func() {
 		if r := recover(); r != nil {
 			trace := debug.Stack()
+
+			// log the trace
 			self.Logger.Printf("%s\n%s", r, trace)
 
-			// 500 response
+			// write error response
 			message := "Internal Server Error"
 			if self.EnableResponseStackTrace {
 				message = fmt.Sprintf("%s\n\n%s", r, trace)
 			}
 			http.Error(orig_writer, message, http.StatusInternalServerError)
+
+			// log response
+			self.log_response(&response_log_record{
+				http.StatusNotFound,
+				orig_request.Method,
+				orig_request.URL.RequestURI(),
+			})
 		}
 	}()
 
@@ -163,8 +182,14 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	}
 	if route == nil {
 		// no route found
-		self.Logger.Printf("404 %s %s => No Route Found", orig_request.Method, orig_request.URL)
 		http.NotFound(orig_writer, orig_request)
+
+		// log response
+		self.log_response(&response_log_record{
+			http.StatusNotFound,
+			orig_request.Method,
+			orig_request.URL.RequestURI(),
+		})
 		return
 	}
 
@@ -190,7 +215,13 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	// run the user code
 	handler := route.Dest.(func(*ResponseWriter, *Request))
 	handler(&writer, &request)
-	self.Logger.Printf("%d %s %s", writer.status_code, orig_request.Method, orig_request.URL)
+
+	// log response
+	self.log_response(&response_log_record{
+		writer.status_code,
+		orig_request.Method,
+		orig_request.URL.RequestURI(),
+	})
 }
 
 // Inherit from http.Request, and provide additional methods.
