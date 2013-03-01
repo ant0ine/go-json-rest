@@ -69,6 +69,10 @@ type ResourceHandler struct {
 	// printed in the 500 response body.
 	EnableResponseStackTrace bool
 
+	// If true, the record that is logged for each response will be printed as JSON
+	// in the log. Convenient for log parsing.
+	EnableLogAsJson bool
+
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
 }
@@ -136,7 +140,19 @@ type response_log_record struct {
 }
 
 func (self *ResourceHandler) log_response(record *response_log_record) {
-	self.Logger.Printf("%+v", record)
+	if self.EnableLogAsJson {
+		b, err := json.Marshal(record)
+		if err != nil {
+			panic(err)
+		}
+		self.Logger.Printf("%s", b)
+	} else {
+		self.Logger.Printf("%d %s %s",
+			record.StatusCode,
+			record.HttpMethod,
+			record.RequestURI,
+		)
+	}
 }
 
 // This makes ResourceHandler implement the http.Handler interface.
