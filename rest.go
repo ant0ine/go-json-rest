@@ -158,12 +158,12 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		strings.ToUpper(orig_request.Method) + orig_request.URL.Path,
 	)
 	if err != nil {
-		// should never happen has the URL has already been parsed
+		// should never happen as the URL has already been parsed
 		panic(err)
 	}
 	if route == nil {
 		// no route found
-		self.Logger.Printf("%s %s => No Route Found (404)", orig_request.Method, orig_request.URL)
+		self.Logger.Printf("404 %s %s => No Route Found", orig_request.Method, orig_request.URL)
 		http.NotFound(orig_writer, orig_request)
 		return
 	}
@@ -183,12 +183,14 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		orig_writer,
 		is_gzipped,
 		is_indented,
+		0,
+		false,
 	}
 
 	// run the user code
 	handler := route.Dest.(func(*ResponseWriter, *Request))
-	self.Logger.Printf("%s %s => Dispatching ...", orig_request.Method, orig_request.URL)
 	handler(&writer, &request)
+	self.Logger.Printf("%d %s %s", writer.status_code, orig_request.Method, orig_request.URL)
 }
 
 // Inherit from http.Request, and provide additional methods.
@@ -220,19 +222,35 @@ func (self *Request) DecodeJsonPayload(v interface{}) error {
 // Inherit from an object implementing the http.ResponseWriter interface, and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
-	is_gzipped  bool
-	is_indented bool
+	is_gzipped   bool
+	is_indented  bool
+	status_code  int
+	wrote_header bool
+}
+
+// Overloading of the http.ResponseWriter method.
+// Just record the status code for logging.
+func (self *ResponseWriter) WriteHeader(code int) {
+	self.ResponseWriter.WriteHeader(code)
+	self.status_code = code
+	self.wrote_header = true
 }
 
 // Overloading of the http.ResponseWriter method.
 // Provide additional capabilities, like transparent gzip encoding.
 func (self *ResponseWriter) Write(b []byte) (int, error) {
+
+	if !self.wrote_header {
+		self.WriteHeader(http.StatusOK)
+	}
+
 	if self.is_gzipped {
 		self.Header().Set("Content-Encoding", "gzip")
 		gzip_writer := gzip.NewWriter(self.ResponseWriter)
 		defer gzip_writer.Close()
 		return gzip_writer.Write(b)
 	}
+
 	return self.ResponseWriter.Write(b)
 }
 
