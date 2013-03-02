@@ -50,6 +50,7 @@ import (
 	"reflect"
 	"runtime/debug"
 	"strings"
+	"time"
 )
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
@@ -134,9 +135,10 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 }
 
 type response_log_record struct {
-	StatusCode int
-	HttpMethod string
-	RequestURI string
+	StatusCode   int
+	ResponseTime *time.Duration
+	HttpMethod   string
+	RequestURI   string
 }
 
 func (self *ResourceHandler) log_response(record *response_log_record) {
@@ -147,8 +149,9 @@ func (self *ResourceHandler) log_response(record *response_log_record) {
 		}
 		self.Logger.Printf("%s", b)
 	} else {
-		self.Logger.Printf("%d %s %s",
+		self.Logger.Printf("%d %v %s %s",
 			record.StatusCode,
+			record.ResponseTime,
 			record.HttpMethod,
 			record.RequestURI,
 		)
@@ -158,6 +161,8 @@ func (self *ResourceHandler) log_response(record *response_log_record) {
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
+
+	t0 := time.Now()
 
 	// set a default Logger
 	if self.Logger == nil {
@@ -182,6 +187,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 			// log response
 			self.log_response(&response_log_record{
 				http.StatusNotFound,
+				nil,
 				orig_request.Method,
 				orig_request.URL.RequestURI(),
 			})
@@ -203,6 +209,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		// log response
 		self.log_response(&response_log_record{
 			http.StatusNotFound,
+			nil,
 			orig_request.Method,
 			orig_request.URL.RequestURI(),
 		})
@@ -232,9 +239,12 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	handler := route.Dest.(func(*ResponseWriter, *Request))
 	handler(&writer, &request)
 
+	duration := time.Now().Sub(t0)
+
 	// log response
 	self.log_response(&response_log_record{
 		writer.status_code,
+		&duration,
 		orig_request.Method,
 		orig_request.URL.RequestURI(),
 	})
