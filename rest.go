@@ -141,7 +141,7 @@ type response_log_record struct {
 	RequestURI   string
 }
 
-func (self *ResourceHandler) log_response(record *response_log_record) {
+func (self *ResourceHandler) log_response_record(record *response_log_record) {
 	if self.EnableLogAsJson {
 		b, err := json.Marshal(record)
 		if err != nil {
@@ -158,11 +158,23 @@ func (self *ResourceHandler) log_response(record *response_log_record) {
 	}
 }
 
+func (self *ResourceHandler) log_response(status_code int, start *time.Time, request *http.Request) {
+
+	duration := time.Now().Sub(*start)
+
+	self.log_response_record(&response_log_record{
+		status_code,
+		&duration,
+		request.Method,
+		request.URL.RequestURI(),
+	})
+}
+
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
 func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
 
-	t0 := time.Now()
+	start := time.Now()
 
 	// set a default Logger
 	if self.Logger == nil {
@@ -185,12 +197,11 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 			http.Error(orig_writer, message, http.StatusInternalServerError)
 
 			// log response
-			self.log_response(&response_log_record{
+			self.log_response(
 				http.StatusNotFound,
-				nil,
-				orig_request.Method,
-				orig_request.URL.RequestURI(),
-			})
+				&start,
+				orig_request,
+			)
 		}
 	}()
 
@@ -207,12 +218,11 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		http.NotFound(orig_writer, orig_request)
 
 		// log response
-		self.log_response(&response_log_record{
+		self.log_response(
 			http.StatusNotFound,
-			nil,
-			orig_request.Method,
-			orig_request.URL.RequestURI(),
-		})
+			&start,
+			orig_request,
+		)
 		return
 	}
 
@@ -239,15 +249,12 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	handler := route.Dest.(func(*ResponseWriter, *Request))
 	handler(&writer, &request)
 
-	duration := time.Now().Sub(t0)
-
 	// log response
-	self.log_response(&response_log_record{
+	self.log_response(
 		writer.status_code,
-		&duration,
-		orig_request.Method,
-		orig_request.URL.RequestURI(),
-	})
+		&start,
+		orig_request,
+	)
 }
 
 // Inherit from http.Request, and provide additional methods.
