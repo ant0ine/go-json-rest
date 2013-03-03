@@ -80,9 +80,18 @@ type ResourceHandler struct {
 
 // Used with SetRoutes.
 type Route struct {
+
+	// Any http method. It will be used as uppercase to avoid common mistakes.
 	HttpMethod string
-	PathExp    string
-	Func       func(*ResponseWriter, *Request)
+
+	// A string like "/resource/:id.json".
+	// Placeholders supported are:
+	// :param that matches any char to the first '/' or '.'
+	// *splat that matches everything to the end of the string
+	PathExp string
+
+	// Code that will be executed when this route is taken.
+	Func func(*ResponseWriter, *Request)
 }
 
 // Create a Route that points to an object method. It can be convenient to point to an object method instead
@@ -283,7 +292,8 @@ func (self *Request) DecodeJsonPayload(v interface{}) error {
 	return nil
 }
 
-// Inherit from an object implementing the http.ResponseWriter interface, and provide additional methods.
+// Inherit from an object implementing the http.ResponseWriter interface,
+// and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
 	is_gzipped   bool
@@ -319,7 +329,7 @@ func (self *ResponseWriter) Write(b []byte) (int, error) {
 }
 
 // Encode the object in JSON, set the content-type header,
-// and call Write
+// and call Write.
 func (self *ResponseWriter) WriteJson(v interface{}) error {
 	self.Header().Set("content-type", "application/json")
 	var b []byte
