@@ -50,6 +50,7 @@ import (
 	"reflect"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -57,7 +58,8 @@ import (
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
-	router urlrouter.Router
+	router         urlrouter.Router
+	status_service *status_service
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -65,6 +67,10 @@ type ResourceHandler struct {
 
 	// If true, the JSON payload will be written in one line with no space.
 	DisableJsonIndent bool
+
+	// If true, the status service will be enabled. Various stats and status will
+	// then be available at GET /.status in a JSON format.
+	EnableStatusService bool
 
 	// If true, when a "panic" happens, the error string and the stack trace will be
 	// printed in the 500 response body.
@@ -128,6 +134,7 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	self.router = urlrouter.Router{
 		Routes: []urlrouter.Route{},
 	}
+
 	for _, route := range routes {
 		// make sure the method is uppercase
 		http_method := strings.ToUpper(route.HttpMethod)
@@ -140,6 +147,21 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 			},
 		)
 	}
+
+	// add the status route as the last route.
+	if self.EnableStatusService == true {
+		self.status_service = new_status_service()
+		self.router.Routes = append(
+			self.router.Routes,
+			urlrouter.Route{
+				PathExp: "GET/.status",
+				Dest: func(w *ResponseWriter, r *Request) {
+					self.status_service.get_status(w, r)
+				},
+			},
+		)
+	}
+
 	return self.router.Start()
 }
 
@@ -169,7 +191,12 @@ func (self *ResourceHandler) log_response_record(record *response_log_record) {
 
 func (self *ResourceHandler) log_response(status_code int, start *time.Time, request *http.Request) {
 
-	duration := time.Now().Sub(*start)
+	now := time.Now()
+	duration := now.Sub(*start)
+
+	if self.status_service != nil {
+		self.status_service.update(status_code, &duration)
+	}
 
 	self.log_response_record(&response_log_record{
 		status_code,
@@ -344,4 +371,81 @@ func (self *ResponseWriter) WriteJson(v interface{}) error {
 	}
 	self.Write(b)
 	return nil
+}
+
+type status_service struct {
+	lock                sync.Mutex
+	start               time.Time
+	pid                 int
+	response_counts     map[string]int
+	total_response_time time.Time
+}
+
+func new_status_service() *status_service {
+	return &status_service{
+		start:               time.Now(),
+		pid:                 os.Getpid(),
+		response_counts:     map[string]int{},
+		total_response_time: time.Time{},
+	}
+}
+
+func (self *status_service) update(status_code int, response_time *time.Duration) {
+	self.lock.Lock()
+	self.response_counts[fmt.Sprintf("%d", status_code)]++
+	self.total_response_time = self.total_response_time.Add(*response_time)
+	self.lock.Unlock()
+}
+
+type status struct {
+	Pid                    int
+	UpTime                 string
+	UpTimeSec              float64
+	Time                   string
+	TimeUnix               int64
+	StatusCodeCount        map[string]int
+	TotalCount             int
+	TotalResponseTime      string
+	TotalResponseTimeSec   float64
+	AverageResponseTime    string
+	AverageResponseTimeSec float64
+}
+
+func (self *status_service) get_status(w *ResponseWriter, r *Request) {
+
+	now := time.Now()
+
+	uptime := now.Sub(self.start)
+
+	total_count := 0
+	for _, count := range self.response_counts {
+		total_count += count
+	}
+
+	total_response_time := self.total_response_time.Sub(time.Time{})
+
+	average_response_time := time.Duration(0)
+	if total_count > 0 {
+		avg_ns := int64(total_response_time) / int64(total_count)
+		average_response_time = time.Duration(avg_ns)
+	}
+
+	st := &status{
+		Pid:                    self.pid,
+		UpTime:                 uptime.String(),
+		UpTimeSec:              uptime.Seconds(),
+		Time:                   now.String(),
+		TimeUnix:               now.Unix(),
+		StatusCodeCount:        self.response_counts,
+		TotalCount:             total_count,
+		TotalResponseTime:      total_response_time.String(),
+		TotalResponseTimeSec:   total_response_time.Seconds(),
+		AverageResponseTime:    average_response_time.String(),
+		AverageResponseTimeSec: average_response_time.Seconds(),
+	}
+
+	err := w.WriteJson(st)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 }
