@@ -39,7 +39,7 @@ func (self *Users) GetUser(w *rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	user := self.Store[id]
 	if user == nil {
-		http.NotFound(w, r.Request)
+		rest.NotFound(w, r)
 		return
 	}
 	w.WriteJson(&user)
@@ -49,7 +49,7 @@ func (self *Users) PostUser(w *rest.ResponseWriter, r *rest.Request) {
 	user := User{}
 	err := r.DecodeJsonPayload(&user)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	id := fmt.Sprintf("%d", len(self.Store)) // stupid
@@ -61,13 +61,13 @@ func (self *Users) PostUser(w *rest.ResponseWriter, r *rest.Request) {
 func (self *Users) PutUser(w *rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	if self.Store[id] == nil {
-		http.NotFound(w, r.Request)
+		rest.NotFound(w, r)
 		return
 	}
 	user := User{}
 	err := r.DecodeJsonPayload(&user)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	user.Id = id

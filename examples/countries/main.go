@@ -27,7 +27,7 @@ func GetCountry(w *rest.ResponseWriter, r *rest.Request) {
 	code := r.PathParam("code")
 	country := store[code]
 	if country == nil {
-		http.NotFound(w, r.Request)
+		rest.NotFound(w, r)
 		return
 	}
 	w.WriteJson(&country)
@@ -45,7 +45,7 @@ func PostCountry(w *rest.ResponseWriter, r *rest.Request) {
 	country := Country{}
 	err := r.DecodeJsonPayload(&country)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if country.Code == "" {
