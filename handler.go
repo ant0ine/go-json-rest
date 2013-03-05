@@ -231,7 +231,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 
 			// log response
 			self.log_response(
-				http.StatusNotFound,
+				http.StatusInternalServerError,
 				&start,
 				orig_request,
 			)
