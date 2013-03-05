@@ -64,6 +64,7 @@ func (self *ResponseWriter) WriteJson(v interface{}) error {
 // The standard plain text net/http Error helper can still be called like this:
 // http.Error(w, "error message", code)
 func Error(w *ResponseWriter, error string, code int) {
+	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(code)
 	err := w.WriteJson(map[string]string{"error": error})
 	if err != nil {
