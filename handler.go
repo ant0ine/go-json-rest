@@ -215,6 +215,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	}
 
 	// catch user code's panic, and convert to http response
+        // (this does not use the JSON error response on purpose)
 	defer func() {
 		if r := recover(); r != nil {
 			trace := debug.Stack()
@@ -238,6 +239,25 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		}
 	}()
 
+	request := Request{
+		orig_request,
+		nil,
+	}
+
+	// determine if gzip is needed
+	is_gzipped := self.EnableGzip == true &&
+		strings.Contains(orig_request.Header.Get("Accept-Encoding"), "gzip")
+
+	is_indented := !self.DisableJsonIndent
+
+	writer := ResponseWriter{
+		orig_writer,
+		is_gzipped,
+		is_indented,
+		0,
+		false,
+	}
+
 	// find the route
 	route, params, err := self.router.FindRoute(
 		strings.ToUpper(orig_request.Method) + orig_request.URL.Path,
@@ -248,7 +268,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	}
 	if route == nil {
 		// no route found
-		http.NotFound(orig_writer, orig_request)
+		NotFound(&writer, &request)
 
 		// log response
 		self.log_response(
@@ -259,24 +279,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		return
 	}
 
-	// determine if gzip is needed
-	is_gzipped := self.EnableGzip == true &&
-		strings.Contains(orig_request.Header.Get("Accept-Encoding"), "gzip")
-
-	is_indented := !self.DisableJsonIndent
-
-	request := Request{
-		orig_request,
-		params,
-	}
-
-	writer := ResponseWriter{
-		orig_writer,
-		is_gzipped,
-		is_indented,
-		0,
-		false,
-	}
+	request.PathParams = params
 
 	// run the user code
 	handler := route.Dest.(func(*ResponseWriter, *Request))
