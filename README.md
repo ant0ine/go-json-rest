@@ -9,6 +9,13 @@ Go-Json-Rest
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using [Go-UrlRouter](https://github.com/ant0ine/go-urlrouter), and helpers to deal with JSON requests and responses. It is not a high-level REST framework that transparently maps HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
 `net/http` objects.
 
+Features
+-----------
+- Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
+- Fast URL routing using Go-UrlRouter. It implements the classic route description syntax using a scalable trie data structure.
+- Optional /.status endpoint for easy monitoring.
+- Examples
+
 Install
 -------
 
