@@ -64,6 +64,16 @@ Documentation
 
 - [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
 
+Options
+-------
+
+Things to enable in production:
+- Gzip compression (default: disabled)
+- Custom Logger (default: Go default)
+
+Things to enable in development:
+- Json indentation (default: enabled)
+- Error stack trace in the response body (default: disabled)
 
 The Status Endpoint
 -------------------
