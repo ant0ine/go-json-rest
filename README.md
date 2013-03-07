@@ -58,6 +58,31 @@ Documentation
 - [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
 
 
+The Status Endpoint
+-------------------
+
+Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
+
+GET /.status returns something like:
+
+    {
+      "Pid": 21732,
+      "UpTime": "1m15.926272s",
+      "UpTimeSec": 75.926272,
+      "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+      "TimeUnix": 1362384027,
+      "StatusCodeCount": {
+        "200": 53,
+        "404": 11
+      },
+      "TotalCount": 64,
+      "TotalResponseTime": "16.777ms",
+      "TotalResponseTimeSec": 0.016777,
+      "AverageResponseTime": "262.14us",
+      "AverageResponseTimeSec": 0.00026214
+    }
+
+
 Copyright (c) 2013 Antoine Imbert
 
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
