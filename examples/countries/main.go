@@ -1,3 +1,18 @@
+/* Demonstrate simple POST GET and DELETE operations
+
+The Curl Demo:
+
+        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+        curl -i http://127.0.0.1:8080/countries/FR
+        curl -i http://127.0.0.1:8080/countries/US
+        curl -i http://127.0.0.1:8080/countries
+        curl -i -X DELETE http://127.0.0.1:8080/countries/FR
+        curl -i http://127.0.0.1:8080/countries
+        curl -i -X DELETE http://127.0.0.1:8080/countries/US
+        curl -i http://127.0.0.1:8080/countries
+
+*/
 package main
 
 import (
@@ -5,16 +20,17 @@ import (
 	"net/http"
 )
 
-// The Curl Demo:
-// curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-// curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
-// curl -i http://127.0.0.1:8080/countries/FR
-// curl -i http://127.0.0.1:8080/countries/US
-// curl -i http://127.0.0.1:8080/countries
-// curl -i -X DELETE http://127.0.0.1:8080/countries/FR
-// curl -i http://127.0.0.1:8080/countries
-// curl -i -X DELETE http://127.0.0.1:8080/countries/US
-// curl -i http://127.0.0.1:8080/countries
+func main() {
+
+	handler := rest.ResourceHandler{}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+		rest.Route{"POST", "/countries", PostCountry},
+		rest.Route{"GET", "/countries/:code", GetCountry},
+		rest.Route{"DELETE", "/countries/:code", DeleteCountry},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
 
 type Country struct {
 	Code string
@@ -63,16 +79,4 @@ func PostCountry(w *rest.ResponseWriter, r *rest.Request) {
 func DeleteCountry(w *rest.ResponseWriter, r *rest.Request) {
 	code := r.PathParam("code")
 	delete(store, code)
-}
-
-func main() {
-
-	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-		rest.Route{"POST", "/countries", PostCountry},
-		rest.Route{"GET", "/countries/:code", GetCountry},
-		rest.Route{"DELETE", "/countries/:code", DeleteCountry},
-	)
-	http.ListenAndServe(":8080", &handler)
 }

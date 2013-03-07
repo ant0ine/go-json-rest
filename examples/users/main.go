@@ -1,15 +1,17 @@
-// Demonstrate how to use rest.RouteObjectMethod
-//
-// rest.RouteObjectMethod helps create a Route that points to
-// an object method instead of just a function.
-//
-// The Curl Demo:
-// curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
-// curl -i http://127.0.0.1:8080/users/0
-// curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
-// curl -i -X DELETE http://127.0.0.1:8080/users/0
-// curl -i http://127.0.0.1:8080/users
-//
+/* Demonstrate how to use rest.RouteObjectMethod
+
+rest.RouteObjectMethod helps create a Route that points to
+an object method instead of just a function.
+
+The Curl Demo:
+
+        curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+        curl -i http://127.0.0.1:8080/users/0
+        curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+        curl -i -X DELETE http://127.0.0.1:8080/users/0
+        curl -i http://127.0.0.1:8080/users
+
+*/
 package main
 
 import (
@@ -17,6 +19,23 @@ import (
 	"github.com/ant0ine/go-json-rest"
 	"net/http"
 )
+
+func main() {
+
+	users := Users{
+		Store: map[string]*User{},
+	}
+
+	handler := rest.ResourceHandler{}
+	handler.SetRoutes(
+		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
+		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
+		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
+		rest.RouteObjectMethod("PUT", "/users/:id", &users, "PutUser"),
+		rest.RouteObjectMethod("DELETE", "/users/:id", &users, "DeleteUser"),
+	)
+	http.ListenAndServe(":8080", &handler)
+}
 
 type User struct {
 	Id   string
@@ -78,21 +97,4 @@ func (self *Users) PutUser(w *rest.ResponseWriter, r *rest.Request) {
 func (self *Users) DeleteUser(w *rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	delete(self.Store, id)
-}
-
-func main() {
-
-	users := Users{
-		Store: map[string]*User{},
-	}
-
-	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
-		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
-		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
-		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
-		rest.RouteObjectMethod("PUT", "/users/:id", &users, "PutUser"),
-		rest.RouteObjectMethod("DELETE", "/users/:id", &users, "DeleteUser"),
-	)
-	http.ListenAndServe(":8080", &handler)
 }
