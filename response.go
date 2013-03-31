@@ -28,10 +28,6 @@ func (self *ResponseWriter) WriteHeader(code int) {
 // Provide additional capabilities, like transparent gzip encoding.
 func (self *ResponseWriter) Write(b []byte) (int, error) {
 
-	if !self.wrote_header {
-		self.WriteHeader(http.StatusOK)
-	}
-
 	if self.is_gzipped {
 		self.Header().Set("Content-Encoding", "gzip")
 		gzip_writer := gzip.NewWriter(self.ResponseWriter)
@@ -39,6 +35,9 @@ func (self *ResponseWriter) Write(b []byte) (int, error) {
 		return gzip_writer.Write(b)
 	}
 
+	if !self.wrote_header {
+		self.WriteHeader(http.StatusOK)
+	}
 	return self.ResponseWriter.Write(b)
 }
 
