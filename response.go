@@ -30,14 +30,18 @@ func (self *ResponseWriter) Write(b []byte) (int, error) {
 
 	if self.is_gzipped {
 		self.Header().Set("Content-Encoding", "gzip")
-		gzip_writer := gzip.NewWriter(self.ResponseWriter)
-		defer gzip_writer.Close()
-		return gzip_writer.Write(b)
 	}
 
 	if !self.wrote_header {
 		self.WriteHeader(http.StatusOK)
 	}
+
+	if self.is_gzipped {
+		gzip_writer := gzip.NewWriter(self.ResponseWriter)
+		defer gzip_writer.Close()
+		return gzip_writer.Write(b)
+	}
+
 	return self.ResponseWriter.Write(b)
 }
 

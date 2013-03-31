@@ -17,6 +17,8 @@ func run_test_request(t *testing.T, handler *ResourceHandler, method, url_str, p
 		Method: method,
 		URL:    url_obj,
 	}
+	r.Header = http.Header{}
+	r.Header.Set("Accept-Encoding", "gzip")
 
 	recorder := httptest.NewRecorder()
 
@@ -35,6 +37,13 @@ func content_type_is_json(t *testing.T, r *httptest.ResponseRecorder) {
 	ct := r.HeaderMap.Get("Content-Type")
 	if ct != "application/json" {
 		t.Errorf("Content type 'application/json' expected, got: %s", ct)
+	}
+}
+
+func content_encoding_is_gzip(t *testing.T, r *httptest.ResponseRecorder) {
+	ce := r.HeaderMap.Get("Content-Encoding")
+	if ce != "gzip" {
+		t.Errorf("Content encoding 'gzip' expected, got: %s", ce)
 	}
 }
 
@@ -108,4 +117,24 @@ func TestHandler(t *testing.T) {
 	code_is(t, recorder, 404)
 	content_type_is_json(t, recorder)
 	body_is(t, recorder, `{"Error":"Resource not found"}`)
+}
+
+func TestGzip(t *testing.T) {
+
+	handler := ResourceHandler{
+		DisableJsonIndent: true,
+		EnableGzip:        true,
+	}
+	handler.SetRoutes(
+		Route{"GET", "/r",
+			func(w *ResponseWriter, r *Request) {
+				w.WriteJson(map[string]string{"Id": "123"})
+			},
+		},
+	)
+
+	recorder := run_test_request(t, &handler, "GET", "http://1.2.3.4/r", "")
+	code_is(t, recorder, 200)
+	content_type_is_json(t, recorder)
+	content_encoding_is_gzip(t, recorder)
 }
