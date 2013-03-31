@@ -10,36 +10,36 @@ import (
 // and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
-	is_gzipped   bool
-	is_indented  bool
-	status_code  int
-	wrote_header bool
+	isGzipped   bool
+	isIndented  bool
+	statusCode  int
+	wroteHeader bool
 }
 
 // Overloading of the http.ResponseWriter method.
 // Just record the status code for logging.
 func (self *ResponseWriter) WriteHeader(code int) {
 	self.ResponseWriter.WriteHeader(code)
-	self.status_code = code
-	self.wrote_header = true
+	self.statusCode = code
+	self.wroteHeader = true
 }
 
 // Overloading of the http.ResponseWriter method.
 // Provide additional capabilities, like transparent gzip encoding.
 func (self *ResponseWriter) Write(b []byte) (int, error) {
 
-	if self.is_gzipped {
+	if self.isGzipped {
 		self.Header().Set("Content-Encoding", "gzip")
 	}
 
-	if !self.wrote_header {
+	if !self.wroteHeader {
 		self.WriteHeader(http.StatusOK)
 	}
 
-	if self.is_gzipped {
-		gzip_writer := gzip.NewWriter(self.ResponseWriter)
-		defer gzip_writer.Close()
-		return gzip_writer.Write(b)
+	if self.isGzipped {
+		gzipWriter := gzip.NewWriter(self.ResponseWriter)
+		defer gzipWriter.Close()
+		return gzipWriter.Write(b)
 	}
 
 	return self.ResponseWriter.Write(b)
@@ -51,7 +51,7 @@ func (self *ResponseWriter) WriteJson(v interface{}) error {
 	self.Header().Set("content-type", "application/json")
 	var b []byte
 	var err error
-	if self.is_indented {
+	if self.isIndented {
 		b, err = json.MarshalIndent(v, "", "  ")
 	} else {
 		b, err = json.Marshal(v)

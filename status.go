@@ -8,27 +8,27 @@ import (
 	"time"
 )
 
-type status_service struct {
-	lock                sync.Mutex
-	start               time.Time
-	pid                 int
-	response_counts     map[string]int
-	total_response_time time.Time
+type statusService struct {
+	lock              sync.Mutex
+	start             time.Time
+	pid               int
+	responseCounts    map[string]int
+	totalResponseTime time.Time
 }
 
-func new_status_service() *status_service {
-	return &status_service{
-		start:               time.Now(),
-		pid:                 os.Getpid(),
-		response_counts:     map[string]int{},
-		total_response_time: time.Time{},
+func newStatusService() *statusService {
+	return &statusService{
+		start:             time.Now(),
+		pid:               os.Getpid(),
+		responseCounts:    map[string]int{},
+		totalResponseTime: time.Time{},
 	}
 }
 
-func (self *status_service) update(status_code int, response_time *time.Duration) {
+func (self *statusService) update(statusCode int, responseTime *time.Duration) {
 	self.lock.Lock()
-	self.response_counts[fmt.Sprintf("%d", status_code)]++
-	self.total_response_time = self.total_response_time.Add(*response_time)
+	self.responseCounts[fmt.Sprintf("%d", statusCode)]++
+	self.totalResponseTime = self.totalResponseTime.Add(*responseTime)
 	self.lock.Unlock()
 }
 
@@ -46,23 +46,23 @@ type status struct {
 	AverageResponseTimeSec float64
 }
 
-func (self *status_service) get_status(w *ResponseWriter, r *Request) {
+func (self *statusService) getStatus(w *ResponseWriter, r *Request) {
 
 	now := time.Now()
 
 	uptime := now.Sub(self.start)
 
-	total_count := 0
-	for _, count := range self.response_counts {
-		total_count += count
+	totalCount := 0
+	for _, count := range self.responseCounts {
+		totalCount += count
 	}
 
-	total_response_time := self.total_response_time.Sub(time.Time{})
+	totalResponseTime := self.totalResponseTime.Sub(time.Time{})
 
-	average_response_time := time.Duration(0)
-	if total_count > 0 {
-		avg_ns := int64(total_response_time) / int64(total_count)
-		average_response_time = time.Duration(avg_ns)
+	averageResponseTime := time.Duration(0)
+	if totalCount > 0 {
+		avgNs := int64(totalResponseTime) / int64(totalCount)
+		averageResponseTime = time.Duration(avgNs)
 	}
 
 	st := &status{
@@ -71,12 +71,12 @@ func (self *status_service) get_status(w *ResponseWriter, r *Request) {
 		UpTimeSec:              uptime.Seconds(),
 		Time:                   now.String(),
 		TimeUnix:               now.Unix(),
-		StatusCodeCount:        self.response_counts,
-		TotalCount:             total_count,
-		TotalResponseTime:      total_response_time.String(),
-		TotalResponseTimeSec:   total_response_time.Seconds(),
-		AverageResponseTime:    average_response_time.String(),
-		AverageResponseTimeSec: average_response_time.Seconds(),
+		StatusCodeCount:        self.responseCounts,
+		TotalCount:             totalCount,
+		TotalResponseTime:      totalResponseTime.String(),
+		TotalResponseTimeSec:   totalResponseTime.Seconds(),
+		AverageResponseTime:    averageResponseTime.String(),
+		AverageResponseTimeSec: averageResponseTime.Seconds(),
 	}
 
 	err := w.WriteJson(st)

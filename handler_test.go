@@ -7,15 +7,15 @@ import (
 	"testing"
 )
 
-func run_test_request(t *testing.T, handler *ResourceHandler, method, url_str, payload string) *httptest.ResponseRecorder {
+func runTestRequest(t *testing.T, handler *ResourceHandler, method, urlStr, payload string) *httptest.ResponseRecorder {
 
-	url_obj, err := url.Parse(url_str)
+	urlObj, err := url.Parse(urlStr)
 	if err != nil {
 		t.Fatal(err)
 	}
 	r := http.Request{
 		Method: method,
-		URL:    url_obj,
+		URL:    urlObj,
 	}
 	r.Header = http.Header{}
 	r.Header.Set("Accept-Encoding", "gzip")
@@ -27,30 +27,30 @@ func run_test_request(t *testing.T, handler *ResourceHandler, method, url_str, p
 	return recorder
 }
 
-func code_is(t *testing.T, r *httptest.ResponseRecorder, expected_code int) {
-	if r.Code != expected_code {
-		t.Errorf("Code %d expected, got: %d", expected_code, r.Code)
+func codeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
+	if r.Code != expectedCode {
+		t.Errorf("Code %d expected, got: %d", expectedCode, r.Code)
 	}
 }
 
-func content_type_is_json(t *testing.T, r *httptest.ResponseRecorder) {
+func contentTypeIsJson(t *testing.T, r *httptest.ResponseRecorder) {
 	ct := r.HeaderMap.Get("Content-Type")
 	if ct != "application/json" {
 		t.Errorf("Content type 'application/json' expected, got: %s", ct)
 	}
 }
 
-func content_encoding_is_gzip(t *testing.T, r *httptest.ResponseRecorder) {
+func contentEncodingIsGzip(t *testing.T, r *httptest.ResponseRecorder) {
 	ce := r.HeaderMap.Get("Content-Encoding")
 	if ce != "gzip" {
 		t.Errorf("Content encoding 'gzip' expected, got: %s", ce)
 	}
 }
 
-func body_is(t *testing.T, r *httptest.ResponseRecorder, expected_body string) {
+func bodyIs(t *testing.T, r *httptest.ResponseRecorder, expectedBody string) {
 	body := r.Body.String()
-	if body != expected_body {
-		t.Errorf("Body '%s' expected, got: '%s'", expected_body, body)
+	if body != expectedBody {
+		t.Errorf("Body '%s' expected, got: '%s'", expectedBody, body)
 	}
 }
 
@@ -85,38 +85,38 @@ func TestHandler(t *testing.T) {
 	)
 
 	// valid get resource
-	recorder := run_test_request(t, &handler, "GET", "http://1.2.3.4/r/123", "")
-	code_is(t, recorder, 200)
-	content_type_is_json(t, recorder)
-	body_is(t, recorder, `{"Id":"123"}`)
+	recorder := runTestRequest(t, &handler, "GET", "http://1.2.3.4/r/123", "")
+	codeIs(t, recorder, 200)
+	contentTypeIsJson(t, recorder)
+	bodyIs(t, recorder, `{"Id":"123"}`)
 
 	// auto 404 on undefined route (wrong method)
-	recorder = run_test_request(t, &handler, "DELETE", "http://1.2.3.4/r/123", "")
-	code_is(t, recorder, 404)
-	content_type_is_json(t, recorder)
-	body_is(t, recorder, `{"Error":"Resource not found"}`)
+	recorder = runTestRequest(t, &handler, "DELETE", "http://1.2.3.4/r/123", "")
+	codeIs(t, recorder, 404)
+	contentTypeIsJson(t, recorder)
+	bodyIs(t, recorder, `{"Error":"Resource not found"}`)
 
 	// auto 404 on undefined route (wrong path)
-	recorder = run_test_request(t, &handler, "GET", "http://1.2.3.4/s/123", "")
-	code_is(t, recorder, 404)
-	content_type_is_json(t, recorder)
-	body_is(t, recorder, `{"Error":"Resource not found"}`)
+	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/s/123", "")
+	codeIs(t, recorder, 404)
+	contentTypeIsJson(t, recorder)
+	bodyIs(t, recorder, `{"Error":"Resource not found"}`)
 
 	// auto 500 on unhandled userecorder error
-	recorder = run_test_request(t, &handler, "GET", "http://1.2.3.4/auto-fails", "")
-	code_is(t, recorder, 500)
+	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/auto-fails", "")
+	codeIs(t, recorder, 500)
 
 	// userecorder error
-	recorder = run_test_request(t, &handler, "GET", "http://1.2.3.4/user-error", "")
-	code_is(t, recorder, 500)
-	content_type_is_json(t, recorder)
-	body_is(t, recorder, `{"Error":"My error"}`)
+	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/user-error", "")
+	codeIs(t, recorder, 500)
+	contentTypeIsJson(t, recorder)
+	bodyIs(t, recorder, `{"Error":"My error"}`)
 
 	// userecorder notfound
-	recorder = run_test_request(t, &handler, "GET", "http://1.2.3.4/user-notfound", "")
-	code_is(t, recorder, 404)
-	content_type_is_json(t, recorder)
-	body_is(t, recorder, `{"Error":"Resource not found"}`)
+	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/user-notfound", "")
+	codeIs(t, recorder, 404)
+	contentTypeIsJson(t, recorder)
+	bodyIs(t, recorder, `{"Error":"Resource not found"}`)
 }
 
 func TestGzip(t *testing.T) {
@@ -133,8 +133,8 @@ func TestGzip(t *testing.T) {
 		},
 	)
 
-	recorder := run_test_request(t, &handler, "GET", "http://1.2.3.4/r", "")
-	code_is(t, recorder, 200)
-	content_type_is_json(t, recorder)
-	content_encoding_is_gzip(t, recorder)
+	recorder := runTestRequest(t, &handler, "GET", "http://1.2.3.4/r", "")
+	codeIs(t, recorder, 200)
+	contentTypeIsJson(t, recorder)
+	contentEncodingIsGzip(t, recorder)
 }

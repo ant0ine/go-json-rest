@@ -55,8 +55,8 @@ import (
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
-	router         urlrouter.Router
-	status_service *status_service
+	router        urlrouter.Router
+	statusService *statusService
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -99,28 +99,28 @@ type Route struct {
 
 // Create a Route that points to an object method. It can be convenient to point to an object method instead
 // of a function, this helper makes it easy by passing the object instance and the method name as parameters.
-func RouteObjectMethod(http_method string, path_exp string, object_instance interface{}, object_method string) Route {
+func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) Route {
 
-	value := reflect.ValueOf(object_instance)
-	func_value := value.MethodByName(object_method)
-	if func_value.IsValid() == false {
+	value := reflect.ValueOf(objectInstance)
+	funcValue := value.MethodByName(objectMethod)
+	if funcValue.IsValid() == false {
 		panic(fmt.Sprintf(
 			"Cannot find the object method %s on %s",
-			object_method,
+			objectMethod,
 			value,
 		))
 	}
-	route_func := func(w *ResponseWriter, r *Request) {
-		func_value.Call([]reflect.Value{
+	routeFunc := func(w *ResponseWriter, r *Request) {
+		funcValue.Call([]reflect.Value{
 			reflect.ValueOf(w),
 			reflect.ValueOf(r),
 		})
 	}
 
 	return Route{
-		HttpMethod: http_method,
-		PathExp:    path_exp,
-		Func:       route_func,
+		HttpMethod: httpMethod,
+		PathExp:    pathExp,
+		Func:       routeFunc,
 	}
 }
 
@@ -134,12 +134,12 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
 	for _, route := range routes {
 		// make sure the method is uppercase
-		http_method := strings.ToUpper(route.HttpMethod)
+		httpMethod := strings.ToUpper(route.HttpMethod)
 
 		self.router.Routes = append(
 			self.router.Routes,
 			urlrouter.Route{
-				PathExp: http_method + route.PathExp,
+				PathExp: httpMethod + route.PathExp,
 				Dest:    route.Func,
 			},
 		)
@@ -147,13 +147,13 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
-		self.status_service = new_status_service()
+		self.statusService = newStatusService()
 		self.router.Routes = append(
 			self.router.Routes,
 			urlrouter.Route{
 				PathExp: "GET/.status",
 				Dest: func(w *ResponseWriter, r *Request) {
-					self.status_service.get_status(w, r)
+					self.statusService.getStatus(w, r)
 				},
 			},
 		)
@@ -162,14 +162,14 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	return self.router.Start()
 }
 
-type response_log_record struct {
+type responseLogRecord struct {
 	StatusCode   int
 	ResponseTime *time.Duration
 	HttpMethod   string
 	RequestURI   string
 }
 
-func (self *ResourceHandler) log_response_record(record *response_log_record) {
+func (self *ResourceHandler) logResponseRecord(record *responseLogRecord) {
 	if self.EnableLogAsJson {
 		b, err := json.Marshal(record)
 		if err != nil {
@@ -186,17 +186,17 @@ func (self *ResourceHandler) log_response_record(record *response_log_record) {
 	}
 }
 
-func (self *ResourceHandler) log_response(status_code int, start *time.Time, request *http.Request) {
+func (self *ResourceHandler) logResponse(statusCode int, start *time.Time, request *http.Request) {
 
 	now := time.Now()
 	duration := now.Sub(*start)
 
-	if self.status_service != nil {
-		self.status_service.update(status_code, &duration)
+	if self.statusService != nil {
+		self.statusService.update(statusCode, &duration)
 	}
 
-	self.log_response_record(&response_log_record{
-		status_code,
+	self.logResponseRecord(&responseLogRecord{
+		statusCode,
 		&duration,
 		request.Method,
 		request.URL.RequestURI(),
@@ -205,7 +205,7 @@ func (self *ResourceHandler) log_response(status_code int, start *time.Time, req
 
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
-func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_request *http.Request) {
+func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origRequest *http.Request) {
 
 	start := time.Now()
 
@@ -215,7 +215,7 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	}
 
 	// catch user code's panic, and convert to http response
-        // (this does not use the JSON error response on purpose)
+	// (this does not use the JSON error response on purpose)
 	defer func() {
 		if r := recover(); r != nil {
 			trace := debug.Stack()
@@ -228,39 +228,39 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 			if self.EnableResponseStackTrace {
 				message = fmt.Sprintf("%s\n\n%s", r, trace)
 			}
-			http.Error(orig_writer, message, http.StatusInternalServerError)
+			http.Error(origWriter, message, http.StatusInternalServerError)
 
 			// log response
-			self.log_response(
+			self.logResponse(
 				http.StatusInternalServerError,
 				&start,
-				orig_request,
+				origRequest,
 			)
 		}
 	}()
 
 	request := Request{
-		orig_request,
+		origRequest,
 		nil,
 	}
 
 	// determine if gzip is needed
-	is_gzipped := self.EnableGzip == true &&
-		strings.Contains(orig_request.Header.Get("Accept-Encoding"), "gzip")
+	isGzipped := self.EnableGzip == true &&
+		strings.Contains(origRequest.Header.Get("Accept-Encoding"), "gzip")
 
-	is_indented := !self.DisableJsonIndent
+	isIndented := !self.DisableJsonIndent
 
 	writer := ResponseWriter{
-		orig_writer,
-		is_gzipped,
-		is_indented,
+		origWriter,
+		isGzipped,
+		isIndented,
 		0,
 		false,
 	}
 
 	// find the route
 	route, params, err := self.router.FindRoute(
-		strings.ToUpper(orig_request.Method) + orig_request.URL.Path,
+		strings.ToUpper(origRequest.Method) + origRequest.URL.Path,
 	)
 	if err != nil {
 		// should never happen as the URL has already been parsed
@@ -271,10 +271,10 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 		NotFound(&writer, &request)
 
 		// log response
-		self.log_response(
+		self.logResponse(
 			http.StatusNotFound,
 			&start,
-			orig_request,
+			origRequest,
 		)
 		return
 	}
@@ -286,9 +286,9 @@ func (self *ResourceHandler) ServeHTTP(orig_writer http.ResponseWriter, orig_req
 	handler(&writer, &request)
 
 	// log response
-	self.log_response(
-		writer.status_code,
+	self.logResponse(
+		writer.statusCode,
 		&start,
-		orig_request,
+		origRequest,
 	)
 }
