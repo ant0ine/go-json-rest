@@ -91,6 +91,7 @@ type Route struct {
 	// Placeholders supported are:
 	// :param that matches any char to the first '/' or '.'
 	// *splat that matches everything to the end of the string
+	// (placeholder names should be unique per PathExp)
 	PathExp string
 
 	// Code that will be executed when this route is taken.
