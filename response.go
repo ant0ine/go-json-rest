@@ -81,3 +81,12 @@ func Error(w *ResponseWriter, error string, code int) {
 func NotFound(w *ResponseWriter, r *Request) {
 	Error(w, "Resource not found", http.StatusNotFound)
 }
+
+// Generates a HTTP redirect.  Calling redirect does not exit the function.
+func (self *ResponseWriter) Redirect(url string, code int) {
+	var b []byte
+
+	self.Header().Set("Location", url)
+	self.WriteHeader(code)
+	self.Write(b)
+}
