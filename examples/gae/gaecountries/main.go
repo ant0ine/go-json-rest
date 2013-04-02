@@ -65,11 +65,11 @@ func PostCountry(w *rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 	if country.Code == "" {
-		http.Error(w, "country code required", 400)
+		rest.Error(w, "country code required", 400)
 		return
 	}
 	if country.Name == "" {
-		http.Error(w, "country name required", 400)
+		rest.Error(w, "country name required", 400)
 		return
 	}
 	store[country.Code] = &country
