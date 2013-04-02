@@ -55,7 +55,7 @@ import (
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
-	router        urlrouter.Router
+	routers       map[string]*urlrouter.Router
 	statusService *statusService
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
@@ -125,42 +125,60 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 	}
 }
 
+func (self *ResourceHandler) addRoute(route Route) {
+
+	// make sure the method is uppercase
+	httpMethod := strings.ToUpper(route.HttpMethod)
+
+	// instanciate a router for this method if needed
+	if self.routers[httpMethod] == nil {
+		self.routers[httpMethod] = &urlrouter.Router{
+			Routes: []urlrouter.Route{},
+		}
+	}
+
+	// add
+	self.routers[httpMethod].Routes = append(
+		self.routers[httpMethod].Routes,
+		urlrouter.Route{
+			PathExp: route.PathExp,
+			Dest:    route.Func,
+		},
+	)
+}
+
 // Define the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 // Note that the underlying router is https://github.com/ant0ine/go-urlrouter.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
-	self.router = urlrouter.Router{
-		Routes: []urlrouter.Route{},
-	}
+
+	self.routers = map[string]*urlrouter.Router{}
 
 	for _, route := range routes {
-		// make sure the method is uppercase
-		httpMethod := strings.ToUpper(route.HttpMethod)
-
-		self.router.Routes = append(
-			self.router.Routes,
-			urlrouter.Route{
-				PathExp: httpMethod + route.PathExp,
-				Dest:    route.Func,
-			},
-		)
+		self.addRoute(route)
 	}
 
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
 		self.statusService = newStatusService()
-		self.router.Routes = append(
-			self.router.Routes,
-			urlrouter.Route{
-				PathExp: "GET/.status",
-				Dest: func(w *ResponseWriter, r *Request) {
-					self.statusService.getStatus(w, r)
-				},
+		self.addRoute(Route{
+			HttpMethod: "GET",
+			PathExp:    "/.status",
+			Func: func(w *ResponseWriter, r *Request) {
+				self.statusService.getStatus(w, r)
 			},
-		)
+		})
 	}
 
-	return self.router.Start()
+	// start all the routers
+	for _, router := range self.routers {
+		err := router.Start()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type responseLogRecord struct {
@@ -259,14 +277,23 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 		false,
 	}
 
-	// find the route
-	route, params, err := self.router.FindRoute(
-		strings.ToUpper(origRequest.Method) + origRequest.URL.Path,
-	)
-	if err != nil {
-		// should never happen as the URL has already been parsed
-		panic(err)
+	// find the router
+	router := self.routers[strings.ToUpper(origRequest.Method)]
+	if router == nil {
+		// no router found
+		NotFound(&writer, &request)
+
+		// log response
+		self.logResponse(
+			http.StatusNotFound,
+			&start,
+			origRequest,
+		)
+		return
 	}
+
+	// find the route
+	route, params := router.FindRouteFromURL(origRequest.URL)
 	if route == nil {
 		// no route found
 		NotFound(&writer, &request)
