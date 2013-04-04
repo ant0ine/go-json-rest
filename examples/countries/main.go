@@ -50,9 +50,11 @@ func GetCountry(w *rest.ResponseWriter, r *rest.Request) {
 }
 
 func GetAllCountries(w *rest.ResponseWriter, r *rest.Request) {
-	countries := []*Country{}
+	countries := make([]*Country, len(store))
+	i := 0
 	for _, country := range store {
-		countries = append(countries, country)
+		countries[i] = country
+		i++
 	}
 	w.WriteJson(&countries)
 }

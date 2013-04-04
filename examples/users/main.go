@@ -47,9 +47,11 @@ type Users struct {
 }
 
 func (self *Users) GetAllUsers(w *rest.ResponseWriter, r *rest.Request) {
-	users := []*User{}
+	users := make([]*User, len(self.Store))
+	i := 0
 	for _, user := range self.Store {
-		users = append(users, user)
+		users[i] = user
+		i++
 	}
 	w.WriteJson(&users)
 }
