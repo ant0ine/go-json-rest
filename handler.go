@@ -129,35 +129,30 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 // if a request matches multiple Routes, the first one will be used.
 // Note that the underlying router is https://github.com/ant0ine/go-urlrouter.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
-	self.router = urlrouter.Router{
-		Routes: []urlrouter.Route{},
-	}
+	self.router = urlrouter.NewRouter()
 
 	for _, route := range routes {
 		// make sure the method is uppercase
 		httpMethod := strings.ToUpper(route.HttpMethod)
 
-		self.router.Routes = append(
-			self.router.Routes,
-			urlrouter.Route{
-				PathExp: httpMethod + route.PathExp,
-				Dest:    route.Func,
-			},
-		)
+		error := self.router.AddRoute(urlrouter.Route{
+			PathExp: httpMethod + route.PathExp,
+			Dest: route.Func,
+		})
+		if error != nil {
+			panic(error)
+		}
 	}
 
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
 		self.statusService = newStatusService()
-		self.router.Routes = append(
-			self.router.Routes,
-			urlrouter.Route{
-				PathExp: "GET/.status",
-				Dest: func(w *ResponseWriter, r *Request) {
-					self.statusService.getStatus(w, r)
-				},
+		self.router.AddRoute(urlrouter.Route{
+			PathExp: "GET/.status",
+			Dest: func(w *ResponseWriter, r *Request) {
+				self.statusService.getStatus(w, r)
 			},
-		)
+		})
 	}
 
 	return self.router.Start()
