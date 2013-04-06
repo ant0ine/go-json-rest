@@ -12,7 +12,6 @@
 //
 //      import (
 //              "github.com/ant0ine/go-json-rest"
-//              "net/http"
 //      )
 //
 //      type User struct {
@@ -33,7 +32,7 @@
 //              handler.SetRoutes(
 //                      rest.Route{"GET", "/users/:id", GetUser},
 //              )
-//              http.ListenAndServe(":8080", &handler)
+//              handler.Start(":8080")
 //      }
 //
 package rest
@@ -156,6 +155,11 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	}
 
 	return self.router.Start()
+}
+
+func (self *ResourceHandler) Start(port string) {
+	fmt.Println(fmt.Sprintf("== Starting the server, listening on %s", port))
+	http.ListenAndServe(port, self)
 }
 
 type responseLogRecord struct {

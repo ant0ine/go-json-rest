@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest"
-	"net/http"
 )
 
 type User struct {
@@ -28,5 +27,5 @@ func main() {
 		rest.Route{"GET", "/user/:id", GetOldAPIUser},
 		rest.Route{"GET", "/users/:id", GetUser},
 	)
-	http.ListenAndServe(":8080", &handler)
+	handler.Start(":8080")
 }
