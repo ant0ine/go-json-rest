@@ -63,6 +63,7 @@ Documentation
 -------------
 
 - [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
+- [(Blog Post) Introducing Go-Json-Rest] (http://blog.ant0ine.com/typepad/2013/04/introducing-go-json-rest.html)
 
 Options
 -------
