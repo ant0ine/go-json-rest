@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 // Inherit from http.Request, and provide additional methods.
@@ -30,4 +32,43 @@ func (self *Request) DecodeJsonPayload(v interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// Returns a URL structure for the base (scheme + host) of the application,
+// without the trailing slash in the host
+func (self *Request) UriBase() url.URL {
+	scheme := self.URL.Scheme
+	if scheme == "" {
+		scheme = "http"
+	}
+
+	host := self.Host
+	indexLastSlash := strings.LastIndex(host, "/")
+	if indexLastSlash == len(host)-1 {
+		host = host[:len(host)-1]
+	}
+
+	url := url.URL{
+		Scheme: scheme,
+		Host:   host,
+	}
+	return url
+}
+
+// Returns an URL structure from the base and an additional path.
+func (self *Request) UriFor(path string) url.URL {
+	baseUrl := self.UriBase()
+	baseUrl.Path = path
+	return baseUrl
+}
+
+// Returns an URL structure from the base, the path and the parameters.
+func (self *Request) UriForWithParams(path string, parameters map[string]string) url.URL {
+	query := url.Values{}
+	for k, v := range parameters {
+		query.Add(k, v)
+	}
+	baseUrl := self.UriFor(path)
+	baseUrl.RawQuery = query.Encode()
+	return baseUrl
 }
