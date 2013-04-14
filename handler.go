@@ -1,7 +1,7 @@
 // A quick and easy way to setup a RESTful JSON API
 //
 // Go-Json-Rest is a thin layer on top of net/http that helps building RESTful JSON APIs easily.
-// It provides fast URL routing using https://github.com/ant0ine/go-urlrouter, and helpers to deal
+// It provides fast URL routing using Trie based implementation, and helpers to deal
 // with JSON requests and responses. It is not a high-level REST framework that transparently maps
 // HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
 // net/http objects.
@@ -41,7 +41,6 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ant0ine/go-urlrouter"
 	"log"
 	"net/http"
 	"os"
@@ -55,7 +54,7 @@ import (
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
-	routers       map[string]*urlrouter.Router
+	routers       map[string]*Router
 	statusService *statusService
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
@@ -132,27 +131,23 @@ func (self *ResourceHandler) addRoute(route Route) {
 
 	// instanciate a router for this method if needed
 	if self.routers[httpMethod] == nil {
-		self.routers[httpMethod] = &urlrouter.Router{
-			Routes: []urlrouter.Route{},
+		self.routers[httpMethod] = &Router{
+			Routes: []Route{},
 		}
 	}
 
 	// add
 	self.routers[httpMethod].Routes = append(
 		self.routers[httpMethod].Routes,
-		urlrouter.Route{
-			PathExp: route.PathExp,
-			Dest:    route.Func,
-		},
+		route,
 	)
 }
 
 // Define the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
-// Note that the underlying router is https://github.com/ant0ine/go-urlrouter.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
-	self.routers = map[string]*urlrouter.Router{}
+	self.routers = map[string]*Router{}
 
 	for _, route := range routes {
 		self.addRoute(route)
@@ -310,7 +305,7 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 	request.PathParams = params
 
 	// run the user code
-	handler := route.Dest.(func(*ResponseWriter, *Request))
+	handler := route.Func
 	handler(&writer, &request)
 
 	// log response
