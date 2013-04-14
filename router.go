@@ -20,13 +20,13 @@
 //		},
 //	}
 //
-//	err := router.Start()
+//	err := router.start()
 //	if err != nil {
 //		panic(err)
 //	}
 //
 //	input := "http://example.org/resources/123"
-//	route, params, err := router.FindRoute(input)
+//	route, params, err := router.findRoute(input)
 //	if err != nil {
 //		panic(err)
 //	}
@@ -56,7 +56,7 @@ type Router struct {
 
 // This validates the Routes and prepares the Trie data structure.
 // It must be called once the Routes are defined and before trying to find Routes.
-func (self *Router) Start() error {
+func (self *Router) start() error {
 
 	self.trie = trie.New()
 	self.index = map[*Route]int{}
@@ -90,7 +90,7 @@ func (self *Router) Start() error {
 }
 
 // Return the first matching Route and the corresponding parameters for a given URL object.
-func (self *Router) FindRouteFromURL(urlObj *url.URL) (*Route, map[string]string) {
+func (self *Router) findRouteFromURL(urlObj *url.URL) (*Route, map[string]string) {
 
 	// lookup the routes in the Trie
 	// TODO verify url encoding
@@ -120,9 +120,8 @@ func (self *Router) FindRouteFromURL(urlObj *url.URL) (*Route, map[string]string
 	return match.RouteValue.(*Route), match.Params
 }
 
-// XXX useless now ?
 // Parse the url string (complete or just the path) and return the first matching Route and the corresponding parameters.
-func (self *Router) FindRoute(urlStr string) (*Route, map[string]string, error) {
+func (self *Router) findRoute(urlStr string) (*Route, map[string]string, error) {
 
 	// parse the url
 	urlObj, err := url.Parse(urlStr)
@@ -130,6 +129,6 @@ func (self *Router) FindRoute(urlStr string) (*Route, map[string]string, error) 
 		return nil, nil, err
 	}
 
-	route, params := self.FindRouteFromURL(urlObj)
+	route, params := self.findRouteFromURL(urlObj)
 	return route, params, nil
 }

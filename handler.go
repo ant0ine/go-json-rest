@@ -167,7 +167,7 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
 	// start all the routers
 	for _, router := range self.routers {
-		err := router.Start()
+		err := router.start()
 		if err != nil {
 			return err
 		}
@@ -288,7 +288,7 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 	}
 
 	// find the route
-	route, params := router.FindRouteFromURL(origRequest.URL)
+	route, params := router.findRouteFromURL(origRequest.URL)
 	if route == nil {
 		// no route found
 		NotFound(&writer, &request)

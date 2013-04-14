@@ -15,14 +15,14 @@ func TestFindRouteAPI(t *testing.T) {
 		},
 	}
 
-	err := router.Start()
+	err := router.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	// full url string
 	input := "http://example.org/"
-	route, params, err := router.FindRoute(input)
+	route, params, err := router.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -35,7 +35,7 @@ func TestFindRouteAPI(t *testing.T) {
 
 	// part of the url string
 	input = "/"
-	route, params, err = router.FindRoute(input)
+	route, params, err = router.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -51,7 +51,7 @@ func TestFindRouteAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
-	route, params = router.FindRouteFromURL(urlObj)
+	route, params = router.findRouteFromURL(urlObj)
 	if route.PathExp != "/" {
 		t.Error()
 	}
@@ -66,13 +66,13 @@ func TestNoRoute(t *testing.T) {
 		Routes: []Route{},
 	}
 
-	err := router.Start()
+	err := router.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	input := "http://example.org/notfound"
-	route, params, err := router.FindRoute(input)
+	route, params, err := router.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -98,7 +98,7 @@ func TestDuplicatedRoute(t *testing.T) {
 		},
 	}
 
-	err := router.Start()
+	err := router.start()
 	if err == nil {
 		t.Error("expected the duplicated route error")
 	}
@@ -117,13 +117,13 @@ func TestRouteOrder(t *testing.T) {
 		},
 	}
 
-	err := router.Start()
+	err := router.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	input := "http://example.org/r/123"
-	route, params, err := router.FindRoute(input)
+	route, params, err := router.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -149,13 +149,13 @@ func TestSimpleExample(t *testing.T) {
 		},
 	}
 
-	err := router.Start()
+	err := router.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	input := "http://example.org/resources/123"
-	route, params, err := router.FindRoute(input)
+	route, params, err := router.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
