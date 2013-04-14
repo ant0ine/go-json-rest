@@ -20,7 +20,7 @@ func splitParam(remaining string) (string, string) {
 }
 
 type node struct {
-	Route          interface{} // XXX rename Value (may contain a map[http_method]*Route in the future)
+	RouteValue     interface{}
 	Children       map[string]*node
 	ChildrenKeyLen int
 	ParamChild     *node
@@ -29,14 +29,14 @@ type node struct {
 	SplatName      string
 }
 
-func (self *node) addRoute(path string, route interface{}) error {
+func (self *node) addRoute(path string, routeValue interface{}) error {
 
 	if len(path) == 0 {
-		// end of the path, set the Route
-		if self.Route != nil {
-			return errors.New("node.Route already set, duplicated path")
+		// end of the path, set the RouteValue
+		if self.RouteValue != nil {
+			return errors.New("node.RouteValue already set, duplicated path")
 		}
-		self.Route = route
+		self.RouteValue = routeValue
 		return nil
 	}
 
@@ -74,7 +74,7 @@ func (self *node) addRoute(path string, route interface{}) error {
 		nextNode = self.Children[token]
 	}
 
-	return nextNode.addRoute(remaining, route)
+	return nextNode.addRoute(remaining, routeValue)
 }
 
 // utility for the node.findRoute recursive method
@@ -110,8 +110,8 @@ func (self *pstack) asMap() map[string]string {
 }
 
 type Match struct {
-	// same Route as in node
-	Route interface{}
+	// Same RouteValue as in node
+	RouteValue interface{}
 	// map of params matched for this result
 	Params map[string]string
 }
@@ -121,12 +121,12 @@ func (self *node) findRoutes(path string, stack *pstack) []*Match {
 	matches := []*Match{}
 
 	// route found !
-	if self.Route != nil && path == "" {
+	if self.RouteValue != nil && path == "" {
 		matches = append(
 			matches,
 			&Match{
-				Route:  self.Route,
-				Params: stack.asMap(),
+				RouteValue: self.RouteValue,
+				Params:     stack.asMap(),
 			},
 		)
 	}
@@ -189,7 +189,7 @@ func (self *node) compress() {
 	// compressable ?
 	canCompress := true
 	for _, node := range self.Children {
-		if node.Route != nil || node.SplatChild != nil || node.ParamChild != nil {
+		if node.RouteValue != nil || node.SplatChild != nil || node.ParamChild != nil {
 			canCompress = false
 		}
 	}

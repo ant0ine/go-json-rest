@@ -93,14 +93,14 @@ func TestDupeInsert(t *testing.T) {
 	if err == nil {
 		t.Error()
 	}
-	if trie.root.Children["/"].Route != "1" {
+	if trie.root.Children["/"].RouteValue != "1" {
 		t.Error()
 	}
 }
 
 func isInMatches(test string, matches []*Match) bool {
 	for _, match := range matches {
-		if match.Route.(string) == test {
+		if match.RouteValue.(string) == test {
 			return true
 		}
 	}
