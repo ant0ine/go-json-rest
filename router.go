@@ -1,39 +1,3 @@
-// Efficient URL routing using a Trie data structure.
-//
-// This Package implements a URL Router, but instead of using the usual
-// "evaluate all the routes and return the first regexp that matches" strategy,
-// it uses a Trie data structure to perform the routing. This is more efficient,
-// and scales better for a large number of routes.
-// It supports the :param and *splat placeholders in the route strings.
-//
-// Example:
-//	router := urlrouter.Router{
-//		Routes: []urlrouter.Route{
-//			urlrouter.Route{
-//				PathExp: "/resources/:id",
-//				Dest:    "one_resource",
-//			},
-//			urlrouter.Route{
-//				PathExp: "/resources",
-//				Dest:    "all_resources",
-//			},
-//		},
-//	}
-//
-//	err := router.start()
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	input := "http://example.org/resources/123"
-//	route, params, err := router.findRoute(input)
-//	if err != nil {
-//		panic(err)
-//	}
-//	fmt.Print(route.Dest)  // one_resource
-//	fmt.Print(params["id"])  // 123
-//
-// (Blog Post: http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html)
 package rest
 
 import (

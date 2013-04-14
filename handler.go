@@ -36,6 +36,13 @@
 //              http.ListenAndServe(":8080", &handler)
 //      }
 //
+//
+// Note about the URL routing: Instead of using the usual
+// "evaluate all the routes and return the first regexp that matches" strategy,
+// it uses a Trie data structure to perform the routing. This is more efficient,
+// and scales better for a large number of routes.
+// It supports the :param and *splat placeholders in the route strings.
+//
 package rest
 
 import (
