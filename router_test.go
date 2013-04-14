@@ -7,7 +7,7 @@ import (
 
 func TestFindRouteAPI(t *testing.T) {
 
-	router := Router{
+	r := router{
 		Routes: []Route{
 			Route{
 				PathExp: "/",
@@ -15,14 +15,14 @@ func TestFindRouteAPI(t *testing.T) {
 		},
 	}
 
-	err := router.start()
+	err := r.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	// full url string
 	input := "http://example.org/"
-	route, params, err := router.findRoute(input)
+	route, params, err := r.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -35,7 +35,7 @@ func TestFindRouteAPI(t *testing.T) {
 
 	// part of the url string
 	input = "/"
-	route, params, err = router.findRoute(input)
+	route, params, err = r.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -51,7 +51,7 @@ func TestFindRouteAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
-	route, params = router.findRouteFromURL(urlObj)
+	route, params = r.findRouteFromURL(urlObj)
 	if route.PathExp != "/" {
 		t.Error()
 	}
@@ -62,17 +62,17 @@ func TestFindRouteAPI(t *testing.T) {
 
 func TestNoRoute(t *testing.T) {
 
-	router := Router{
+	r := router{
 		Routes: []Route{},
 	}
 
-	err := router.start()
+	err := r.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	input := "http://example.org/notfound"
-	route, params, err := router.findRoute(input)
+	route, params, err := r.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -87,7 +87,7 @@ func TestNoRoute(t *testing.T) {
 
 func TestDuplicatedRoute(t *testing.T) {
 
-	router := Router{
+	r := router{
 		Routes: []Route{
 			Route{
 				PathExp: "/",
@@ -98,7 +98,7 @@ func TestDuplicatedRoute(t *testing.T) {
 		},
 	}
 
-	err := router.start()
+	err := r.start()
 	if err == nil {
 		t.Error("expected the duplicated route error")
 	}
@@ -106,7 +106,7 @@ func TestDuplicatedRoute(t *testing.T) {
 
 func TestRouteOrder(t *testing.T) {
 
-	router := Router{
+	r := router{
 		Routes: []Route{
 			Route{
 				PathExp: "/r/:id",
@@ -117,13 +117,13 @@ func TestRouteOrder(t *testing.T) {
 		},
 	}
 
-	err := router.start()
+	err := r.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	input := "http://example.org/r/123"
-	route, params, err := router.findRoute(input)
+	route, params, err := r.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -138,7 +138,7 @@ func TestRouteOrder(t *testing.T) {
 
 func TestSimpleExample(t *testing.T) {
 
-	router := Router{
+	r := router{
 		Routes: []Route{
 			Route{
 				PathExp: "/resources/:id",
@@ -149,13 +149,13 @@ func TestSimpleExample(t *testing.T) {
 		},
 	}
 
-	err := router.start()
+	err := r.start()
 	if err != nil {
 		t.Fatal()
 	}
 
 	input := "http://example.org/resources/123"
-	route, params, err := router.findRoute(input)
+	route, params, err := r.findRoute(input)
 	if err != nil {
 		t.Fatal()
 	}

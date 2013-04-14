@@ -54,18 +54,18 @@ func BenchmarkNoCompression(b *testing.B) {
 
 	b.StopTimer()
 
-	router := Router{
+	r := router{
 		Routes:                 routes(),
 		disableTrieCompression: true,
 	}
-	router.start()
+	r.start()
 	urlObjs := requestUrls()
 
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
 		for _, urlObj := range urlObjs {
-			router.findRouteFromURL(urlObj)
+			r.findRouteFromURL(urlObj)
 		}
 	}
 }
@@ -74,17 +74,17 @@ func BenchmarkCompression(b *testing.B) {
 
 	b.StopTimer()
 
-	router := Router{
+	r := router{
 		Routes: routes(),
 	}
-	router.start()
+	r.start()
 	urlObjs := requestUrls()
 
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
 		for _, urlObj := range urlObjs {
-			router.findRouteFromURL(urlObj)
+			r.findRouteFromURL(urlObj)
 		}
 	}
 }

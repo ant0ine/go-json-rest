@@ -9,8 +9,7 @@ import (
 // TODO
 // support for #param placeholder ?
 
-// XXX Router should be a private object
-type Router struct {
+type router struct {
 	// list of Routes, the order matters, if multiple Routes match, the first defined will be used.
 	Routes                 []Route
 	disableTrieCompression bool
@@ -20,7 +19,7 @@ type Router struct {
 
 // This validates the Routes and prepares the Trie data structure.
 // It must be called once the Routes are defined and before trying to find Routes.
-func (self *Router) start() error {
+func (self *router) start() error {
 
 	self.trie = trie.New()
 	self.index = map[*Route]int{}
@@ -54,7 +53,7 @@ func (self *Router) start() error {
 }
 
 // Return the first matching Route and the corresponding parameters for a given URL object.
-func (self *Router) findRouteFromURL(urlObj *url.URL) (*Route, map[string]string) {
+func (self *router) findRouteFromURL(urlObj *url.URL) (*Route, map[string]string) {
 
 	// lookup the routes in the Trie
 	// TODO verify url encoding
@@ -85,7 +84,7 @@ func (self *Router) findRouteFromURL(urlObj *url.URL) (*Route, map[string]string
 }
 
 // Parse the url string (complete or just the path) and return the first matching Route and the corresponding parameters.
-func (self *Router) findRoute(urlStr string) (*Route, map[string]string, error) {
+func (self *router) findRoute(urlStr string) (*Route, map[string]string, error) {
 
 	// parse the url
 	urlObj, err := url.Parse(urlStr)

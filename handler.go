@@ -61,7 +61,7 @@ import (
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
-	routers       map[string]*Router
+	routers       map[string]*router
 	statusService *statusService
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
@@ -138,7 +138,7 @@ func (self *ResourceHandler) addRoute(route Route) {
 
 	// instanciate a router for this method if needed
 	if self.routers[httpMethod] == nil {
-		self.routers[httpMethod] = &Router{
+		self.routers[httpMethod] = &router{
 			Routes: []Route{},
 		}
 	}
@@ -154,7 +154,7 @@ func (self *ResourceHandler) addRoute(route Route) {
 // if a request matches multiple Routes, the first one will be used.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
-	self.routers = map[string]*Router{}
+	self.routers = map[string]*router{}
 
 	for _, route := range routes {
 		self.addRoute(route)
@@ -166,15 +166,15 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 		self.addRoute(Route{
 			HttpMethod: "GET",
 			PathExp:    "/.status",
-			Func: func(w *ResponseWriter, r *Request) {
-				self.statusService.getStatus(w, r)
+			Func: func(writer *ResponseWriter, request *Request) {
+				self.statusService.getStatus(writer, request)
 			},
 		})
 	}
 
 	// start all the routers
-	for _, router := range self.routers {
-		err := router.start()
+	for _, r := range self.routers {
+		err := r.start()
 		if err != nil {
 			return err
 		}
@@ -238,16 +238,16 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 	// catch user code's panic, and convert to http response
 	// (this does not use the JSON error response on purpose)
 	defer func() {
-		if r := recover(); r != nil {
+		if reco := recover(); reco != nil {
 			trace := debug.Stack()
 
 			// log the trace
-			self.Logger.Printf("%s\n%s", r, trace)
+			self.Logger.Printf("%s\n%s", reco, trace)
 
 			// write error response
 			message := "Internal Server Error"
 			if self.EnableResponseStackTrace {
-				message = fmt.Sprintf("%s\n\n%s", r, trace)
+				message = fmt.Sprintf("%s\n\n%s", reco, trace)
 			}
 			http.Error(origWriter, message, http.StatusInternalServerError)
 
@@ -280,8 +280,8 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 	}
 
 	// find the router
-	router := self.routers[strings.ToUpper(origRequest.Method)]
-	if router == nil {
+	methodRouter := self.routers[strings.ToUpper(origRequest.Method)]
+	if methodRouter == nil {
 		// no router found
 		NotFound(&writer, &request)
 
@@ -295,7 +295,7 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 	}
 
 	// find the route
-	route, params := router.findRouteFromURL(origRequest.URL)
+	route, params := methodRouter.findRouteFromURL(origRequest.URL)
 	if route == nil {
 		// no route found
 		NotFound(&writer, &request)
