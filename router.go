@@ -101,7 +101,7 @@ func (self *Router) FindRouteFromURL(urlObj *url.URL) (*Route, map[string]string
 	matchesByIndex := map[int]*trie.Match{}
 
 	for _, match := range matches {
-		route := match.Route.(*Route)
+		route := match.RouteValue.(*Route)
 		routeIndex := self.index[route]
 		matchesByIndex[routeIndex] = match
 		if minIndex == -1 || routeIndex < minIndex {
@@ -117,7 +117,7 @@ func (self *Router) FindRouteFromURL(urlObj *url.URL) (*Route, map[string]string
 	// and the corresponding params
 	match := matchesByIndex[minIndex]
 
-	return match.Route.(*Route), match.Params
+	return match.RouteValue.(*Route), match.Params
 }
 
 // XXX useless now ?
