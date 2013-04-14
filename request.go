@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 // Inherit from http.Request, and provide additional methods.
@@ -43,8 +42,7 @@ func (self *Request) UriBase() url.URL {
 	}
 
 	host := self.Host
-	indexLastSlash := strings.LastIndex(host, "/")
-	if indexLastSlash == len(host)-1 {
+	if host[len(host)-1] == '/' {
 		host = host[:len(host)-1]
 	}
 
