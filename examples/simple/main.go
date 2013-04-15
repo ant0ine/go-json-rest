@@ -12,7 +12,7 @@ type User struct {
 }
 
 func GetUser(w *rest.ResponseWriter, req *rest.Request) {
-	params := map[string]string {"userId": req.PathParam("id")}
+	params := map[string][]string {"userId": []string{ req.PathParam("id") }}
 	url := req.UriForWithParams("/posts/exports", params)
 	user := User{
 		Id:   req.PathParam("id"),
