@@ -1,8 +1,11 @@
-// Special Trie implementation for URL routing.
+// Special Trie implementation for HTTP routing.
 //
 // This Trie implementation is designed to support strings that includes
-// :param and *splat parameters. Strings that are commonly used for URL
-// routing. You probably don't need to use this package directly.
+// :param and *splat parameters. Strings that are commonly used to represent
+// the Path in HTTP routing. This implementation also maintain for each Path
+// a map of HTTP Methods associated with the Route.
+//
+// You probably don't need to use this package directly.
 //
 package trie
 
@@ -20,28 +23,35 @@ func splitParam(remaining string) (string, string) {
 }
 
 type node struct {
-	RouteValue     interface{}
-	Children       map[string]*node
-	ChildrenKeyLen int
-	ParamChild     *node
-	ParamName      string
-	SplatChild     *node
-	SplatName      string
+	HttpMethodToRoute map[string]interface{}
+	Children          map[string]*node
+	ChildrenKeyLen    int
+	ParamChild        *node
+	ParamName         string
+	SplatChild        *node
+	SplatName         string
 }
 
-func (self *node) addRoute(path string, routeValue interface{}) error {
+func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error {
 
-	if len(path) == 0 {
-		// end of the path, set the RouteValue
-		if self.RouteValue != nil {
-			return errors.New("node.RouteValue already set, duplicated path")
+	if len(pathExp) == 0 {
+		// end of the path, leaf node, update the map
+		if self.HttpMethodToRoute == nil {
+			self.HttpMethodToRoute = map[string]interface{}{
+				httpMethod: route,
+			}
+			return nil
+		} else {
+			if self.HttpMethodToRoute[httpMethod] != nil {
+				return errors.New("node.Route already set, duplicated path and method")
+			}
+			self.HttpMethodToRoute[httpMethod] = route
+			return nil
 		}
-		self.RouteValue = routeValue
-		return nil
 	}
 
-	token := path[0:1]
-	remaining := path[1:]
+	token := pathExp[0:1]
+	remaining := pathExp[1:]
 	var nextNode *node
 
 	if token[0] == ':' {
@@ -74,28 +84,45 @@ func (self *node) addRoute(path string, routeValue interface{}) error {
 		nextNode = self.Children[token]
 	}
 
-	return nextNode.addRoute(remaining, routeValue)
+	return nextNode.addRoute(httpMethod, remaining, route)
 }
 
-// utility for the node.findRoute recursive method
-type pstack struct {
-	params []map[string]string
+// utility for the node.findRoutes recursive method
+type findContext struct {
+	paramStack []map[string]string
+	pathFound  bool
+	results    []*Result
 }
 
-func (self *pstack) add(name, value string) {
-	self.params = append(
-		self.params,
+func newFindContext() *findContext {
+	return &findContext{
+		paramStack: []map[string]string{},
+		pathFound:  false,
+		results:    []*Result{},
+	}
+}
+
+func (self *findContext) addResult(result *Result) {
+	self.results = append(
+		self.results,
+		result,
+	)
+}
+
+func (self *findContext) pushParams(name, value string) {
+	self.paramStack = append(
+		self.paramStack,
 		map[string]string{name: value},
 	)
 }
 
-func (self *pstack) pop() {
-	self.params = self.params[:len(self.params)-1]
+func (self *findContext) popParams() {
+	self.paramStack = self.paramStack[:len(self.paramStack)-1]
 }
 
-func (self *pstack) asMap() map[string]string {
+func (self *findContext) asMap() map[string]string {
 	r := map[string]string{}
-	for _, param := range self.params {
+	for _, param := range self.paramStack {
 		for key, value := range param {
 			if r[key] != "" {
 				panic(fmt.Sprintf(
@@ -109,68 +136,60 @@ func (self *pstack) asMap() map[string]string {
 	return r
 }
 
-type Match struct {
-	// Same RouteValue as in node
-	RouteValue interface{}
+// empty Result means that the path has been found but not the method.
+type Result struct {
+	// Same Route as in AddRoute
+	Route interface{}
 	// map of params matched for this result
 	Params map[string]string
 }
 
-func (self *node) findRoutes(path string, stack *pstack) []*Match {
+func (self *node) findRoutes(httpMethod, path string, context *findContext) {
 
-	matches := []*Match{}
+	if self.HttpMethodToRoute != nil && path == "" {
+		// path found !
+		context.pathFound = true
 
-	// route found !
-	if self.RouteValue != nil && path == "" {
-		matches = append(
-			matches,
-			&Match{
-				RouteValue: self.RouteValue,
-				Params:     stack.asMap(),
-			},
-		)
+		// found a route
+		if self.HttpMethodToRoute[httpMethod] != nil {
+			context.addResult(
+				&Result{
+					Route:  self.HttpMethodToRoute[httpMethod],
+					Params: context.asMap(),
+				},
+			)
+		}
 	}
 
 	if len(path) == 0 {
-		return matches
+		return
 	}
 
 	// *splat branch
 	if self.SplatChild != nil {
-		stack.add(self.SplatName, path)
-		matches = append(
-			matches,
-			self.SplatChild.findRoutes("", stack)...,
-		)
-		stack.pop()
+		context.pushParams(self.SplatName, path)
+		self.SplatChild.findRoutes(httpMethod, "", context)
+		context.popParams()
 	}
 
 	// :param branch
 	if self.ParamChild != nil {
 		value, remaining := splitParam(path)
-		stack.add(self.ParamName, value)
-		matches = append(
-			matches,
-			self.ParamChild.findRoutes(remaining, stack)...,
-		)
-		stack.pop()
+		context.pushParams(self.ParamName, value)
+		self.ParamChild.findRoutes(httpMethod, remaining, context)
+		context.popParams()
 	}
 
 	// main branch
 	length := self.ChildrenKeyLen
 	if len(path) < length {
-		return matches
+		return
 	}
 	token := path[0:length]
 	remaining := path[length:]
 	if self.Children[token] != nil {
-		matches = append(
-			matches,
-			self.Children[token].findRoutes(remaining, stack)...,
-		)
+		self.Children[token].findRoutes(httpMethod, remaining, context)
 	}
-
-	return matches
 }
 
 func (self *node) compress() {
@@ -189,7 +208,7 @@ func (self *node) compress() {
 	// compressable ?
 	canCompress := true
 	for _, node := range self.Children {
-		if node.RouteValue != nil || node.SplatChild != nil || node.ParamChild != nil {
+		if node.HttpMethodToRoute != nil || node.SplatChild != nil || node.ParamChild != nil {
 			canCompress = false
 		}
 	}
@@ -225,13 +244,15 @@ func New() *Trie {
 }
 
 // Insert the route in the Trie following or creating the nodes corresponding to the path.
-func (self *Trie) AddRoute(path string, route interface{}) error {
-	return self.root.addRoute(path, route)
+func (self *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error {
+	return self.root.addRoute(httpMethod, pathExp, route)
 }
 
-// Given a path, return all the matchin routes.
-func (self *Trie) FindRoutes(path string) []*Match {
-	return self.root.findRoutes(path, &pstack{})
+// Given a path and a method, return all the matching routes.
+func (self *Trie) FindRoutes(httpMethod, path string) []*Result {
+	context := newFindContext()
+	self.root.findRoutes(httpMethod, path, context)
+	return context.results
 }
 
 // Reduce the size of the tree, must be done after the last AddRoute.

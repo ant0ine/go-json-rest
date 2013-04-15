@@ -11,17 +11,17 @@ func TestPathInsert(t *testing.T) {
 		t.Error()
 	}
 
-	trie.AddRoute("/", "1")
+	trie.AddRoute("GET", "/", "1")
 	if trie.root.Children["/"] == nil {
 		t.Error()
 	}
 
-	trie.AddRoute("/r", "2")
+	trie.AddRoute("GET", "/r", "2")
 	if trie.root.Children["/"].Children["r"] == nil {
 		t.Error()
 	}
 
-	trie.AddRoute("/r/", "3")
+	trie.AddRoute("GET", "/r/", "3")
 	if trie.root.Children["/"].Children["r"].Children["/"] == nil {
 		t.Error()
 	}
@@ -30,8 +30,8 @@ func TestPathInsert(t *testing.T) {
 func TestTrieCompression(t *testing.T) {
 
 	trie := New()
-	trie.AddRoute("/abc", "3")
-	trie.AddRoute("/adc", "3")
+	trie.AddRoute("GET", "/abc", "3")
+	trie.AddRoute("GET", "/adc", "3")
 
 	// before compression
 	if trie.root.Children["/"].Children["a"].Children["b"].Children["c"] == nil {
@@ -55,7 +55,7 @@ func TestTrieCompression(t *testing.T) {
 func TestParamInsert(t *testing.T) {
 	trie := New()
 
-	trie.AddRoute("/:id/", "")
+	trie.AddRoute("GET", "/:id/", "")
 	if trie.root.Children["/"].ParamChild.Children["/"] == nil {
 		t.Error()
 	}
@@ -63,7 +63,7 @@ func TestParamInsert(t *testing.T) {
 		t.Error()
 	}
 
-	trie.AddRoute("/:id/:property.:format", "")
+	trie.AddRoute("GET", "/:id/:property.:format", "")
 	if trie.root.Children["/"].ParamChild.Children["/"].ParamChild.Children["."].ParamChild == nil {
 		t.Error()
 	}
@@ -80,7 +80,7 @@ func TestParamInsert(t *testing.T) {
 
 func TestSplatInsert(t *testing.T) {
 	trie := New()
-	trie.AddRoute("/*splat", "")
+	trie.AddRoute("GET", "/*splat", "")
 	if trie.root.Children["/"].SplatChild == nil {
 		t.Error()
 	}
@@ -88,19 +88,19 @@ func TestSplatInsert(t *testing.T) {
 
 func TestDupeInsert(t *testing.T) {
 	trie := New()
-	trie.AddRoute("/", "1")
-	err := trie.AddRoute("/", "2")
+	trie.AddRoute("GET", "/", "1")
+	err := trie.AddRoute("GET", "/", "2")
 	if err == nil {
 		t.Error()
 	}
-	if trie.root.Children["/"].RouteValue != "1" {
+	if trie.root.Children["/"].HttpMethodToRoute["GET"] != "1" {
 		t.Error()
 	}
 }
 
-func isInMatches(test string, matches []*Match) bool {
+func isInMatches(test string, matches []*Result) bool {
 	for _, match := range matches {
-		if match.RouteValue.(string) == test {
+		if match.Route.(string) == test {
 			return true
 		}
 	}
@@ -111,14 +111,14 @@ func TestFindRoute(t *testing.T) {
 
 	trie := New()
 
-	trie.AddRoute("/", "root")
-	trie.AddRoute("/r/:id", "resource")
-	trie.AddRoute("/r/:id/property", "property")
-	trie.AddRoute("/r/:id/property.*format", "property_format")
+	trie.AddRoute("GET", "/", "root")
+	trie.AddRoute("GET", "/r/:id", "resource")
+	trie.AddRoute("GET", "/r/:id/property", "property")
+	trie.AddRoute("GET", "/r/:id/property.*format", "property_format")
 
 	trie.Compress()
 
-	matches := trie.FindRoutes("/")
+	matches := trie.FindRoutes("GET", "/")
 	if len(matches) != 1 {
 		t.Errorf("expected one route, got %d", len(matches))
 	}
@@ -126,12 +126,12 @@ func TestFindRoute(t *testing.T) {
 		t.Error("expected 'root'")
 	}
 
-	matches = trie.FindRoutes("/notfound")
+	matches = trie.FindRoutes("GET", "/notfound")
 	if len(matches) != 0 {
 		t.Errorf("expected zero route, got %d", len(matches))
 	}
 
-	matches = trie.FindRoutes("/r/1")
+	matches = trie.FindRoutes("GET", "/r/1")
 	if len(matches) != 1 {
 		t.Errorf("expected one route, got %d", len(matches))
 	}
@@ -142,7 +142,7 @@ func TestFindRoute(t *testing.T) {
 		t.Error()
 	}
 
-	matches = trie.FindRoutes("/r/1/property")
+	matches = trie.FindRoutes("GET", "/r/1/property")
 	if len(matches) != 1 {
 		t.Errorf("expected one route, got %d", len(matches))
 	}
@@ -153,7 +153,7 @@ func TestFindRoute(t *testing.T) {
 		t.Error()
 	}
 
-	matches = trie.FindRoutes("/r/1/property.json")
+	matches = trie.FindRoutes("GET", "/r/1/property.json")
 	if len(matches) != 1 {
 		t.Errorf("expected one route, got %d", len(matches))
 	}
@@ -172,16 +172,16 @@ func TestFindRouteMultipleMatches(t *testing.T) {
 
 	trie := New()
 
-	trie.AddRoute("/r/1", "resource1")
-	trie.AddRoute("/r/2", "resource2")
-	trie.AddRoute("/r/:id", "resource_generic")
-	trie.AddRoute("/s/*rest", "special_all")
-	trie.AddRoute("/s/:param", "special_generic")
-	trie.AddRoute("/", "root")
+	trie.AddRoute("GET", "/r/1", "resource1")
+	trie.AddRoute("GET", "/r/2", "resource2")
+	trie.AddRoute("GET", "/r/:id", "resource_generic")
+	trie.AddRoute("GET", "/s/*rest", "special_all")
+	trie.AddRoute("GET", "/s/:param", "special_generic")
+	trie.AddRoute("GET", "/", "root")
 
 	trie.Compress()
 
-	matches := trie.FindRoutes("/r/1")
+	matches := trie.FindRoutes("GET", "/r/1")
 	if len(matches) != 2 {
 		t.Errorf("expected two matches, got %d", len(matches))
 	}
@@ -192,7 +192,7 @@ func TestFindRouteMultipleMatches(t *testing.T) {
 		t.Error()
 	}
 
-	matches = trie.FindRoutes("/s/1")
+	matches = trie.FindRoutes("GET", "/s/1")
 	if len(matches) != 2 {
 		t.Errorf("expected two matches, got %d", len(matches))
 	}
