@@ -1,9 +1,9 @@
 package rest
 
 import (
-	"errors"
 	"github.com/ant0ine/go-json-rest/trie"
 	"net/url"
+	"strings"
 )
 
 // TODO
@@ -23,23 +23,24 @@ func (self *router) start() error {
 
 	self.trie = trie.New()
 	self.index = map[*Route]int{}
-	unique := map[string]bool{}
 
 	for i, _ := range self.Routes {
+
 		// pointer to the Route
 		route := &self.Routes[i]
-		// unique
-		if unique[route.PathExp] == true {
-			return errors.New("duplicated PathExp")
-		}
-		unique[route.PathExp] = true
-		// index
-		self.index[route] = i
+
 		// insert in the Trie
-		err := self.trie.AddRoute(route.PathExp, route)
+		err := self.trie.AddRoute(
+			strings.ToUpper(route.HttpMethod),
+			route.PathExp,
+			route,
+		)
 		if err != nil {
 			return err
 		}
+
+		// index
+		self.index[route] = i
 	}
 
 	if self.disableTrieCompression == false {
@@ -53,20 +54,23 @@ func (self *router) start() error {
 }
 
 // Return the first matching Route and the corresponding parameters for a given URL object.
-func (self *router) findRouteFromURL(urlObj *url.URL) (*Route, map[string]string) {
+func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string) {
 
 	// lookup the routes in the Trie
 	// TODO verify url encoding
-	matches := self.trie.FindRoutes(urlObj.Path)
+	results := self.trie.FindRoutes(
+		strings.ToUpper(httpMethod),
+		urlObj.Path,
+	)
 
-	// only return the first Route that matches
+	// only return the first Route that results
 	minIndex := -1
-	matchesByIndex := map[int]*trie.Match{}
+	resultsByIndex := map[int]*trie.Result{}
 
-	for _, match := range matches {
-		route := match.RouteValue.(*Route)
+	for _, result := range results {
+		route := result.Route.(*Route)
 		routeIndex := self.index[route]
-		matchesByIndex[routeIndex] = match
+		resultsByIndex[routeIndex] = result
 		if minIndex == -1 || routeIndex < minIndex {
 			minIndex = routeIndex
 		}
@@ -78,13 +82,13 @@ func (self *router) findRouteFromURL(urlObj *url.URL) (*Route, map[string]string
 	}
 
 	// and the corresponding params
-	match := matchesByIndex[minIndex]
+	result := resultsByIndex[minIndex]
 
-	return match.RouteValue.(*Route), match.Params
+	return result.Route.(*Route), result.Params
 }
 
 // Parse the url string (complete or just the path) and return the first matching Route and the corresponding parameters.
-func (self *router) findRoute(urlStr string) (*Route, map[string]string, error) {
+func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, error) {
 
 	// parse the url
 	urlObj, err := url.Parse(urlStr)
@@ -92,6 +96,6 @@ func (self *router) findRoute(urlStr string) (*Route, map[string]string, error) 
 		return nil, nil, err
 	}
 
-	route, params := self.findRouteFromURL(urlObj)
+	route, params := self.findRouteFromURL(httpMethod, urlObj)
 	return route, params, nil
 }

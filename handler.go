@@ -61,8 +61,8 @@ import (
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
 type ResourceHandler struct {
-	routers       map[string]*router
-	statusService *statusService
+	internalRouter *router
+	statusService  *statusService
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -131,53 +131,38 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 	}
 }
 
-func (self *ResourceHandler) addRoute(route Route) {
-
-	// make sure the method is uppercase
-	httpMethod := strings.ToUpper(route.HttpMethod)
-
-	// instanciate a router for this method if needed
-	if self.routers[httpMethod] == nil {
-		self.routers[httpMethod] = &router{
-			Routes: []Route{},
-		}
-	}
-
-	// add
-	self.routers[httpMethod].Routes = append(
-		self.routers[httpMethod].Routes,
-		route,
-	)
-}
-
 // Define the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
-	self.routers = map[string]*router{}
+	self.internalRouter = &router{}
 
 	for _, route := range routes {
-		self.addRoute(route)
+		self.internalRouter.Routes = append(
+			self.internalRouter.Routes,
+			route,
+		)
 	}
 
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
 		self.statusService = newStatusService()
-		self.addRoute(Route{
-			HttpMethod: "GET",
-			PathExp:    "/.status",
-			Func: func(writer *ResponseWriter, request *Request) {
-				self.statusService.getStatus(writer, request)
+		self.internalRouter.Routes = append(
+			self.internalRouter.Routes,
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "/.status",
+				Func: func(writer *ResponseWriter, request *Request) {
+					self.statusService.getStatus(writer, request)
+				},
 			},
-		})
+		)
 	}
 
-	// start all the routers
-	for _, r := range self.routers {
-		err := r.start()
-		if err != nil {
-			return err
-		}
+	// start the router
+	err := self.internalRouter.start()
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -279,24 +264,11 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 		false,
 	}
 
-	// find the router
-	methodRouter := self.routers[strings.ToUpper(origRequest.Method)]
-	if methodRouter == nil {
-		// no router found
-		NotFound(&writer, &request)
-
-		// log response
-		self.logResponse(
-			http.StatusNotFound,
-			&start,
-			origRequest,
-		)
-		return
-	}
-
 	// find the route
-	route, params := methodRouter.findRouteFromURL(origRequest.URL)
+	route, params := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
 	if route == nil {
+		// TODO handle the 406, the info is in the Trie
+
 		// no route found
 		NotFound(&writer, &request)
 

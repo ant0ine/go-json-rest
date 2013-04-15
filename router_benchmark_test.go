@@ -29,7 +29,10 @@ func routes() []Route {
 
 	routes := []Route{}
 	for _, path := range routePaths {
-		routes = append(routes, Route{PathExp: path})
+		routes = append(routes, Route{
+			HttpMethod: "GET",
+			PathExp:    path,
+		})
 	}
 	return routes
 }
@@ -65,7 +68,7 @@ func BenchmarkNoCompression(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, urlObj := range urlObjs {
-			r.findRouteFromURL(urlObj)
+			r.findRouteFromURL("GET", urlObj)
 		}
 	}
 }
@@ -84,7 +87,7 @@ func BenchmarkCompression(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for _, urlObj := range urlObjs {
-			r.findRouteFromURL(urlObj)
+			r.findRouteFromURL("GET", urlObj)
 		}
 	}
 }

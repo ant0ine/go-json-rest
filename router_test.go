@@ -10,7 +10,8 @@ func TestFindRouteAPI(t *testing.T) {
 	r := router{
 		Routes: []Route{
 			Route{
-				PathExp: "/",
+				HttpMethod: "GET",
+				PathExp:    "/",
 			},
 		},
 	}
@@ -22,7 +23,7 @@ func TestFindRouteAPI(t *testing.T) {
 
 	// full url string
 	input := "http://example.org/"
-	route, params, err := r.findRoute(input)
+	route, params, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -35,7 +36,7 @@ func TestFindRouteAPI(t *testing.T) {
 
 	// part of the url string
 	input = "/"
-	route, params, err = r.findRoute(input)
+	route, params, err = r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -51,7 +52,7 @@ func TestFindRouteAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
-	route, params = r.findRouteFromURL(urlObj)
+	route, params = r.findRouteFromURL("GET", urlObj)
 	if route.PathExp != "/" {
 		t.Error()
 	}
@@ -72,7 +73,7 @@ func TestNoRoute(t *testing.T) {
 	}
 
 	input := "http://example.org/notfound"
-	route, params, err := r.findRoute(input)
+	route, params, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -90,10 +91,12 @@ func TestDuplicatedRoute(t *testing.T) {
 	r := router{
 		Routes: []Route{
 			Route{
-				PathExp: "/",
+				HttpMethod: "GET",
+				PathExp:    "/",
 			},
 			Route{
-				PathExp: "/",
+				HttpMethod: "GET",
+				PathExp:    "/",
 			},
 		},
 	}
@@ -109,10 +112,12 @@ func TestRouteOrder(t *testing.T) {
 	r := router{
 		Routes: []Route{
 			Route{
-				PathExp: "/r/:id",
+				HttpMethod: "GET",
+				PathExp:    "/r/:id",
 			},
 			Route{
-				PathExp: "/r/*rest",
+				HttpMethod: "GET",
+				PathExp:    "/r/*rest",
 			},
 		},
 	}
@@ -123,7 +128,7 @@ func TestRouteOrder(t *testing.T) {
 	}
 
 	input := "http://example.org/r/123"
-	route, params, err := r.findRoute(input)
+	route, params, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -141,10 +146,12 @@ func TestSimpleExample(t *testing.T) {
 	r := router{
 		Routes: []Route{
 			Route{
-				PathExp: "/resources/:id",
+				HttpMethod: "GET",
+				PathExp:    "/resources/:id",
 			},
 			Route{
-				PathExp: "/resources",
+				HttpMethod: "GET",
+				PathExp:    "/resources",
 			},
 		},
 	}
@@ -155,7 +162,7 @@ func TestSimpleExample(t *testing.T) {
 	}
 
 	input := "http://example.org/resources/123"
-	route, params, err := r.findRoute(input)
+	route, params, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
