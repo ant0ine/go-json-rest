@@ -42,7 +42,7 @@ func (self *Request) UriBase() url.URL {
 	}
 
 	host := self.Host
-	if host[len(host)-1] == '/' {
+	if len(host) > 0 && host[len(host)-1] == '/' {
 		host = host[:len(host)-1]
 	}
 
@@ -61,10 +61,12 @@ func (self *Request) UriFor(path string) url.URL {
 }
 
 // Returns an URL structure from the base, the path and the parameters.
-func (self *Request) UriForWithParams(path string, parameters map[string]string) url.URL {
+func (self *Request) UriForWithParams(path string, parameters map[string][]string) url.URL {
 	query := url.Values{}
 	for k, v := range parameters {
-		query.Add(k, v)
+		for _, vv := range v {
+			query.Add(k, vv)
+		}
 	}
 	baseUrl := self.UriFor(path)
 	baseUrl.RawQuery = query.Encode()
