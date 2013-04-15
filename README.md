@@ -100,6 +100,11 @@ GET /.status returns something like:
       "AverageResponseTimeSec": 0.00026214
     }
 
+Thanks
+------
+- [Franck Cuny](https://github.com/franckcuny)
+- [Ask Bjørn Hansen](https://github.com/abh)
+
 
 Copyright (c) 2013 Antoine Imbert
 
