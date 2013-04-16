@@ -53,6 +53,23 @@ func (self *router) start() error {
 	return nil
 }
 
+// return the result that has route defined the earliest
+func (self *router) ofFirstDefinedRoute(results []*trie.Result) *trie.Result {
+	minIndex := -1
+	resultsByIndex := map[int]*trie.Result{}
+
+	for _, result := range results {
+		route := result.Route.(*Route)
+		routeIndex := self.index[route]
+		resultsByIndex[routeIndex] = result
+		if minIndex == -1 || routeIndex < minIndex {
+			minIndex = routeIndex
+		}
+	}
+
+	return resultsByIndex[minIndex]
+}
+
 // Return the first matching Route and the corresponding parameters for a given URL object.
 func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string) {
 
@@ -67,27 +84,15 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 	if len(results) == 0 {
 		// no route found
 		return nil, nil
-	} else if len(results) == 1 {
+	}
+
+	if len(results) == 1 {
 		// one route found
 		return results[0].Route.(*Route), results[0].Params
 	}
 
-	// only return the first Route that results
-	minIndex := -1
-	resultsByIndex := map[int]*trie.Result{}
-
-	for _, result := range results {
-		route := result.Route.(*Route)
-		routeIndex := self.index[route]
-		resultsByIndex[routeIndex] = result
-		if minIndex == -1 || routeIndex < minIndex {
-			minIndex = routeIndex
-		}
-	}
-
-	// and the corresponding params
-	result := resultsByIndex[minIndex]
-
+	// multiple routes found, pick the first defined
+	result := self.ofFirstDefinedRoute(results)
 	return result.Route.(*Route), result.Params
 }
 
