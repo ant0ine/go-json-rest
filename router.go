@@ -63,6 +63,11 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 		urlObj.Path,
 	)
 
+	// short cut
+	if len(results) == 1 {
+		return results[0].Route.(*Route), results[0].Params
+	}
+
 	// only return the first Route that results
 	minIndex := -1
 	resultsByIndex := map[int]*trie.Result{}
