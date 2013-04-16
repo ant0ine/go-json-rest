@@ -12,7 +12,7 @@ Go-Json-Rest
 Features
 -----------
 - Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
-- Fast URL routing using Go-UrlRouter. It implements the classic route description syntax using a scalable trie data structure.
+- Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.
 - Optional /.status endpoint for easy monitoring.
 - Examples
 

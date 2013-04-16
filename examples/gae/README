@@ -9,7 +9,5 @@ Setup:
  * cd gae/
  * mkdir -p github.com/ant0ine
  * cp -r $GOPATH/src/github.com/ant0ine/go-json-rest github.com/ant0ine/go-json-rest
- * cp -r $GOPATH/src/github.com/ant0ine/go-urlrouter github.com/ant0ine/go-urlrouter
  * rm -rf github.com/ant0ine/go-json-rest/examples/
- * rm -rf github.com/ant0ine/go-urlrouter/examples/
  * path/to/google_appengine/dev_appserver.py .

@@ -53,7 +53,7 @@ func (self *router) start() error {
 	return nil
 }
 
-// return the result that has route defined the earliest
+// return the result that has the route defined the earliest
 func (self *router) ofFirstDefinedRoute(results []*trie.Result) *trie.Result {
 	minIndex := -1
 	resultsByIndex := map[int]*trie.Result{}
