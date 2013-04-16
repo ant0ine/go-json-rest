@@ -1,7 +1,7 @@
 // A quick and easy way to setup a RESTful JSON API
 //
 // Go-Json-Rest is a thin layer on top of net/http that helps building RESTful JSON APIs easily.
-// It provides fast URL routing using Trie based implementation, and helpers to deal
+// It provides fast URL routing using a Trie based implementation, and helpers to deal
 // with JSON requests and responses. It is not a high-level REST framework that transparently maps
 // HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
 // net/http objects.
