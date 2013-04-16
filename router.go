@@ -63,8 +63,12 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 		urlObj.Path,
 	)
 
-	// short cut
-	if len(results) == 1 {
+	// short cuts
+	if len(results) == 0 {
+		// no route found
+		return nil, nil
+	} else if len(results) == 1 {
+		// one route found
 		return results[0].Route.(*Route), results[0].Params
 	}
 
@@ -79,11 +83,6 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 		if minIndex == -1 || routeIndex < minIndex {
 			minIndex = routeIndex
 		}
-	}
-
-	if minIndex == -1 {
-		// no route found
-		return nil, nil
 	}
 
 	// and the corresponding params
