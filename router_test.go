@@ -8,7 +8,7 @@ import (
 func TestFindRouteAPI(t *testing.T) {
 
 	r := router{
-		Routes: []Route{
+		routes: []Route{
 			Route{
 				HttpMethod: "GET",
 				PathExp:    "/",
@@ -64,7 +64,7 @@ func TestFindRouteAPI(t *testing.T) {
 func TestNoRoute(t *testing.T) {
 
 	r := router{
-		Routes: []Route{},
+		routes: []Route{},
 	}
 
 	err := r.start()
@@ -89,7 +89,7 @@ func TestNoRoute(t *testing.T) {
 func TestDuplicatedRoute(t *testing.T) {
 
 	r := router{
-		Routes: []Route{
+		routes: []Route{
 			Route{
 				HttpMethod: "GET",
 				PathExp:    "/",
@@ -110,7 +110,7 @@ func TestDuplicatedRoute(t *testing.T) {
 func TestRouteOrder(t *testing.T) {
 
 	r := router{
-		Routes: []Route{
+		routes: []Route{
 			Route{
 				HttpMethod: "GET",
 				PathExp:    "/r/:id",
@@ -144,7 +144,7 @@ func TestRouteOrder(t *testing.T) {
 func TestSimpleExample(t *testing.T) {
 
 	r := router{
-		Routes: []Route{
+		routes: []Route{
 			Route{
 				HttpMethod: "GET",
 				PathExp:    "/resources/:id",

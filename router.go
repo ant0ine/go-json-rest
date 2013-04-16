@@ -10,8 +10,7 @@ import (
 // support for #param placeholder ?
 
 type router struct {
-	// list of Routes, the order matters, if multiple Routes match, the first defined will be used.
-	Routes                 []Route
+	routes                 []Route
 	disableTrieCompression bool
 	index                  map[*Route]int
 	trie                   *trie.Trie
@@ -19,15 +18,16 @@ type router struct {
 
 // This validates the Routes and prepares the Trie data structure.
 // It must be called once the Routes are defined and before trying to find Routes.
+// The order matters, if multiple Routes match, the first defined will be used.
 func (self *router) start() error {
 
 	self.trie = trie.New()
 	self.index = map[*Route]int{}
 
-	for i, _ := range self.Routes {
+	for i, _ := range self.routes {
 
 		// pointer to the Route
-		route := &self.Routes[i]
+		route := &self.routes[i]
 
 		// insert in the Trie
 		err := self.trie.AddRoute(

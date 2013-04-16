@@ -138,8 +138,8 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	self.internalRouter = &router{}
 
 	for _, route := range routes {
-		self.internalRouter.Routes = append(
-			self.internalRouter.Routes,
+		self.internalRouter.routes = append(
+			self.internalRouter.routes,
 			route,
 		)
 	}
@@ -147,8 +147,8 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
 		self.statusService = newStatusService()
-		self.internalRouter.Routes = append(
-			self.internalRouter.Routes,
+		self.internalRouter.routes = append(
+			self.internalRouter.routes,
 			Route{
 				HttpMethod: "GET",
 				PathExp:    "/.status",
