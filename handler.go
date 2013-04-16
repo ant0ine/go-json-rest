@@ -135,13 +135,8 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 // if a request matches multiple Routes, the first one will be used.
 func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 
-	self.internalRouter = &router{}
-
-	for _, route := range routes {
-		self.internalRouter.routes = append(
-			self.internalRouter.routes,
-			route,
-		)
+	self.internalRouter = &router{
+		routes: routes,
 	}
 
 	// add the status route as the last route.
