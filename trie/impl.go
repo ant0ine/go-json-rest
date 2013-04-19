@@ -238,7 +238,7 @@ func (self *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error 
 	return self.root.addRoute(httpMethod, pathExp, route)
 }
 
-// Given a path and a method, return all the matching routes.
+// Given a path and an http method, return all the matching routes.
 func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 	context := newFindContext()
 	context.matchFunc = func(httpMethod, path string, node *node) {
@@ -255,6 +255,25 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 	}
 	self.root.find(httpMethod, path, context)
 	return context.matches["pathAndMethod"]
+}
+
+// Given a path, and whatever the http method, return all the matching routes.
+func (self *Trie) FindRoutesForPath(path string) []*Match {
+	context := newFindContext()
+	context.matchFunc = func(httpMethod, path string, node *node) {
+		params := context.asMap()
+		for _, route := range node.HttpMethodToRoute {
+			context.addMatch(
+				"path",
+				&Match{
+					Route:  route,
+					Params: params,
+				},
+			)
+		}
+	}
+	self.root.find("", path, context)
+	return context.matches["path"]
 }
 
 // Reduce the size of the tree, must be done after the last AddRoute.
