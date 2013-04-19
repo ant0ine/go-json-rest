@@ -98,7 +98,7 @@ func TestDupeInsert(t *testing.T) {
 	}
 }
 
-func isInMatches(test string, matches []*Result) bool {
+func isInMatches(test string, matches []*Match) bool {
 	for _, match := range matches {
 		if match.Route.(string) == test {
 			return true

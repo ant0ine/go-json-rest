@@ -54,9 +54,9 @@ func (self *router) start() error {
 }
 
 // return the result that has the route defined the earliest
-func (self *router) ofFirstDefinedRoute(results []*trie.Result) *trie.Result {
+func (self *router) ofFirstDefinedRoute(results []*trie.Match) *trie.Match {
 	minIndex := -1
-	resultsByIndex := map[int]*trie.Result{}
+	resultsByIndex := map[int]*trie.Match{}
 
 	for _, result := range results {
 		route := result.Route.(*Route)

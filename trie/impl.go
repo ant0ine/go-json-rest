@@ -90,22 +90,24 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error 
 // utility for the node.findRoutes recursive method
 type findContext struct {
 	paramStack []map[string]string
-	pathFound  bool
-	results    []*Result
+	matches    map[string][]*Match
+	matchFunc  func(httpMethod, path string, node *node)
 }
 
 func newFindContext() *findContext {
 	return &findContext{
 		paramStack: []map[string]string{},
-		pathFound:  false,
-		results:    []*Result{},
+		matches:    map[string][]*Match{},
 	}
 }
 
-func (self *findContext) addResult(result *Result) {
-	self.results = append(
-		self.results,
-		result,
+func (self *findContext) addMatch(kind string, match *Match) {
+	if self.matches[kind] == nil {
+		self.matches[kind] = []*Match{}
+	}
+	self.matches[kind] = append(
+		self.matches[kind],
+		match,
 	)
 }
 
@@ -136,29 +138,17 @@ func (self *findContext) asMap() map[string]string {
 	return r
 }
 
-// empty Result means that the path has been found but not the method.
-type Result struct {
+type Match struct {
 	// Same Route as in AddRoute
 	Route interface{}
 	// map of params matched for this result
 	Params map[string]string
 }
 
-func (self *node) findRoutes(httpMethod, path string, context *findContext) {
+func (self *node) find(httpMethod, path string, context *findContext) {
 
 	if self.HttpMethodToRoute != nil && path == "" {
-		// path found !
-		context.pathFound = true
-
-		// found a route
-		if self.HttpMethodToRoute[httpMethod] != nil {
-			context.addResult(
-				&Result{
-					Route:  self.HttpMethodToRoute[httpMethod],
-					Params: context.asMap(),
-				},
-			)
-		}
+		context.matchFunc(httpMethod, path, self)
 	}
 
 	if len(path) == 0 {
@@ -168,7 +158,7 @@ func (self *node) findRoutes(httpMethod, path string, context *findContext) {
 	// *splat branch
 	if self.SplatChild != nil {
 		context.pushParams(self.SplatName, path)
-		self.SplatChild.findRoutes(httpMethod, "", context)
+		self.SplatChild.find(httpMethod, "", context)
 		context.popParams()
 	}
 
@@ -176,7 +166,7 @@ func (self *node) findRoutes(httpMethod, path string, context *findContext) {
 	if self.ParamChild != nil {
 		value, remaining := splitParam(path)
 		context.pushParams(self.ParamName, value)
-		self.ParamChild.findRoutes(httpMethod, remaining, context)
+		self.ParamChild.find(httpMethod, remaining, context)
 		context.popParams()
 	}
 
@@ -188,7 +178,7 @@ func (self *node) findRoutes(httpMethod, path string, context *findContext) {
 	token := path[0:length]
 	remaining := path[length:]
 	if self.Children[token] != nil {
-		self.Children[token].findRoutes(httpMethod, remaining, context)
+		self.Children[token].find(httpMethod, remaining, context)
 	}
 }
 
@@ -249,10 +239,22 @@ func (self *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error 
 }
 
 // Given a path and a method, return all the matching routes.
-func (self *Trie) FindRoutes(httpMethod, path string) []*Result {
+func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 	context := newFindContext()
-	self.root.findRoutes(httpMethod, path, context)
-	return context.results
+	context.matchFunc = func(httpMethod, path string, node *node) {
+		if node.HttpMethodToRoute[httpMethod] != nil {
+			// path and method match, found a route !
+			context.addMatch(
+				"pathAndMethod",
+				&Match{
+					Route:  node.HttpMethodToRoute[httpMethod],
+					Params: context.asMap(),
+				},
+			)
+		}
+	}
+	self.root.find(httpMethod, path, context)
+	return context.matches["pathAndMethod"]
 }
 
 // Reduce the size of the tree, must be done after the last AddRoute.
