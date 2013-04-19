@@ -122,7 +122,7 @@ func (self *findContext) popParams() {
 	self.paramStack = self.paramStack[:len(self.paramStack)-1]
 }
 
-func (self *findContext) asMap() map[string]string {
+func (self *findContext) paramsAsMap() map[string]string {
 	r := map[string]string{}
 	for _, param := range self.paramStack {
 		for key, value := range param {
@@ -248,7 +248,7 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 				"pathAndMethod",
 				&Match{
 					Route:  node.HttpMethodToRoute[httpMethod],
-					Params: context.asMap(),
+					Params: context.paramsAsMap(),
 				},
 			)
 		}
@@ -261,7 +261,7 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 func (self *Trie) FindRoutesForPath(path string) []*Match {
 	context := newFindContext()
 	context.matchFunc = func(httpMethod, path string, node *node) {
-		params := context.asMap()
+		params := context.paramsAsMap()
 		for _, route := range node.HttpMethodToRoute {
 			context.addMatch(
 				"path",
