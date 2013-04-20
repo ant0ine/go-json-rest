@@ -248,7 +248,7 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 
 // Same as FindRoutes, but return in addition a boolean indicating if the path was matched.
 // Useful to return 405
-func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) []*Match, bool {
+func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, bool) {
 	context := newFindContext()
 	pathMatched := false
 	matches := []*Match{}
