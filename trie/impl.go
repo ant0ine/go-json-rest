@@ -246,6 +246,29 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 	return matches
 }
 
+// Same as FindRoutes, but return in addition a boolean indicating if the path was matched.
+// Useful to return 405
+func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) []*Match, bool {
+	context := newFindContext()
+	pathMatched := false
+	matches := []*Match{}
+	context.matchFunc = func(httpMethod, path string, node *node) {
+		pathMatched = true
+		if node.HttpMethodToRoute[httpMethod] != nil {
+			// path and method match, found a route !
+			matches = append(
+				matches,
+				&Match{
+					Route:  node.HttpMethodToRoute[httpMethod],
+					Params: context.paramsAsMap(),
+				},
+			)
+		}
+	}
+	self.root.find(httpMethod, path, context)
+	return matches, pathMatched
+}
+
 // Given a path, and whatever the http method, return all the matching routes.
 func (self *Trie) FindRoutesForPath(path string) []*Match {
 	context := newFindContext()
