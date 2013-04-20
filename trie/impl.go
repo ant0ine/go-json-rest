@@ -90,25 +90,13 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error 
 // utility for the node.findRoutes recursive method
 type findContext struct {
 	paramStack []map[string]string
-	matches    map[string][]*Match
 	matchFunc  func(httpMethod, path string, node *node)
 }
 
 func newFindContext() *findContext {
 	return &findContext{
 		paramStack: []map[string]string{},
-		matches:    map[string][]*Match{},
 	}
-}
-
-func (self *findContext) addMatch(kind string, match *Match) {
-	if self.matches[kind] == nil {
-		self.matches[kind] = []*Match{}
-	}
-	self.matches[kind] = append(
-		self.matches[kind],
-		match,
-	)
 }
 
 func (self *findContext) pushParams(name, value string) {
@@ -241,11 +229,12 @@ func (self *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error 
 // Given a path and an http method, return all the matching routes.
 func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 	context := newFindContext()
+	matches := []*Match{}
 	context.matchFunc = func(httpMethod, path string, node *node) {
 		if node.HttpMethodToRoute[httpMethod] != nil {
 			// path and method match, found a route !
-			context.addMatch(
-				"pathAndMethod",
+			matches = append(
+				matches,
 				&Match{
 					Route:  node.HttpMethodToRoute[httpMethod],
 					Params: context.paramsAsMap(),
@@ -254,17 +243,18 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 		}
 	}
 	self.root.find(httpMethod, path, context)
-	return context.matches["pathAndMethod"]
+	return matches
 }
 
 // Given a path, and whatever the http method, return all the matching routes.
 func (self *Trie) FindRoutesForPath(path string) []*Match {
 	context := newFindContext()
+	matches := []*Match{}
 	context.matchFunc = func(httpMethod, path string, node *node) {
 		params := context.paramsAsMap()
 		for _, route := range node.HttpMethodToRoute {
-			context.addMatch(
-				"path",
+			matches = append(
+				matches,
 				&Match{
 					Route:  route,
 					Params: params,
@@ -273,7 +263,7 @@ func (self *Trie) FindRoutesForPath(path string) []*Match {
 		}
 	}
 	self.root.find("", path, context)
-	return context.matches["path"]
+	return matches
 }
 
 // Reduce the size of the tree, must be done after the last AddRoute.
