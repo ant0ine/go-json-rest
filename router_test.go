@@ -23,7 +23,7 @@ func TestFindRouteAPI(t *testing.T) {
 
 	// full url string
 	input := "http://example.org/"
-	route, params, err := r.findRoute("GET", input)
+	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -31,12 +31,15 @@ func TestFindRouteAPI(t *testing.T) {
 		t.Error()
 	}
 	if len(params) != 0 {
+		t.Error()
+	}
+	if pathMatched != true {
 		t.Error()
 	}
 
 	// part of the url string
 	input = "/"
-	route, params, err = r.findRoute("GET", input)
+	route, params, pathMatched, err = r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -44,6 +47,9 @@ func TestFindRouteAPI(t *testing.T) {
 		t.Error()
 	}
 	if len(params) != 0 {
+		t.Error()
+	}
+	if pathMatched != true {
 		t.Error()
 	}
 
@@ -52,11 +58,14 @@ func TestFindRouteAPI(t *testing.T) {
 	if err != nil {
 		t.Fatal()
 	}
-	route, params = r.findRouteFromURL("GET", urlObj)
+	route, params, pathMatched = r.findRouteFromURL("GET", urlObj)
 	if route.PathExp != "/" {
 		t.Error()
 	}
 	if len(params) != 0 {
+		t.Error()
+	}
+	if pathMatched != true {
 		t.Error()
 	}
 }
@@ -73,7 +82,7 @@ func TestNoRoute(t *testing.T) {
 	}
 
 	input := "http://example.org/notfound"
-	route, params, err := r.findRoute("GET", input)
+	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -83,6 +92,9 @@ func TestNoRoute(t *testing.T) {
 	}
 	if params != nil {
 		t.Error("params must be nil too")
+	}
+	if pathMatched != false {
+		t.Error()
 	}
 }
 
@@ -128,7 +140,7 @@ func TestRouteOrder(t *testing.T) {
 	}
 
 	input := "http://example.org/r/123"
-	route, params, err := r.findRoute("GET", input)
+	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -137,6 +149,9 @@ func TestRouteOrder(t *testing.T) {
 		t.Errorf("both match, expected the first defined, got %s", route.PathExp)
 	}
 	if params["id"] != "123" {
+		t.Error()
+	}
+	if pathMatched != true {
 		t.Error()
 	}
 }
@@ -162,7 +177,7 @@ func TestSimpleExample(t *testing.T) {
 	}
 
 	input := "http://example.org/resources/123"
-	route, params, err := r.findRoute("GET", input)
+	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
 		t.Fatal()
 	}
@@ -171,6 +186,9 @@ func TestSimpleExample(t *testing.T) {
 		t.Error()
 	}
 	if params["id"] != "123" {
+		t.Error()
+	}
+	if pathMatched != true {
 		t.Error()
 	}
 }

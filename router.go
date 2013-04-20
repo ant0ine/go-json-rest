@@ -71,11 +71,11 @@ func (self *router) ofFirstDefinedRoute(matches []*trie.Match) *trie.Match {
 }
 
 // Return the first matching Route and the corresponding parameters for a given URL object.
-func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string) {
+func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string, bool) {
 
 	// lookup the routes in the Trie
 	// TODO verify url encoding
-	matches := self.trie.FindRoutes(
+	matches, pathMatched := self.trie.FindRoutesAndPathMatched(
 		strings.ToUpper(httpMethod),
 		urlObj.Path,
 	)
@@ -83,28 +83,28 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 	// short cuts
 	if len(matches) == 0 {
 		// no route found
-		return nil, nil
+		return nil, nil, pathMatched
 	}
 
 	if len(matches) == 1 {
 		// one route found
-		return matches[0].Route.(*Route), matches[0].Params
+		return matches[0].Route.(*Route), matches[0].Params, pathMatched
 	}
 
 	// multiple routes found, pick the first defined
 	result := self.ofFirstDefinedRoute(matches)
-	return result.Route.(*Route), result.Params
+	return result.Route.(*Route), result.Params, pathMatched
 }
 
 // Parse the url string (complete or just the path) and return the first matching Route and the corresponding parameters.
-func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, error) {
+func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, bool, error) {
 
 	// parse the url
 	urlObj, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 
-	route, params := self.findRouteFromURL(httpMethod, urlObj)
-	return route, params, nil
+	route, params, pathMatched := self.findRouteFromURL(httpMethod, urlObj)
+	return route, params, pathMatched, nil
 }

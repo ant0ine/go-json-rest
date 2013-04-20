@@ -90,11 +90,11 @@ func TestHandler(t *testing.T) {
 	contentTypeIsJson(t, recorder)
 	bodyIs(t, recorder, `{"Id":"123"}`)
 
-	// auto 404 on undefined route (wrong method)
+	// auto 405 on undefined route (wrong method)
 	recorder = runTestRequest(t, &handler, "DELETE", "http://1.2.3.4/r/123", "")
-	codeIs(t, recorder, 404)
+	codeIs(t, recorder, 405)
 	contentTypeIsJson(t, recorder)
-	bodyIs(t, recorder, `{"Error":"Resource not found"}`)
+	bodyIs(t, recorder, `{"Error":"Method not allowed"}`)
 
 	// auto 404 on undefined route (wrong path)
 	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/s/123", "")

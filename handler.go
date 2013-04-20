@@ -260,22 +260,34 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 	}
 
 	// find the route
-	route, params := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
+	route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
 	if route == nil {
-		// TODO handle the 406, the info is in the Trie
+		if pathMatched {
+			// no route found, but path was matched: 405 Method Not Allowed
+			Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
 
-		// no route found
-		NotFound(&writer, &request)
+			// log response
+			self.logResponse(
+				http.StatusMethodNotAllowed,
+				&start,
+				origRequest,
+			)
+			return
+		} else {
+			// no route found, the path was not matched: 404 Not Found
+			NotFound(&writer, &request)
 
-		// log response
-		self.logResponse(
-			http.StatusNotFound,
-			&start,
-			origRequest,
-		)
-		return
+			// log response
+			self.logResponse(
+				http.StatusNotFound,
+				&start,
+				origRequest,
+			)
+			return
+		}
 	}
 
+	// a route was found, set the PathParams
 	request.PathParams = params
 
 	// run the user code
