@@ -29,7 +29,7 @@
 //      }
 //
 //      func main() {
-//              handler := ResourceHandler{}
+//              handler := rest.ResourceHandler{}
 //              handler.SetRoutes(
 //                      rest.Route{"GET", "/users/:id", GetUser},
 //              )
