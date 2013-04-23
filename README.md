@@ -43,7 +43,7 @@ Example
 	        w.WriteJson(&user)
 	}
 	func main() {
-               handler := rest.ResourceHandler{}
+            handler := rest.ResourceHandler{}
 	        handler.SetRoutes(
 	                rest.Route{"GET", "/users/:id", GetUser},
 	        )
