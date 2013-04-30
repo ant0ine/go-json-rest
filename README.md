@@ -13,6 +13,7 @@ Features
 -----------
 - Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
 - Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.
+- Test package to help writing tests for the API.
 - Optional /.status endpoint for easy monitoring.
 - Examples
 
