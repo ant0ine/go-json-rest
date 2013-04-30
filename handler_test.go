@@ -1,17 +1,17 @@
 package rest
 
 import (
+	"github.com/ant0ine/go-json-rest/test"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"testing"
 )
 
-func runTestRequest(t *testing.T, handler *ResourceHandler, method, urlStr, payload string) *httptest.ResponseRecorder {
+func makeRequest(method, urlStr, payload string) *http.Request {
 
 	urlObj, err := url.Parse(urlStr)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 	r := http.Request{
 		Method: method,
@@ -19,39 +19,7 @@ func runTestRequest(t *testing.T, handler *ResourceHandler, method, urlStr, payl
 	}
 	r.Header = http.Header{}
 	r.Header.Set("Accept-Encoding", "gzip")
-
-	recorder := httptest.NewRecorder()
-
-	handler.ServeHTTP(recorder, &r)
-
-	return recorder
-}
-
-func codeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
-	if r.Code != expectedCode {
-		t.Errorf("Code %d expected, got: %d", expectedCode, r.Code)
-	}
-}
-
-func contentTypeIsJson(t *testing.T, r *httptest.ResponseRecorder) {
-	ct := r.HeaderMap.Get("Content-Type")
-	if ct != "application/json" {
-		t.Errorf("Content type 'application/json' expected, got: %s", ct)
-	}
-}
-
-func contentEncodingIsGzip(t *testing.T, r *httptest.ResponseRecorder) {
-	ce := r.HeaderMap.Get("Content-Encoding")
-	if ce != "gzip" {
-		t.Errorf("Content encoding 'gzip' expected, got: %s", ce)
-	}
-}
-
-func bodyIs(t *testing.T, r *httptest.ResponseRecorder, expectedBody string) {
-	body := r.Body.String()
-	if body != expectedBody {
-		t.Errorf("Body '%s' expected, got: '%s'", expectedBody, body)
-	}
+	return &r
 }
 
 func TestHandler(t *testing.T) {
@@ -85,38 +53,38 @@ func TestHandler(t *testing.T) {
 	)
 
 	// valid get resource
-	recorder := runTestRequest(t, &handler, "GET", "http://1.2.3.4/r/123", "")
-	codeIs(t, recorder, 200)
-	contentTypeIsJson(t, recorder)
-	bodyIs(t, recorder, `{"Id":"123"}`)
+	recorded := test.RunRequest(t, &handler, makeRequest("GET", "http://1.2.3.4/r/123", ""))
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Id":"123"}`)
 
 	// auto 405 on undefined route (wrong method)
-	recorder = runTestRequest(t, &handler, "DELETE", "http://1.2.3.4/r/123", "")
-	codeIs(t, recorder, 405)
-	contentTypeIsJson(t, recorder)
-	bodyIs(t, recorder, `{"Error":"Method not allowed"}`)
+	recorded = test.RunRequest(t, &handler, makeRequest("DELETE", "http://1.2.3.4/r/123", ""))
+	recorded.CodeIs(405)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Error":"Method not allowed"}`)
 
 	// auto 404 on undefined route (wrong path)
-	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/s/123", "")
-	codeIs(t, recorder, 404)
-	contentTypeIsJson(t, recorder)
-	bodyIs(t, recorder, `{"Error":"Resource not found"}`)
+	recorded = test.RunRequest(t, &handler, makeRequest("GET", "http://1.2.3.4/s/123", ""))
+	recorded.CodeIs(404)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Error":"Resource not found"}`)
 
 	// auto 500 on unhandled userecorder error
-	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/auto-fails", "")
-	codeIs(t, recorder, 500)
+	recorded = test.RunRequest(t, &handler, makeRequest("GET", "http://1.2.3.4/auto-fails", ""))
+	recorded.CodeIs(500)
 
 	// userecorder error
-	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/user-error", "")
-	codeIs(t, recorder, 500)
-	contentTypeIsJson(t, recorder)
-	bodyIs(t, recorder, `{"Error":"My error"}`)
+	recorded = test.RunRequest(t, &handler, makeRequest("GET", "http://1.2.3.4/user-error", ""))
+	recorded.CodeIs(500)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Error":"My error"}`)
 
 	// userecorder notfound
-	recorder = runTestRequest(t, &handler, "GET", "http://1.2.3.4/user-notfound", "")
-	codeIs(t, recorder, 404)
-	contentTypeIsJson(t, recorder)
-	bodyIs(t, recorder, `{"Error":"Resource not found"}`)
+	recorded = test.RunRequest(t, &handler, makeRequest("GET", "http://1.2.3.4/user-notfound", ""))
+	recorded.CodeIs(404)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Error":"Resource not found"}`)
 }
 
 func TestGzip(t *testing.T) {
@@ -133,8 +101,8 @@ func TestGzip(t *testing.T) {
 		},
 	)
 
-	recorder := runTestRequest(t, &handler, "GET", "http://1.2.3.4/r", "")
-	codeIs(t, recorder, 200)
-	contentTypeIsJson(t, recorder)
-	contentEncodingIsGzip(t, recorder)
+	recorded := test.RunRequest(t, &handler, makeRequest("GET", "http://1.2.3.4/r", ""))
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.ContentEncodingIsGzip()
 }
