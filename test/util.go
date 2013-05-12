@@ -1,5 +1,9 @@
 // Utility functions to help writing tests for a Go-Json-Rest app
 //
+// Go comes with net/http/httptest to help writing test for an http
+// server. When this http server implements a JSON REST API, some basic
+// checks end up to be always the same. This test package tries to save
+// some typing by providing helpers for this particular use case.
 package test
 
 import (
