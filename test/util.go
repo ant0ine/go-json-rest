@@ -5,9 +5,24 @@ package test
 import (
 	"net/http"
 	"net/http/httptest"
-	//	"net/url"
+	"net/url"
 	"testing"
 )
+
+func MakeSimpleRequest(method, urlStr, payload string) *http.Request {
+
+	urlObj, err := url.Parse(urlStr)
+	if err != nil {
+		panic(err)
+	}
+	r := http.Request{
+		Method: method,
+		URL:    urlObj,
+	}
+	r.Header = http.Header{}
+	r.Header.Set("Accept-Encoding", "gzip")
+	return &r
+}
 
 func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
 	if r.Code != expectedCode {
