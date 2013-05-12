@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -95,6 +96,40 @@ func TestNoRoute(t *testing.T) {
 	}
 	if pathMatched != false {
 		t.Error()
+	}
+}
+
+func TestEmptyPathExp(t *testing.T) {
+
+	r := router{
+		routes: []Route{
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "",
+			},
+		},
+	}
+
+	err := r.start()
+	if err == nil || !strings.Contains(err.Error(), "empty") {
+		t.Error("expected the empty PathExp error")
+	}
+}
+
+func TestInvalidPathExp(t *testing.T) {
+
+	r := router{
+		routes: []Route{
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "invalid",
+			},
+		},
+	}
+
+	err := r.start()
+	if err == nil || !strings.Contains(err.Error(), "/") {
+		t.Error("expected the / PathExp error")
 	}
 }
 

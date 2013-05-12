@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"github.com/ant0ine/go-json-rest/trie"
 	"net/url"
 	"strings"
@@ -29,6 +30,15 @@ func (self *router) start() error {
 		// pointer to the Route
 		route := &self.routes[i]
 
+		// PathExp validation
+		if route.PathExp == "" {
+			return errors.New("empty PathExp")
+		}
+		if route.PathExp[0] != '/' {
+			return errors.New("PathExp must start with /")
+		}
+		// TODO urlencoding ?
+
 		// insert in the Trie
 		err := self.trie.AddRoute(
 			strings.ToUpper(route.HttpMethod),
@@ -46,9 +56,6 @@ func (self *router) start() error {
 	if self.disableTrieCompression == false {
 		self.trie.Compress()
 	}
-
-	// TODO validation of the PathExp ? start with a /
-	// TODO url encoding
 
 	return nil
 }
