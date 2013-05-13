@@ -37,12 +37,15 @@ func (self *router) start() error {
 		if route.PathExp[0] != '/' {
 			return errors.New("PathExp must start with /")
 		}
-		// TODO urlencoding ?
+		urlObj, err := url.Parse(route.PathExp)
+		if err != nil {
+			return err
+		}
 
 		// insert in the Trie
-		err := self.trie.AddRoute(
-			strings.ToUpper(route.HttpMethod),
-			route.PathExp,
+		err = self.trie.AddRoute(
+			strings.ToUpper(route.HttpMethod), // work with the HttpMethod in uppercase
+			urlObj.RequestURI(),               // work with the PathExp urlencoded.
 			route,
 		)
 		if err != nil {
@@ -81,10 +84,9 @@ func (self *router) ofFirstDefinedRoute(matches []*trie.Match) *trie.Match {
 func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string, bool) {
 
 	// lookup the routes in the Trie
-	// TODO verify url encoding
 	matches, pathMatched := self.trie.FindRoutesAndPathMatched(
-		strings.ToUpper(httpMethod),
-		urlObj.Path,
+		strings.ToUpper(httpMethod), // work with the httpMethod in uppercase
+		urlObj.RequestURI(),         // work with the path urlencoded
 	)
 
 	// short cuts

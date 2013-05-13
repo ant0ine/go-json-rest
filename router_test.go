@@ -133,6 +133,64 @@ func TestInvalidPathExp(t *testing.T) {
 	}
 }
 
+func TestUrlEncodedFind(t *testing.T) {
+
+	r := router{
+		routes: []Route{
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "/with space", // not urlencoded
+			},
+		},
+	}
+
+	err := r.start()
+	if err != nil {
+		t.Fatal()
+	}
+
+	input := "http://example.org/with%20space" // urlencoded
+	route, _, pathMatched, err := r.findRoute("GET", input)
+	if err != nil {
+		t.Fatal()
+	}
+	if route.PathExp != "/with space" {
+		t.Error()
+	}
+	if pathMatched != true {
+		t.Error()
+	}
+}
+
+func TestNonUrlEncodedFind(t *testing.T) {
+
+	r := router{
+		routes: []Route{
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "/with%20space", // urlencoded
+			},
+		},
+	}
+
+	err := r.start()
+	if err != nil {
+		t.Fatal()
+	}
+
+	input := "http://example.org/with space" // not urlencoded
+	route, _, pathMatched, err := r.findRoute("GET", input)
+	if err != nil {
+		t.Fatal()
+	}
+	if route.PathExp != "/with%20space" {
+		t.Error()
+	}
+	if pathMatched != true {
+		t.Error()
+	}
+}
+
 func TestDuplicatedRoute(t *testing.T) {
 
 	r := router{
