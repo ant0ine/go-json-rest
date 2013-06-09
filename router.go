@@ -42,10 +42,16 @@ func (self *router) start() error {
 			return err
 		}
 
+		// work with the PathExp urlencoded.
+		pathExp := urlObj.RequestURI()
+
+		// make an exception for '*' used by the *splat notation
+		pathExp = strings.Replace(pathExp, "%2A", "*", -1)
+
 		// insert in the Trie
 		err = self.trie.AddRoute(
 			strings.ToUpper(route.HttpMethod), // work with the HttpMethod in uppercase
-			urlObj.RequestURI(),               // work with the PathExp urlencoded.
+			pathExp,
 			route,
 		)
 		if err != nil {

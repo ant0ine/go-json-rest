@@ -212,6 +212,38 @@ func TestDuplicatedRoute(t *testing.T) {
 	}
 }
 
+func TestSplatUrlEncoded(t *testing.T) {
+
+	r := router{
+		routes: []Route{
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "/r/*rest",
+			},
+		},
+	}
+
+	err := r.start()
+	if err != nil {
+		t.Fatal()
+	}
+
+	input := "http://example.org/r/123"
+	route, params, pathMatched, err := r.findRoute("GET", input)
+	if err != nil {
+		t.Fatal()
+	}
+	if route == nil {
+		t.Fatal("Expected a match")
+	}
+	if params["rest"] != "123" {
+		t.Error()
+	}
+	if pathMatched != true {
+		t.Error()
+	}
+}
+
 func TestRouteOrder(t *testing.T) {
 
 	r := router{
