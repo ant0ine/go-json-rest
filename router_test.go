@@ -162,6 +162,38 @@ func TestUrlEncodedFind(t *testing.T) {
 	}
 }
 
+func TestWithQueryString(t *testing.T) {
+
+	r := router{
+		routes: []Route{
+			Route{
+				HttpMethod: "GET",
+				PathExp:    "/r/:id",
+			},
+		},
+	}
+
+	err := r.start()
+	if err != nil {
+		t.Fatal()
+	}
+
+	input := "http://example.org/r/123?arg=value"
+	route, params, pathMatched, err := r.findRoute("GET", input)
+	if err != nil {
+		t.Fatal()
+	}
+	if route == nil {
+		t.Fatal("Expected a match")
+	}
+	if params["id"] != "123" {
+		t.Errorf("expected 123, got %s", params["id"])
+	}
+	if pathMatched != true {
+		t.Error()
+	}
+}
+
 func TestNonUrlEncodedFind(t *testing.T) {
 
 	r := router{
