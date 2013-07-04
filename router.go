@@ -17,6 +17,13 @@ type router struct {
 	trie                   *trie.Trie
 }
 
+func escapedPath(urlObj *url.URL) string {
+	// the escape method of url.URL should be public
+	// that would avoid this split.
+	parts := strings.SplitN(urlObj.RequestURI(), "?", 2)
+	return parts[0]
+}
+
 // This validates the Routes and prepares the Trie data structure.
 // It must be called once the Routes are defined and before trying to find Routes.
 // The order matters, if multiple Routes match, the first defined will be used.
@@ -43,9 +50,10 @@ func (self *router) start() error {
 		}
 
 		// work with the PathExp urlencoded.
-		pathExp := urlObj.RequestURI()
+		pathExp := escapedPath(urlObj)
 
 		// make an exception for '*' used by the *splat notation
+		// (at the trie insert only)
 		pathExp = strings.Replace(pathExp, "%2A", "*", -1)
 
 		// insert in the Trie
@@ -92,7 +100,7 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 	// lookup the routes in the Trie
 	matches, pathMatched := self.trie.FindRoutesAndPathMatched(
 		strings.ToUpper(httpMethod), // work with the httpMethod in uppercase
-		urlObj.RequestURI(),         // work with the path urlencoded
+		escapedPath(urlObj),         // work with the path urlencoded
 	)
 
 	// short cuts
