@@ -17,6 +17,17 @@ func TestHandler(t *testing.T) {
 				w.WriteJson(map[string]string{"Id": id})
 			},
 		},
+		Route{"POST", "/r/:id",
+			func(w *ResponseWriter, r *Request) {
+				// JSON echo
+				data := map[string]string{}
+				err := r.DecodeJsonPayload(&data)
+				if err != nil {
+					t.Fatal(err)
+				}
+				w.WriteJson(data)
+			},
+		},
 		Route{"GET", "/auto-fails",
 			func(w *ResponseWriter, r *Request) {
 				a := []int{}
@@ -40,6 +51,20 @@ func TestHandler(t *testing.T) {
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Id":"123"}`)
+
+	// valid post resource
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", `{"Test": "Test"}`))
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Test":"Test"}`)
+
+	// broken Content-Type post resource
+	request := test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", `{"Test": "Test"}`)
+	request.Header.Set("Content-Type", "text/html")
+	recorded = test.RunRequest(t, &handler, request)
+	recorded.CodeIs(415)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Error":"Bad Content-Type, expected 'application/json'"}`)
 
 	// auto 405 on undefined route (wrong method)
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("DELETE", "http://1.2.3.4/r/123", ""))

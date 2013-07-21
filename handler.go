@@ -83,6 +83,10 @@ type ResourceHandler struct {
 	// in the log. Convenient for log parsing.
 	EnableLogAsJson bool
 
+	// If true, the handler does NOT check the request Content-Type. Otherwise, it
+	// must be set to 'application/json' if the content is non-null.
+	EnableRelaxedContentType bool
+
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
 }
@@ -257,6 +261,22 @@ func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origReque
 		isIndented,
 		0,
 		false,
+	}
+
+	// check the Content-Type
+	if self.EnableRelaxedContentType == false &&
+		origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
+		strings.ToLower(origRequest.Header.Get("Content-Type")) != "application/json" {
+
+		Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType)
+
+		// log response
+		self.logResponse(
+			http.StatusUnsupportedMediaType,
+			&start,
+			origRequest,
+		)
+		return
 	}
 
 	// find the route
