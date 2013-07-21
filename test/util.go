@@ -9,23 +9,22 @@ package test
 import (
 	"net/http"
 	"net/http/httptest"
-	"net/url"
+	"strings"
 	"testing"
 )
 
 func MakeSimpleRequest(method, urlStr, payload string) *http.Request {
 
-	urlObj, err := url.Parse(urlStr)
+	r, err := http.NewRequest(method, urlStr, strings.NewReader(payload))
 	if err != nil {
 		panic(err)
 	}
-	r := http.Request{
-		Method: method,
-		URL:    urlObj,
-	}
-	r.Header = http.Header{}
 	r.Header.Set("Accept-Encoding", "gzip")
-	return &r
+	if payload != "" {
+		r.Header.Set("Content-Type", "application/json")
+	}
+
+	return r
 }
 
 func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
