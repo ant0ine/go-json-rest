@@ -32,7 +32,7 @@ type node struct {
 	SplatName         string
 }
 
-func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error {
+func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedParams []string) error {
 
 	if len(pathExp) == 0 {
 		// end of the path, leaf node, update the map
@@ -58,6 +58,15 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error 
 		// :param case
 		var name string
 		name, remaining = splitParam(remaining)
+
+		// Check param name is unique
+		for _, e := range usedParams {
+			if e == name {
+				panic(fmt.Sprintf("A route can't have two params with the same name: %s", name))
+			}
+		}
+		usedParams = append(usedParams, name)
+
 		if self.ParamChild == nil {
 			self.ParamChild = &node{}
 			self.ParamName = name
@@ -90,7 +99,7 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error 
 		nextNode = self.Children[token]
 	}
 
-	return nextNode.addRoute(httpMethod, remaining, route)
+	return nextNode.addRoute(httpMethod, remaining, route, usedParams)
 }
 
 // utility for the node.findRoutes recursive method
@@ -229,7 +238,7 @@ func New() *Trie {
 
 // Insert the route in the Trie following or creating the nodes corresponding to the path.
 func (self *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error {
-	return self.root.addRoute(httpMethod, pathExp, route)
+	return self.root.addRoute(httpMethod, pathExp, route, []string{})
 }
 
 // Given a path and an http method, return all the matching routes.
