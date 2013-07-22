@@ -7,20 +7,32 @@
 package test
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func MakeSimpleRequest(method, urlStr, payload string) *http.Request {
+func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.Request {
 
-	r, err := http.NewRequest(method, urlStr, strings.NewReader(payload))
+	s := ""
+
+	if payload != nil {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			panic(err)
+		}
+		s = fmt.Sprintf("%s", b)
+	}
+
+	r, err := http.NewRequest(method, urlStr, strings.NewReader(s))
 	if err != nil {
 		panic(err)
 	}
 	r.Header.Set("Accept-Encoding", "gzip")
-	if payload != "" {
+	if payload != nil {
 		r.Header.Set("Content-Type", "application/json")
 	}
 

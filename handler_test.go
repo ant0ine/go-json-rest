@@ -47,19 +47,20 @@ func TestHandler(t *testing.T) {
 	)
 
 	// valid get resource
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r/123", ""))
+	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r/123", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Id":"123"}`)
 
 	// valid post resource
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", `{"Test": "Test"}`))
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest(
+		"POST", "http://1.2.3.4/r/123", &map[string]string{"Test": "Test"}))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Test":"Test"}`)
 
 	// broken Content-Type post resource
-	request := test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", `{"Test": "Test"}`)
+	request := test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", &map[string]string{"Test": "Test"})
 	request.Header.Set("Content-Type", "text/html")
 	recorded = test.RunRequest(t, &handler, request)
 	recorded.CodeIs(415)
@@ -67,29 +68,29 @@ func TestHandler(t *testing.T) {
 	recorded.BodyIs(`{"Error":"Bad Content-Type, expected 'application/json'"}`)
 
 	// auto 405 on undefined route (wrong method)
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("DELETE", "http://1.2.3.4/r/123", ""))
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("DELETE", "http://1.2.3.4/r/123", nil))
 	recorded.CodeIs(405)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Method not allowed"}`)
 
 	// auto 404 on undefined route (wrong path)
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/s/123", ""))
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/s/123", nil))
 	recorded.CodeIs(404)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Resource not found"}`)
 
 	// auto 500 on unhandled userecorder error
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/auto-fails", ""))
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/auto-fails", nil))
 	recorded.CodeIs(500)
 
 	// userecorder error
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-error", ""))
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-error", nil))
 	recorded.CodeIs(500)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"My error"}`)
 
 	// userecorder notfound
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-notfound", ""))
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-notfound", nil))
 	recorded.CodeIs(404)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Resource not found"}`)
@@ -109,7 +110,7 @@ func TestGzip(t *testing.T) {
 		},
 	)
 
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", ""))
+	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
