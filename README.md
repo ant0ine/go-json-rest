@@ -76,6 +76,7 @@ Things to enable in production:
 
 Things to enable in development:
 - Json indentation (default: enabled)
+- Relaxed ContentType (default: disabled)
 - Error stack trace in the response body (default: disabled)
 
 The Status Endpoint

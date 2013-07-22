@@ -26,7 +26,9 @@ func main() {
 		Store: map[string]*User{},
 	}
 
-	handler := rest.ResourceHandler{}
+	handler := rest.ResourceHandler{
+                EnableRelaxedContentType: true,
+        }
 	handler.SetRoutes(
 		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
 		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),

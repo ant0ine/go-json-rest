@@ -22,7 +22,9 @@ import (
 
 func main() {
 
-	handler := rest.ResourceHandler{}
+	handler := rest.ResourceHandler{
+                EnableRelaxedContentType: true,
+        }
 	handler.SetRoutes(
 		rest.Route{"GET", "/countries", GetAllCountries},
 		rest.Route{"POST", "/countries", PostCountry},
