@@ -62,7 +62,9 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedPa
 		// Check param name is unique
 		for _, e := range usedParams {
 			if e == name {
-				panic(fmt.Sprintf("A route can't have two params with the same name: %s", name))
+				return errors.New(
+					fmt.Sprintf("A route can't have two params with the same name: %s", name),
+				)
 			}
 		}
 		usedParams = append(usedParams, name)
@@ -72,9 +74,13 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedPa
 			self.ParamName = name
 		} else {
 			if self.ParamName != name {
-				panic(fmt.Sprintf(
-					"Routes sharing a common placeholder MUST name it consistently: %s != %s",
-					self.ParamName, name))
+				return errors.New(
+					fmt.Sprintf(
+						"Routes sharing a common placeholder MUST name it consistently: %s != %s",
+						self.ParamName,
+						name,
+					),
+				)
 			}
 		}
 		nextNode = self.ParamChild
@@ -130,6 +136,7 @@ func (self *findContext) paramsAsMap() map[string]string {
 	for _, param := range self.paramStack {
 		for key, value := range param {
 			if r[key] != "" {
+				// this is checked at addRoute time, and should never happen.
 				panic(fmt.Sprintf(
 					"placeholder %s already found, placeholder names should be unique per route",
 					key,
