@@ -61,6 +61,12 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}) error 
 		if self.ParamChild == nil {
 			self.ParamChild = &node{}
 			self.ParamName = name
+		} else {
+			if self.ParamName != name {
+				panic(fmt.Sprintf(
+					"Routes sharing a common placeholder MUST name it consistently: %s != %s",
+					self.ParamName, name))
+			}
 		}
 		nextNode = self.ParamChild
 	} else if token[0] == '*' {
