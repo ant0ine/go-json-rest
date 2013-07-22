@@ -203,3 +203,28 @@ func TestFindRouteMultipleMatches(t *testing.T) {
 		t.Error()
 	}
 }
+
+func TestConsistentPlaceholderName(t *testing.T) {
+
+	trie := New()
+
+	trie.AddRoute("GET", "/r/:id", "oneph")
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Should have died on adding second route")
+		}
+	}()
+	trie.AddRoute("GET", "/r/:rid/other", "twoph")
+}
+
+func TestDuplicateName(t *testing.T) {
+
+	trie := New()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Should have died, this route has two `:id`")
+		}
+	}()
+	trie.AddRoute("GET", "/r/:id/o/:id", "two")
+}
