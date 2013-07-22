@@ -105,6 +105,7 @@ GET /.status returns something like:
 Thanks
 ------
 - [Franck Cuny](https://github.com/franckcuny)
+- [Yann Kerhervé](https://github.com/yannk)
 - [Ask Bjørn Hansen](https://github.com/abh)
 
 
