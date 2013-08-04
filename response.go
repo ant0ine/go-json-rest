@@ -9,28 +9,7 @@ import (
 // and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
-	isIndented  bool
-	statusCode  int
-	wroteHeader bool
-}
-
-// Overloading of the http.ResponseWriter method.
-// Just record the status code for logging.
-func (self *ResponseWriter) WriteHeader(code int) {
-	self.ResponseWriter.WriteHeader(code)
-	self.statusCode = code
-	self.wroteHeader = true
-}
-
-// Overloading of the http.ResponseWriter method.
-// Provide additional capabilities, like transparent gzip encoding.
-func (self *ResponseWriter) Write(b []byte) (int, error) {
-
-	if !self.wroteHeader {
-		self.WriteHeader(http.StatusOK)
-	}
-
-	return self.ResponseWriter.Write(b)
+	isIndented bool
 }
 
 // Encode the object in JSON, set the content-type header,

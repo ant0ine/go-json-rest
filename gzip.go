@@ -25,11 +25,12 @@ func (self *ResourceHandler) gzipWrapper(h http.HandlerFunc) http.HandlerFunc {
 		// determine if gzip is needed
 		if self.EnableGzip == true &&
 			strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			w = &gzipResponseWriter{w}
-		}
-
-		// call the handler
-		h(w, r)
-
+			writer := &gzipResponseWriter{w}
+                        // call the handler
+                        h(writer, r)
+		} else {
+                        // call the handler
+                        h(w, r)
+                }
 	}
 }

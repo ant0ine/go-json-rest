@@ -185,8 +185,6 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 					message = fmt.Sprintf("%s\n\n%s", reco, trace)
 				}
 				http.Error(origWriter, message, http.StatusInternalServerError)
-
-				self.env.setVar(origRequest, "statusCode", http.StatusInternalServerError)
 			}
 		}()
 
@@ -200,8 +198,6 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		writer := ResponseWriter{
 			origWriter,
 			isIndented,
-			0,
-			false,
 		}
 
 		// check the Content-Type
@@ -210,7 +206,6 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			strings.ToLower(origRequest.Header.Get("Content-Type")) != "application/json" {
 
 			Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType)
-			self.env.setVar(origRequest, "statusCode", http.StatusUnsupportedMediaType)
 			return
 		}
 
@@ -220,12 +215,10 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			if pathMatched {
 				// no route found, but path was matched: 405 Method Not Allowed
 				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
-				self.env.setVar(origRequest, "statusCode", http.StatusMethodNotAllowed)
 				return
 			} else {
 				// no route found, the path was not matched: 404 Not Found
 				NotFound(&writer, &request)
-				self.env.setVar(origRequest, "statusCode", http.StatusNotFound)
 				return
 			}
 		}
@@ -236,8 +229,6 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		// run the user code
 		handler := route.Func
 		handler(&writer, &request)
-
-		self.env.setVar(origRequest, "statusCode", writer.statusCode)
 	}
 }
 
@@ -249,7 +240,9 @@ func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		self.gzipWrapper(
 			self.statusWrapper(
 				self.timerWrapper(
-					self.app(),
+					self.recorderWrapper(
+						self.app(),
+					),
 				),
 			),
 		),
