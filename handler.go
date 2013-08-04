@@ -46,15 +46,12 @@
 package rest
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"reflect"
 	"runtime/debug"
 	"strings"
-	"time"
 )
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
@@ -63,6 +60,7 @@ import (
 type ResourceHandler struct {
 	internalRouter *router
 	statusService  *statusService
+	env            *env
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -143,6 +141,8 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 		routes: routes,
 	}
 
+	self.env = &env{}
+
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
 		self.statusService = newStatusService()
@@ -167,157 +167,99 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	return nil
 }
 
-type responseLogRecord struct {
-	StatusCode   int
-	ResponseTime *time.Duration
-	HttpMethod   string
-	RequestURI   string
-}
+func (self *ResourceHandler) app() http.HandlerFunc {
+	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
 
-func (self *ResourceHandler) logResponseRecord(record *responseLogRecord) {
-	if self.EnableLogAsJson {
-		b, err := json.Marshal(record)
-		if err != nil {
-			panic(err)
+		// catch user code's panic, and convert to http response
+		// (this does not use the JSON error response on purpose)
+		defer func() {
+			if reco := recover(); reco != nil {
+				trace := debug.Stack()
+
+				// log the trace
+				self.Logger.Printf("%s\n%s", reco, trace)
+
+				// write error response
+				message := "Internal Server Error"
+				if self.EnableResponseStackTrace {
+					message = fmt.Sprintf("%s\n\n%s", reco, trace)
+				}
+				http.Error(origWriter, message, http.StatusInternalServerError)
+
+				self.env.setVar(origRequest, "statusCode", http.StatusInternalServerError)
+			}
+		}()
+
+		request := Request{
+			origRequest,
+			nil,
 		}
-		self.Logger.Printf("%s", b)
-	} else {
-		self.Logger.Printf("%d %v %s %s",
-			record.StatusCode,
-			record.ResponseTime,
-			record.HttpMethod,
-			record.RequestURI,
-		)
+
+		// determine if gzip is needed
+		isGzipped := self.EnableGzip == true &&
+			strings.Contains(origRequest.Header.Get("Accept-Encoding"), "gzip")
+
+		isIndented := !self.DisableJsonIndent
+
+		writer := ResponseWriter{
+			origWriter,
+			isGzipped,
+			isIndented,
+			0,
+			false,
+		}
+
+		// check the Content-Type
+		if self.EnableRelaxedContentType == false &&
+			origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
+			strings.ToLower(origRequest.Header.Get("Content-Type")) != "application/json" {
+
+			Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType)
+			self.env.setVar(origRequest, "statusCode", http.StatusUnsupportedMediaType)
+			return
+		}
+
+		// find the route
+		route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
+		if route == nil {
+			if pathMatched {
+				// no route found, but path was matched: 405 Method Not Allowed
+				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
+				self.env.setVar(origRequest, "statusCode", http.StatusMethodNotAllowed)
+				return
+			} else {
+				// no route found, the path was not matched: 404 Not Found
+				NotFound(&writer, &request)
+				self.env.setVar(origRequest, "statusCode", http.StatusNotFound)
+				return
+			}
+		}
+
+		// a route was found, set the PathParams
+		request.PathParams = params
+
+		// run the user code
+		handler := route.Func
+		handler(&writer, &request)
+
+		self.env.setVar(origRequest, "statusCode", writer.statusCode)
 	}
-}
-
-func (self *ResourceHandler) logResponse(statusCode int, start *time.Time, request *http.Request) {
-
-	now := time.Now()
-	duration := now.Sub(*start)
-
-	if self.statusService != nil {
-		self.statusService.update(statusCode, &duration)
-	}
-
-	self.logResponseRecord(&responseLogRecord{
-		statusCode,
-		&duration,
-		request.Method,
-		request.URL.RequestURI(),
-	})
 }
 
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
-func (self *ResourceHandler) ServeHTTP(origWriter http.ResponseWriter, origRequest *http.Request) {
+func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	start := time.Now()
-
-	// set a default Logger
-	if self.Logger == nil {
-		self.Logger = log.New(os.Stderr, "", log.LstdFlags)
-	}
-
-	// catch user code's panic, and convert to http response
-	// (this does not use the JSON error response on purpose)
-	defer func() {
-		if reco := recover(); reco != nil {
-			trace := debug.Stack()
-
-			// log the trace
-			self.Logger.Printf("%s\n%s", reco, trace)
-
-			// write error response
-			message := "Internal Server Error"
-			if self.EnableResponseStackTrace {
-				message = fmt.Sprintf("%s\n\n%s", reco, trace)
-			}
-			http.Error(origWriter, message, http.StatusInternalServerError)
-
-			// log response
-			self.logResponse(
-				http.StatusInternalServerError,
-				&start,
-				origRequest,
-			)
-		}
-	}()
-
-	request := Request{
-		origRequest,
-		nil,
-	}
-
-	// determine if gzip is needed
-	isGzipped := self.EnableGzip == true &&
-		strings.Contains(origRequest.Header.Get("Accept-Encoding"), "gzip")
-
-	isIndented := !self.DisableJsonIndent
-
-	writer := ResponseWriter{
-		origWriter,
-		isGzipped,
-		isIndented,
-		0,
-		false,
-	}
-
-	// check the Content-Type
-	if self.EnableRelaxedContentType == false &&
-		origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
-		strings.ToLower(origRequest.Header.Get("Content-Type")) != "application/json" {
-
-		Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType)
-
-		// log response
-		self.logResponse(
-			http.StatusUnsupportedMediaType,
-			&start,
-			origRequest,
-		)
-		return
-	}
-
-	// find the route
-	route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
-	if route == nil {
-		if pathMatched {
-			// no route found, but path was matched: 405 Method Not Allowed
-			Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
-
-			// log response
-			self.logResponse(
-				http.StatusMethodNotAllowed,
-				&start,
-				origRequest,
-			)
-			return
-		} else {
-			// no route found, the path was not matched: 404 Not Found
-			NotFound(&writer, &request)
-
-			// log response
-			self.logResponse(
-				http.StatusNotFound,
-				&start,
-				origRequest,
-			)
-			return
-		}
-	}
-
-	// a route was found, set the PathParams
-	request.PathParams = params
-
-	// run the user code
-	handler := route.Func
-	handler(&writer, &request)
-
-	// log response
-	self.logResponse(
-		writer.statusCode,
-		&start,
-		origRequest,
+	handlerFunc := self.logWrapper(
+		self.statusWrapper(
+			self.timerWrapper(
+				self.app(),
+			),
+		),
 	)
+
+	handlerFunc(w, r)
+
+	// clear the env data for this request
+	self.env.clear(r)
 }
