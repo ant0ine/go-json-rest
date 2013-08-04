@@ -195,15 +195,10 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			nil,
 		}
 
-		// determine if gzip is needed
-		isGzipped := self.EnableGzip == true &&
-			strings.Contains(origRequest.Header.Get("Accept-Encoding"), "gzip")
-
 		isIndented := !self.DisableJsonIndent
 
 		writer := ResponseWriter{
 			origWriter,
-			isGzipped,
 			isIndented,
 			0,
 			false,
@@ -251,9 +246,11 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	handlerFunc := self.logWrapper(
-		self.statusWrapper(
-			self.timerWrapper(
-				self.app(),
+		self.gzipWrapper(
+			self.statusWrapper(
+				self.timerWrapper(
+					self.app(),
+				),
 			),
 		),
 	)
