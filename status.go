@@ -8,6 +8,21 @@ import (
 	"time"
 )
 
+func (self *ResourceHandler) statusWrapper(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		// call the handler
+		h(w, r)
+
+		if self.statusService != nil {
+			self.statusService.update(
+				self.env.getVar(r, "statusCode").(int),
+				self.env.getVar(r, "elapsedTime").(*time.Duration),
+			)
+		}
+	}
+}
+
 type statusService struct {
 	lock              sync.Mutex
 	start             time.Time
