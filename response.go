@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"compress/gzip"
 	"encoding/json"
 	"net/http"
 )
@@ -10,39 +9,7 @@ import (
 // and provide additional methods.
 type ResponseWriter struct {
 	http.ResponseWriter
-	isGzipped   bool
-	isIndented  bool
-	statusCode  int
-	wroteHeader bool
-}
-
-// Overloading of the http.ResponseWriter method.
-// Just record the status code for logging.
-func (self *ResponseWriter) WriteHeader(code int) {
-	self.ResponseWriter.WriteHeader(code)
-	self.statusCode = code
-	self.wroteHeader = true
-}
-
-// Overloading of the http.ResponseWriter method.
-// Provide additional capabilities, like transparent gzip encoding.
-func (self *ResponseWriter) Write(b []byte) (int, error) {
-
-	if self.isGzipped {
-		self.Header().Set("Content-Encoding", "gzip")
-	}
-
-	if !self.wroteHeader {
-		self.WriteHeader(http.StatusOK)
-	}
-
-	if self.isGzipped {
-		gzipWriter := gzip.NewWriter(self.ResponseWriter)
-		defer gzipWriter.Close()
-		return gzipWriter.Write(b)
-	}
-
-	return self.ResponseWriter.Write(b)
+	isIndented bool
 }
 
 // Encode the object in JSON, set the content-type header,
