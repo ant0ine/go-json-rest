@@ -40,6 +40,16 @@ func newStatusService() *statusService {
 	}
 }
 
+func (self *statusService) getRoute() Route {
+	return Route{
+		HttpMethod: "GET",
+		PathExp:    "/.status",
+		Func: func(writer *ResponseWriter, request *Request) {
+			self.getStatus(writer, request)
+		},
+	}
+}
+
 func (self *statusService) update(statusCode int, responseTime *time.Duration) {
 	self.lock.Lock()
 	self.responseCounts[fmt.Sprintf("%d", statusCode)]++

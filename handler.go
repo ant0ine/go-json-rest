@@ -141,21 +141,10 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 		routes: routes,
 	}
 
-	self.env = &env{}
-
 	// add the status route as the last route.
 	if self.EnableStatusService == true {
 		self.statusService = newStatusService()
-		self.internalRouter.routes = append(
-			self.internalRouter.routes,
-			Route{
-				HttpMethod: "GET",
-				PathExp:    "/.status",
-				Func: func(writer *ResponseWriter, request *Request) {
-					self.statusService.getStatus(writer, request)
-				},
-			},
-		)
+		self.internalRouter.routes = append(self.internalRouter.routes, self.statusService.getRoute())
 	}
 
 	// start the router
@@ -163,6 +152,9 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	if err != nil {
 		return err
 	}
+
+	// extra init actions
+	self.env = &env{}
 
 	return nil
 }
