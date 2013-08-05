@@ -9,6 +9,7 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -72,6 +73,18 @@ func BodyIs(t *testing.T, r *httptest.ResponseRecorder, expectedBody string) {
 	}
 }
 
+func DecodeJsonPayload(r *httptest.ResponseRecorder, v interface{}) error {
+	content, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(content, v)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type Recorded struct {
 	T        *testing.T
 	Recorder *httptest.ResponseRecorder
@@ -101,4 +114,8 @@ func (self *Recorded) ContentEncodingIsGzip() {
 
 func (self *Recorded) BodyIs(expectedBody string) {
 	BodyIs(self.T, self.Recorder, expectedBody)
+}
+
+func (self *Recorded) DecodeJsonPayload(v interface{}) error {
+	return DecodeJsonPayload(self.Recorder, v)
 }
