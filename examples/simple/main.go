@@ -1,3 +1,10 @@
+/* The minimal example from the documentation
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/users/123
+
+*/
 package main
 
 import (
