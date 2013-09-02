@@ -48,10 +48,10 @@ package rest
 import (
 	"fmt"
 	"log"
+	"mime"
 	"net/http"
 	"reflect"
 	"runtime/debug"
-	"strings"
 )
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
@@ -83,6 +83,7 @@ type ResourceHandler struct {
 
 	// If true, the handler does NOT check the request Content-Type. Otherwise, it
 	// must be set to 'application/json' if the content is non-null.
+	// Note: If a charset parameter exists, it MUST be UTF-8
 	EnableRelaxedContentType bool
 
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
@@ -192,12 +193,22 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			isIndented,
 		}
 
+
 		// check the Content-Type
+		mediatype, params, _ := mime.ParseMediaType(origRequest.Header.Get("Content-Type"))
+		charset, ok := params["charset"]
+		if !ok {
+			charset = "UTF-8"
+		}
+
 		if self.EnableRelaxedContentType == false &&
 			origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
-			strings.ToLower(origRequest.Header.Get("Content-Type")) != "application/json" {
+			!(mediatype == "application/json" && charset == "UTF-8") {
 
-			Error(&writer, "Bad Content-Type, expected 'application/json'", http.StatusUnsupportedMediaType)
+			Error(&writer,
+				"Bad Content-Type or charset, expected 'application/json; charset=UTF-8'",
+				http.StatusUnsupportedMediaType,
+			)
 			return
 		}
 
