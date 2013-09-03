@@ -67,7 +67,7 @@ func TestHandler(t *testing.T) {
 	recorded = test.RunRequest(t, &handler, request)
 	recorded.CodeIs(415)
 	recorded.ContentTypeIsJson()
-	recorded.BodyIs(`{"Error":"Bad Content-Type or charset, expected 'application/json; charset=UTF-8'"}`)
+	recorded.BodyIs(`{"Error":"Bad Content-Type or charset, expected 'application/json'"}`)
 
 	// broken Content-Type post resource
 	request = test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", &map[string]string{"Test": "Test"})
@@ -75,7 +75,7 @@ func TestHandler(t *testing.T) {
 	recorded = test.RunRequest(t, &handler, request)
 	recorded.CodeIs(415)
 	recorded.ContentTypeIsJson()
-	recorded.BodyIs(`{"Error":"Bad Content-Type or charset, expected 'application/json; charset=UTF-8'"}`)
+	recorded.BodyIs(`{"Error":"Bad Content-Type or charset, expected 'application/json'"}`)
 
 	// Content-Type post resource with charset
 	request = test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", &map[string]string{"Test": "Test"})

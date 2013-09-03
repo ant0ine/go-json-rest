@@ -206,7 +206,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			!(mediatype == "application/json" && charset == "UTF-8") {
 
 			Error(&writer,
-				"Bad Content-Type or charset, expected 'application/json; charset=UTF-8'",
+				"Bad Content-Type or charset, expected 'application/json'",
 				http.StatusUnsupportedMediaType,
 			)
 			return
