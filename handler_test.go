@@ -67,7 +67,23 @@ func TestHandler(t *testing.T) {
 	recorded = test.RunRequest(t, &handler, request)
 	recorded.CodeIs(415)
 	recorded.ContentTypeIsJson()
-	recorded.BodyIs(`{"Error":"Bad Content-Type, expected 'application/json'"}`)
+	recorded.BodyIs(`{"Error":"Bad Content-Type or charset, expected 'application/json; charset=UTF-8'"}`)
+
+	// broken Content-Type post resource
+	request = test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", &map[string]string{"Test": "Test"})
+	request.Header.Set("Content-Type", "application/json; charset=ISO-8859-1")
+	recorded = test.RunRequest(t, &handler, request)
+	recorded.CodeIs(415)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Error":"Bad Content-Type or charset, expected 'application/json; charset=UTF-8'"}`)
+
+	// Content-Type post resource with charset
+	request = test.MakeSimpleRequest("POST", "http://1.2.3.4/r/123", &map[string]string{"Test": "Test"})
+	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded = test.RunRequest(t, &handler, request)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs(`{"Test":"Test"}`)
 
 	// auto 405 on undefined route (wrong method)
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("DELETE", "http://1.2.3.4/r/123", nil))
