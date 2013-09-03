@@ -72,3 +72,30 @@ func (self *Request) UriForWithParams(path string, parameters map[string][]strin
 	baseUrl.RawQuery = query.Encode()
 	return baseUrl
 }
+
+// CORS request info derived from a rest.Request.
+type CorsInfo struct {
+	IsCors                      bool
+	IsPreflight                 bool
+	Origin                      string
+	AccessControlRequestMethod  string
+	AccessControlRequestHeaders []string
+}
+
+// Derive CorsInfo from Request
+func (self *Request) GetCorsInfo() *CorsInfo {
+
+	origin := self.Header.Get("Origin")
+	isCors := origin != ""
+	reqMethod := self.Header.Get("Access-Control-Request-Method")
+	reqHeaders := self.Header[http.CanonicalHeaderKey("Access-Control-Request-Headers")]
+	isPreflight := isCors && self.Method == "OPTIONS" && reqMethod != ""
+
+	return &CorsInfo{
+		IsCors:      isCors,
+		IsPreflight: isPreflight,
+		Origin:      origin,
+		AccessControlRequestMethod:  reqMethod,
+		AccessControlRequestHeaders: reqHeaders,
+	}
+}
