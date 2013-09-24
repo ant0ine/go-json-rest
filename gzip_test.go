@@ -12,15 +12,25 @@ func TestGzip(t *testing.T) {
 		EnableGzip:        true,
 	}
 	handler.SetRoutes(
-		Route{"GET", "/r",
+		Route{"GET", "/ok",
 			func(w *ResponseWriter, r *Request) {
 				w.WriteJson(map[string]string{"Id": "123"})
 			},
 		},
+		Route{"GET", "/error",
+			func(w *ResponseWriter, r *Request) {
+				Error(w, "gzipped error", 500)
+			},
+		},
 	)
 
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
+	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/ok", nil))
 	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.ContentEncodingIsGzip()
+
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/error", nil))
+	recorded.CodeIs(500)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
 }
