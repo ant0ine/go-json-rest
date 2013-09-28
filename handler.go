@@ -193,7 +193,6 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			isIndented,
 		}
 
-
 		// check the Content-Type
 		mediatype, params, _ := mime.ParseMediaType(origRequest.Header.Get("Content-Type"))
 		charset, ok := params["charset"]
