@@ -52,6 +52,7 @@ import (
 	"net/http"
 	"reflect"
 	"runtime/debug"
+	"strings"
 )
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
@@ -202,7 +203,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 
 		if self.EnableRelaxedContentType == false &&
 			origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
-			!(mediatype == "application/json" && charset == "UTF-8") {
+			!(mediatype == "application/json" && strings.ToUpper(charset) == "UTF-8") {
 
 			Error(&writer,
 				"Bad Content-Type or charset, expected 'application/json'",
