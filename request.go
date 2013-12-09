@@ -37,9 +37,9 @@ func (self *Request) DecodeJsonPayload(v interface{}, decodeBody bool) error {
 	if err != nil {
 		return err
 	}
-    contentstr := ""
+    contentstr := CToGoString(content)
     if decodeBody == true {
-        contentstr, _ = url.QueryUnescape(CToGoString(content))
+        contentstr, _ = url.QueryUnescape(contentstr)
     }
 	err = json.Unmarshal([]byte(contentstr), v)
 	if err != nil {
