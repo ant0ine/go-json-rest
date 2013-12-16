@@ -57,9 +57,12 @@ Example
 More Examples
 -------------
 
-- [Countries](https://github.com/ant0ine/go-json-rest/blob/master/examples/countries.go) Demo very simple GET, POST, DELETE operations
-- [Users](https://github.com/ant0ine/go-json-rest/blob/master/examples/users.go) Demo the mapping to object methods
-- [SPDY](https://github.com/ant0ine/go-json-rest/blob/master/examples/spdy.go) Demo SPDY using github.com/shykes/spdy-go
+(See the dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples)
+
+- [Countries](https://github.com/ant0ine/go-json-rest-examples/blob/master/countries/main.go) Demo very simple GET, POST, DELETE operations
+- [Users](https://github.com/ant0ine/go-json-rest-examples/blob/master/users/main.go) Demo the mapping to object methods
+- [SPDY](https://github.com/ant0ine/go-json-rest-examples/blob/master/spdy/main.go) Demo SPDY using github.com/shykes/spdy-go
+- [GAE](https://github.com/ant0ine/go-json-rest-examples/tree/master/gae) Demo go-json-rest on Google App Engine
 
 
 Documentation
