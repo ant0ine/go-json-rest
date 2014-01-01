@@ -114,7 +114,7 @@ Thanks
 - [Ask Bjørn Hansen](https://github.com/abh)
 
 
-Copyright (c) 2013 Antoine Imbert
+Copyright (c) 2013-2014 Antoine Imbert
 
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
