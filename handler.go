@@ -231,19 +231,24 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
 		if route == nil {
 			if pathMatched.Matched {
-				if nil != corsRequest && corsRequest.IsPreflight {
-					if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
-						corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
-						if nil != origin.AccessControl {
-							if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
-								Error(&writer, err.Error(), http.StatusBadRequest)
-								return
+				if nil != corsRequest {
+					if corsRequest.IsPreflight {
+						if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
+							corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
+							if nil != origin.AccessControl {
+								if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
+									Error(&writer, err.Error(), http.StatusBadRequest)
+									return
+								}
 							}
+							corsHeaders.setPreflightHeaders(&writer)
+							return
+						} else {
+							Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
+							return
 						}
-						corsHeaders.setPreflightHeaders(&writer)
-						return
 					} else {
-						Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
+						Error(&writer, `CORS request method not matched even though it's not Preflight`, http.StatusBadRequest)
 						return
 					}
 				}
