@@ -258,7 +258,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		}
 
 		// Write headers for an actual CORS request
-		if nil != corsRequest {
+		if nil != corsRequest && corsRequest.IsCors {
 			if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
 				corsHeaders := origin.newCorsActualHeaders()
 				if nil != origin.AccessControl {
