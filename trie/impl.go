@@ -274,7 +274,7 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 }
 
 type PathMatch struct {
-	bool
+	Matched     bool
 	HttpMethods []string
 }
 
@@ -285,7 +285,7 @@ func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, *
 	pathMatched := &PathMatch{}
 	matches := []*Match{}
 	context.matchFunc = func(httpMethod, path string, node *node) {
-		pathMatched.bool = true
+		pathMatched.Matched = true
 		pathMatched.HttpMethods = node.HttpMethods
 		if node.HttpMethodToRoute[httpMethod] != nil {
 			// path and method match, found a route !

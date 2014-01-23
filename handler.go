@@ -230,7 +230,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		// find the route
 		route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
 		if route == nil {
-			if pathMatched {
+			if pathMatched.Matched {
 				if nil != corsRequest && corsRequest.IsPreflight {
 					if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
 						corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
