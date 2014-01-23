@@ -24,12 +24,15 @@ func splitParam(remaining string) (string, string) {
 
 type node struct {
 	HttpMethodToRoute map[string]interface{}
-	Children          map[string]*node
-	ChildrenKeyLen    int
-	ParamChild        *node
-	ParamName         string
-	SplatChild        *node
-	SplatName         string
+	// stores list of http methods used in this node
+	// this may be replaced by dynamic lookup on method route map keys butt feels like this approach is better
+	HttpMethods    []string
+	Children       map[string]*node
+	ChildrenKeyLen int
+	ParamChild     *node
+	ParamName      string
+	SplatChild     *node
+	SplatName      string
 }
 
 func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedParams []string) error {
@@ -40,12 +43,14 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedPa
 			self.HttpMethodToRoute = map[string]interface{}{
 				httpMethod: route,
 			}
+			self.HttpMethods = append(self.HttpMethods, httpMethod)
 			return nil
 		} else {
 			if self.HttpMethodToRoute[httpMethod] != nil {
 				return errors.New("node.Route already set, duplicated path and method")
 			}
 			self.HttpMethodToRoute[httpMethod] = route
+			self.HttpMethods = append(self.HttpMethods, httpMethod)
 			return nil
 		}
 	}
@@ -268,14 +273,20 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 	return matches
 }
 
+type PathMatch struct {
+	bool
+	HttpMethods []string
+}
+
 // Same as FindRoutes, but return in addition a boolean indicating if the path was matched.
 // Useful to return 405
-func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, bool) {
+func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, *PathMatch) {
 	context := newFindContext()
-	pathMatched := false
+	pathMatched := &PathMatch{}
 	matches := []*Match{}
 	context.matchFunc = func(httpMethod, path string, node *node) {
-		pathMatched = true
+		pathMatched.bool = true
+		pathMatched.HttpMethods = node.HttpMethods
 		if node.HttpMethodToRoute[httpMethod] != nil {
 			// path and method match, found a route !
 			matches = append(
