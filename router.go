@@ -2,8 +2,7 @@ package rest
 
 import (
 	"errors"
-	//"github.com/tgregory/go-json-rest/trie"
-	"go-json-rest/trie"
+	"github.com/tgregory/go-json-rest/trie"
 	"net/url"
 	"strings"
 )
