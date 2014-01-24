@@ -34,7 +34,7 @@ func TestFindRouteAPI(t *testing.T) {
 	if len(params) != 0 {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 
@@ -50,7 +50,7 @@ func TestFindRouteAPI(t *testing.T) {
 	if len(params) != 0 {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 
@@ -66,7 +66,7 @@ func TestFindRouteAPI(t *testing.T) {
 	if len(params) != 0 {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }
@@ -94,7 +94,7 @@ func TestNoRoute(t *testing.T) {
 	if params != nil {
 		t.Error("params must be nil too")
 	}
-	if pathMatched != false {
+	if pathMatched.Matched != false {
 		t.Error()
 	}
 }
@@ -157,7 +157,7 @@ func TestUrlEncodedFind(t *testing.T) {
 	if route.PathExp != "/with space" {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }
@@ -189,7 +189,7 @@ func TestWithQueryString(t *testing.T) {
 	if params["id"] != "123" {
 		t.Errorf("expected 123, got %s", params["id"])
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }
@@ -218,7 +218,7 @@ func TestNonUrlEncodedFind(t *testing.T) {
 	if route.PathExp != "/with%20space" {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }
@@ -271,7 +271,7 @@ func TestSplatUrlEncoded(t *testing.T) {
 	if params["rest"] != "123" {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }
@@ -308,7 +308,7 @@ func TestRouteOrder(t *testing.T) {
 	if params["id"] != "123" {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }
@@ -345,7 +345,7 @@ func TestSimpleExample(t *testing.T) {
 	if params["id"] != "123" {
 		t.Error()
 	}
-	if pathMatched != true {
+	if pathMatched.Matched != true {
 		t.Error()
 	}
 }

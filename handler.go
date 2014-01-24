@@ -240,7 +240,12 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 					Error(&writer, `CORS request method not matched even though it's not Preflight`, http.StatusBadRequest)
 					return
 				}
-				if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
+				origin, ok := self.internalCors.index[corsRequest.Origin]
+				if !ok {
+					origin, ok = self.internalCors.index["*"]
+				}
+				if ok {
+
 					corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
 					if nil != origin.AccessControl {
 						if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
@@ -263,7 +268,11 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 
 		// Write headers for an actual CORS request
 		if nil != corsRequest && corsRequest.IsCors {
-			if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
+			origin, ok := self.internalCors.index[corsRequest.Origin]
+			if !ok {
+				origin, ok = self.internalCors.index["*"]
+			}
+			if ok {
 				corsHeaders := origin.newCorsActualHeaders()
 				if nil != origin.AccessControl {
 					if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {

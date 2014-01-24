@@ -121,14 +121,14 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 }
 
 // Parse the url string (complete or just the path) and return the first matching Route and the corresponding parameters.
-func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, trie.PathMatch, error) {
+func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, *trie.PathMatch, error) {
 
 	// parse the url
 	urlObj, err := url.Parse(urlStr)
 	if err != nil {
-		return nil, nil, trie.PathMatch{}, err
+		return nil, nil, &trie.PathMatch{}, err
 	}
 
 	route, params, pathMatched := self.findRouteFromURL(httpMethod, urlObj)
-	return route, params, *pathMatched, nil
+	return route, params, pathMatched, nil
 }
