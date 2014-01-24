@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -67,9 +68,10 @@ type CorsResponseHeaders struct {
 }
 
 func newCorsRequest(r *http.Request) *CorsRequest {
-
 	origin := r.Header.Get("Origin")
-	isCors := origin != ""
+	// Chrome and safari send Origin header even within the same domain
+	originUrl, err := url.ParseRequestURI(origin)
+	isCors := nil == err && origin != "" && r.Host != originUrl.Host
 	reqMethod := r.Header.Get("Access-Control-Request-Method")
 	reqHeaders := strings.Split(r.Header.Get("Access-Control-Request-Headers"), `, `)
 	isPreflight := isCors && r.Method == "OPTIONS" && reqMethod != ""
