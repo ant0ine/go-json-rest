@@ -254,6 +254,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 						}
 					}
 					corsHeaders.setPreflightHeaders(&writer)
+					origWriter.WriteHeader(200)
 					return
 				} else {
 					Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
