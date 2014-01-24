@@ -225,36 +225,35 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		}
 		var corsRequest *CorsRequest
 		if nil != self.internalCors {
-			corsRequest = newCorsRequest(&request)
+			corsRequest = newCorsRequest(origRequest)
 		}
 		// find the route
 		route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
 		if route == nil {
 			if pathMatched.Matched {
-				if nil != corsRequest {
-					if corsRequest.IsPreflight {
-						if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
-							corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
-							if nil != origin.AccessControl {
-								if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
-									Error(&writer, err.Error(), http.StatusBadRequest)
-									return
-								}
-							}
-							corsHeaders.setPreflightHeaders(&writer)
-							return
-						} else {
-							Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
+				if nil == corsRequest {
+					// no route found, but path was matched: 405 Method Not Allowed
+					Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
+					return
+				}
+				if !corsRequest.IsPreflight {
+					Error(&writer, `CORS request method not matched even though it's not Preflight`, http.StatusBadRequest)
+					return
+				}
+				if origin, ok := self.internalCors.index[corsRequest.Origin]; ok {
+					corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
+					if nil != origin.AccessControl {
+						if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
+							Error(&writer, err.Error(), http.StatusBadRequest)
 							return
 						}
-					} else {
-						Error(&writer, `CORS request method not matched even though it's not Preflight`, http.StatusBadRequest)
-						return
 					}
+					corsHeaders.setPreflightHeaders(&writer)
+					return
+				} else {
+					Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
+					return
 				}
-				// no route found, but path was matched: 405 Method Not Allowed
-				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
-				return
 			} else {
 				// no route found, the path was not matched: 404 Not Found
 				NotFound(&writer, &request)
