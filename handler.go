@@ -62,6 +62,7 @@ type ResourceHandler struct {
 	internalRouter *router
 	statusService  *statusService
 	env            *env
+	internalCors   *cors
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -161,6 +162,17 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	return nil
 }
 
+func (self *ResourceHandler) SetOrigins(origins ...Origin) {
+	index := make(map[string]*Origin)
+	for i, _ := range origins {
+		index[origins[i].Host] = &origins[i]
+	}
+	self.internalCors = &cors{
+		origins: origins,
+		index:   index,
+	}
+}
+
 func (self *ResourceHandler) app() http.HandlerFunc {
 	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
 
@@ -211,17 +223,67 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			)
 			return
 		}
-
+		var corsRequest *CorsRequest
+		if nil != self.internalCors {
+			corsRequest = newCorsRequest(origRequest)
+		}
 		// find the route
 		route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
 		if route == nil {
-			if pathMatched {
-				// no route found, but path was matched: 405 Method Not Allowed
-				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
-				return
+			if pathMatched.Matched {
+				if nil == corsRequest {
+					// no route found, but path was matched: 405 Method Not Allowed
+					Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
+					return
+				}
+				if !corsRequest.IsPreflight {
+					Error(&writer, `CORS request method not matched even though it's not Preflight`, http.StatusBadRequest)
+					return
+				}
+				origin, ok := self.internalCors.index[corsRequest.Origin]
+				if !ok {
+					origin, ok = self.internalCors.index["*"]
+				}
+				if ok {
+
+					corsHeaders := origin.newCorsPreflightHeaders(pathMatched.HttpMethods)
+					if nil != origin.AccessControl {
+						if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
+							Error(&writer, err.Error(), http.StatusBadRequest)
+							return
+						}
+					}
+					corsHeaders.setPreflightHeaders(&writer)
+					origWriter.WriteHeader(200)
+					return
+				} else {
+					Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
+					return
+				}
 			} else {
 				// no route found, the path was not matched: 404 Not Found
 				NotFound(&writer, &request)
+				return
+			}
+		}
+
+		// Write headers for an actual CORS request
+		if nil != corsRequest && corsRequest.IsCors {
+			origin, ok := self.internalCors.index[corsRequest.Origin]
+			if !ok {
+				origin, ok = self.internalCors.index["*"]
+			}
+			if ok {
+				corsHeaders := origin.newCorsActualHeaders()
+				if nil != origin.AccessControl {
+					if err := origin.AccessControl(corsRequest, corsHeaders); nil != err {
+						Error(&writer, err.Error(), http.StatusBadRequest)
+						return
+					}
+				}
+				corsHeaders.setActualHeaders(&writer)
+			} else {
+				Error(&writer, `CORS origin forbidden`, http.StatusBadRequest)
 				return
 			}
 		}
