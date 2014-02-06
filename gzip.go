@@ -13,6 +13,7 @@ type gzipResponseWriter struct {
 
 func (self *gzipResponseWriter) WriteHeader(code int) {
 	self.Header().Set("Content-Encoding", "gzip")
+	self.Header().Add("Vary", "Accept-Encoding")
 	self.ResponseWriter.WriteHeader(code)
 	self.wroteHeader = true
 }

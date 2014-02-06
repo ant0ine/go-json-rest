@@ -28,9 +28,11 @@ func TestGzip(t *testing.T) {
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
+	recorded.HeaderIs("Vary", "Accept-Encoding")
 
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/error", nil))
 	recorded.CodeIs(500)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
+	recorded.HeaderIs("Vary", "Accept-Encoding")
 }
