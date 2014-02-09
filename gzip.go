@@ -36,9 +36,9 @@ func (self *gzipResponseWriter) Write(b []byte) (int, error) {
 		gzipWriter := gzip.NewWriter(self.ResponseWriter)
 		defer gzipWriter.Close()
 		return gzipWriter.Write(b)
-	} else {
-		return self.ResponseWriter.Write(b)
 	}
+
+	return self.ResponseWriter.Write(b)
 }
 
 func (self *ResourceHandler) gzipWrapper(h http.HandlerFunc) http.HandlerFunc {
