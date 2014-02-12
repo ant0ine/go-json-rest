@@ -12,6 +12,11 @@ type ResponseWriter struct {
 	isIndented bool
 }
 
+func (self *ResponseWriter) Flush() {
+	flusher := self.ResponseWriter.(http.Flusher)
+	flusher.Flush()
+}
+
 // Encode the object in JSON, set the content-type header,
 // and call Write.
 func (self *ResponseWriter) WriteJson(v interface{}) error {

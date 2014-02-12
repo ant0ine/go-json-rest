@@ -26,6 +26,14 @@ func (self *gzipResponseWriter) WriteHeader(code int) {
 	self.wroteHeader = true
 }
 
+func (self *gzipResponseWriter) Flush() {
+	if !self.wroteHeader {
+		self.WriteHeader(http.StatusOK)
+	}
+	flusher := self.ResponseWriter.(http.Flusher)
+	flusher.Flush()
+}
+
 func (self *gzipResponseWriter) Write(b []byte) (int, error) {
 
 	if !self.wroteHeader {
