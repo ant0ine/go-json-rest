@@ -12,6 +12,8 @@ type ResponseWriter struct {
 	isIndented bool
 }
 
+// Make rest.ResponseWriter implement the http.Flusher interface.
+// It propagates the Flush call to the wrapped ResponseWriter.
 func (self *ResponseWriter) Flush() {
 	flusher := self.ResponseWriter.(http.Flusher)
 	flusher.Flush()
