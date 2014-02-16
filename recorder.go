@@ -6,8 +6,15 @@ import (
 
 type recorderResponseWriter struct {
 	http.ResponseWriter
+	http.Flusher
 	statusCode  int
 	wroteHeader bool
+}
+
+type flusher struct {
+}
+
+func (f flusher) Flush() {
 }
 
 func (self *recorderResponseWriter) WriteHeader(code int) {
@@ -33,10 +40,17 @@ func (self *recorderResponseWriter) Write(b []byte) (int, error) {
 	return self.ResponseWriter.Write(b)
 }
 
+func responseFlusher(w http.ResponseWriter) http.Flusher {
+	if f, ok := w.(http.Flusher); ok {
+		return f
+	}
+	return flusher{}
+}
+
 func (self *ResourceHandler) recorderWrapper(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		writer := &recorderResponseWriter{w, 0, false}
+		writer := &recorderResponseWriter{w, responseFlusher(w), 0, false}
 
 		// call the handler
 		h(writer, r)
