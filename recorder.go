@@ -11,6 +11,7 @@ type recorderResponseWriter struct {
 }
 
 func (self *recorderResponseWriter) WriteHeader(code int) {
+	self.Header().Add("X-Powered-By", "go-json-rest")
 	self.ResponseWriter.WriteHeader(code)
 	self.statusCode = code
 	self.wroteHeader = true
