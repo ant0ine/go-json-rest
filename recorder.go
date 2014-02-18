@@ -25,6 +25,11 @@ func (self *recorderResponseWriter) Flush() {
 	flusher.Flush()
 }
 
+func (self *recorderResponseWriter) CloseNotify() <-chan bool {
+	notifier := self.ResponseWriter.(http.CloseNotifier)
+	return notifier.CloseNotify()
+}
+
 func (self *recorderResponseWriter) Write(b []byte) (int, error) {
 
 	if !self.wroteHeader {

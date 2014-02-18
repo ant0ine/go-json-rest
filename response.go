@@ -19,6 +19,12 @@ func (self *ResponseWriter) Flush() {
 	flusher.Flush()
 }
 
+// Make rest.ResponseWriter implement the http.CloseNotifier interface.
+func (self *ResponseWriter) CloseNotify() <-chan bool {
+	notifier := self.ResponseWriter.(http.CloseNotifier)
+	return notifier.CloseNotify()
+}
+
 // Encode the object in JSON, set the content-type header,
 // and call Write.
 func (self *ResponseWriter) WriteJson(v interface{}) error {

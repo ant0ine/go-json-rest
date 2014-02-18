@@ -34,6 +34,11 @@ func (self *gzipResponseWriter) Flush() {
 	flusher.Flush()
 }
 
+func (self *gzipResponseWriter) CloseNotify() <-chan bool {
+	notifier := self.ResponseWriter.(http.CloseNotifier)
+	return notifier.CloseNotify()
+}
+
 func (self *gzipResponseWriter) Write(b []byte) (int, error) {
 
 	if !self.wroteHeader {
