@@ -55,6 +55,9 @@ import (
 	"strings"
 )
 
+// Signature of a handler method in the context of go-json-rest.
+type HandleFunc func(*ResponseWriter, *Request)
+
 // Implement the http.Handler interface and act as a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation.
@@ -105,7 +108,7 @@ type Route struct {
 	PathExp string
 
 	// Code that will be executed when this route is taken.
-	Func func(*ResponseWriter, *Request)
+	Func HandleFunc
 }
 
 // Create a Route that points to an object method. It can be convenient to point to an object method instead
