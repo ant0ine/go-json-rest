@@ -164,7 +164,8 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 	return nil
 }
 
-func (self *ResourceHandler) app() http.HandlerFunc {
+// Middleware that handles the transition between http and rest objects.
+func (self *ResourceHandler) adapter(handler HandleFunc) http.HandlerFunc {
 	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
 
 		// catch user code's panic, and convert to http response
@@ -197,18 +198,26 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 			isIndented,
 		}
 
+		handler(&writer, &request)
+	}
+}
+
+// Handle the REST routing and run the user code.
+func (self *ResourceHandler) app() HandleFunc {
+	return func(writer *ResponseWriter, request *Request) {
+
 		// check the Content-Type
-		mediatype, params, _ := mime.ParseMediaType(origRequest.Header.Get("Content-Type"))
+		mediatype, params, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
 		charset, ok := params["charset"]
 		if !ok {
 			charset = "UTF-8"
 		}
 
 		if self.EnableRelaxedContentType == false &&
-			origRequest.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
+			request.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
 			!(mediatype == "application/json" && strings.ToUpper(charset) == "UTF-8") {
 
-			Error(&writer,
+			Error(writer,
 				"Bad Content-Type or charset, expected 'application/json'",
 				http.StatusUnsupportedMediaType,
 			)
@@ -216,15 +225,15 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 		}
 
 		// find the route
-		route, params, pathMatched := self.internalRouter.findRouteFromURL(origRequest.Method, origRequest.URL)
+		route, params, pathMatched := self.internalRouter.findRouteFromURL(request.Method, request.URL)
 		if route == nil {
 			if pathMatched {
 				// no route found, but path was matched: 405 Method Not Allowed
-				Error(&writer, "Method not allowed", http.StatusMethodNotAllowed)
+				Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
 				return
 			} else {
 				// no route found, the path was not matched: 404 Not Found
-				NotFound(&writer, &request)
+				NotFound(writer, request)
 				return
 			}
 		}
@@ -234,7 +243,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 
 		// run the user code
 		handler := route.Func
-		handler(&writer, &request)
+		handler(writer, request)
 	}
 }
 
@@ -247,7 +256,9 @@ func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			self.statusWrapper(
 				self.timerWrapper(
 					self.recorderWrapper(
-						self.app(),
+						self.adapter(
+							self.app(),
+						),
 					),
 				),
 			),
