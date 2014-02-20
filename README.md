@@ -63,6 +63,7 @@ More Examples
 - [GAE](https://github.com/ant0ine/go-json-rest-examples/tree/master/gae) Demo go-json-rest on Google App Engine
 - [GORM](https://github.com/ant0ine/go-json-rest-examples/blob/master/gorm/main.go) Demo basic CRUD operations using MySQL and GORM
 - [Streaming](https://github.com/ant0ine/go-json-rest-examples/blob/master/streaming/main.go) Demo Line Delimited JSON stream
+- [CORS](https://github.com/ant0ine/go-json-rest-examples/blob/master/cors/main.go) Demo CORS support for all endpoints
 
 
 Documentation
