@@ -56,7 +56,7 @@ import (
 )
 
 // Signature of a handler method in the context of go-json-rest.
-type HandleFunc func(*ResponseWriter, *Request)
+type HandlerFunc func(*ResponseWriter, *Request)
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
@@ -94,7 +94,7 @@ type ResourceHandler struct {
 	// It can be used for instance to manage CORS or authentication.
 	// (see the CORS example in go-json-rest-example)
 	// This is run pre REST routing, request.PathParams is not set yet.
-	PreRoutingMiddleware func(handler HandleFunc) HandleFunc
+	PreRoutingMiddleware func(handler HandlerFunc) HandlerFunc
 
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
@@ -114,7 +114,7 @@ type Route struct {
 	PathExp string
 
 	// Code that will be executed when this route is taken.
-	Func HandleFunc
+	Func HandlerFunc
 }
 
 // Create a Route that points to an object method. It can be convenient to point to an object method instead
@@ -171,7 +171,7 @@ func (self *ResourceHandler) SetRoutes(routes ...Route) error {
 }
 
 // Middleware that handles the transition between http and rest objects.
-func (self *ResourceHandler) adapter(handler HandleFunc) http.HandlerFunc {
+func (self *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
 
 		// catch user code's panic, and convert to http response
@@ -209,7 +209,7 @@ func (self *ResourceHandler) adapter(handler HandleFunc) http.HandlerFunc {
 }
 
 // Handle the REST routing and run the user code.
-func (self *ResourceHandler) app() HandleFunc {
+func (self *ResourceHandler) app() HandlerFunc {
 	return func(writer *ResponseWriter, request *Request) {
 
 		// check the Content-Type
@@ -258,7 +258,7 @@ func (self *ResourceHandler) app() HandleFunc {
 func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if self.PreRoutingMiddleware == nil {
-		self.PreRoutingMiddleware = func(handler HandleFunc) HandleFunc {
+		self.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
 			return func(writer *ResponseWriter, request *Request) {
 				handler(writer, request)
 			}
