@@ -90,6 +90,12 @@ type ResourceHandler struct {
 	// Note: If a charset parameter exists, it MUST be UTF-8
 	EnableRelaxedContentType bool
 
+	// Optional middleware that can be used to wrap the REST endpoints.
+	// It can be used for instance to manage CORS or authentication.
+	// (see the CORS example in go-json-rest-example)
+	// This is run pre REST routing, request.PathParams is not set yet.
+	PreRoutingMiddleware func(handler HandleFunc) HandleFunc
+
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
 }
@@ -251,13 +257,23 @@ func (self *ResourceHandler) app() HandleFunc {
 // You probably don't want to use it directly.
 func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	if self.PreRoutingMiddleware == nil {
+		self.PreRoutingMiddleware = func(handler HandleFunc) HandleFunc {
+			return func(writer *ResponseWriter, request *Request) {
+				handler(writer, request)
+			}
+		}
+	}
+
 	handlerFunc := self.logWrapper(
 		self.gzipWrapper(
 			self.statusWrapper(
 				self.timerWrapper(
 					self.recorderWrapper(
 						self.adapter(
-							self.app(),
+							self.PreRoutingMiddleware(
+								self.app(),
+							),
 						),
 					),
 				),
