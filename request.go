@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // Inherit from http.Request, and provide additional methods.
@@ -88,9 +89,20 @@ func (self *Request) GetCorsInfo() *CorsInfo {
 
 	origin := self.Header.Get("Origin")
 	originUrl, err := url.ParseRequestURI(origin)
+
 	isCors := err == nil && origin != "" && self.Host != originUrl.Host
+
 	reqMethod := self.Header.Get("Access-Control-Request-Method")
-	reqHeaders := self.Header[http.CanonicalHeaderKey("Access-Control-Request-Headers")]
+
+	reqHeaders := []string{}
+	rawReqHeaders := self.Header[http.CanonicalHeaderKey("Access-Control-Request-Headers")]
+	for _, rawReqHeader := range rawReqHeaders {
+		// net/http does not handle comma delimited headers for us
+		for _, reqHeader := range strings.Split(rawReqHeader, ",") {
+			reqHeaders = append(reqHeaders, http.CanonicalHeaderKey(strings.TrimSpace(reqHeader)))
+		}
+	}
+
 	isPreflight := isCors && self.Method == "OPTIONS" && reqMethod != ""
 
 	return &CorsInfo{
