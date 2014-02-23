@@ -17,7 +17,11 @@ type Request struct {
 
 // Provide a convenient access to the PathParams map
 func (self *Request) PathParam(name string) string {
-	return self.PathParams[name]
+	ret, err := url.QueryUnescape(self.PathParams[name])
+	if err != nil {
+		return self.PathParams[name]
+	}
+	return ret
 }
 
 // Read the request body and decode the JSON using json.Unmarshal
