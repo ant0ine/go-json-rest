@@ -16,7 +16,7 @@ import (
 
 func splitParam(remaining string) (string, string) {
 	i := 0
-	for len(remaining) > i && remaining[i] != '/' && remaining[i] != '.' {
+	for len(remaining) > i && remaining[i] != '/' {
 		i++
 	}
 	return remaining[:i], remaining[i:]
