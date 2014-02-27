@@ -15,19 +15,34 @@ type Request struct {
 	PathParams map[string]string
 }
 
+func CToGoString(c []byte) string {
+    n := -1
+    for i, b := range c {
+        if b == 0 {
+            break
+        }
+        n = i
+    }
+    return string(c[:n+1])
+}
+
 // Provide a convenient access to the PathParams map
 func (self *Request) PathParam(name string) string {
 	return self.PathParams[name]
 }
 
 // Read the request body and decode the JSON using json.Unmarshal
-func (self *Request) DecodeJsonPayload(v interface{}) error {
+func (self *Request) DecodeJsonPayload(v interface{}, decodeBody bool) error {
 	content, err := ioutil.ReadAll(self.Body)
 	self.Body.Close()
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(content, v)
+    contentstr := CToGoString(content)
+    if decodeBody == true {
+        contentstr, _ = url.QueryUnescape(contentstr)
+    }
+	err = json.Unmarshal([]byte(contentstr), v)
 	if err != nil {
 		return err
 	}
