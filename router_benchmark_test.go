@@ -46,9 +46,9 @@ func requestUrls() []*url.URL {
 		"http://example.org/doesnotexist",
 	}
 	urlObjs := []*url.URL{}
-	for _, url_str := range urlStrs {
-		url_obj, _ := url.Parse(url_str)
-		urlObjs = append(urlObjs, url_obj)
+	for _, urlStr := range urlStrs {
+		urlObj, _ := url.Parse(urlStr)
+		urlObjs = append(urlObjs, urlObj)
 	}
 	return urlObjs
 }
