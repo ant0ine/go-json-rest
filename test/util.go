@@ -97,26 +97,26 @@ func RunRequest(t *testing.T, handler http.Handler, request *http.Request) *Reco
 	return &Recorded{t, recorder}
 }
 
-func (self *Recorded) CodeIs(expectedCode int) {
-	CodeIs(self.T, self.Recorder, expectedCode)
+func (rd *Recorded) CodeIs(expectedCode int) {
+	CodeIs(rd.T, rd.Recorder, expectedCode)
 }
 
-func (self *Recorded) HeaderIs(headerKey, expectedValue string) {
-	HeaderIs(self.T, self.Recorder, headerKey, expectedValue)
+func (rd *Recorded) HeaderIs(headerKey, expectedValue string) {
+	HeaderIs(rd.T, rd.Recorder, headerKey, expectedValue)
 }
 
-func (self *Recorded) ContentTypeIsJson() {
-	self.HeaderIs("Content-Type", "application/json")
+func (rd *Recorded) ContentTypeIsJson() {
+	rd.HeaderIs("Content-Type", "application/json")
 }
 
-func (self *Recorded) ContentEncodingIsGzip() {
-	self.HeaderIs("Content-Encoding", "gzip")
+func (rd *Recorded) ContentEncodingIsGzip() {
+	rd.HeaderIs("Content-Encoding", "gzip")
 }
 
-func (self *Recorded) BodyIs(expectedBody string) {
-	BodyIs(self.T, self.Recorder, expectedBody)
+func (rd *Recorded) BodyIs(expectedBody string) {
+	BodyIs(rd.T, rd.Recorder, expectedBody)
 }
 
-func (self *Recorded) DecodeJsonPayload(v interface{}) error {
-	return DecodeJsonPayload(self.Recorder, v)
+func (rd *Recorded) DecodeJsonPayload(v interface{}) error {
+	return DecodeJsonPayload(rd.Recorder, v)
 }

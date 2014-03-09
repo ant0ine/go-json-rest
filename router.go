@@ -27,15 +27,15 @@ func escapedPath(urlObj *url.URL) string {
 // This validates the Routes and prepares the Trie data structure.
 // It must be called once the Routes are defined and before trying to find Routes.
 // The order matters, if multiple Routes match, the first defined will be used.
-func (self *router) start() error {
+func (rt *router) start() error {
 
-	self.trie = trie.New()
-	self.index = map[*Route]int{}
+	rt.trie = trie.New()
+	rt.index = map[*Route]int{}
 
-	for i, _ := range self.routes {
+	for i, _ := range rt.routes {
 
 		// pointer to the Route
-		route := &self.routes[i]
+		route := &rt.routes[i]
 
 		// PathExp validation
 		if route.PathExp == "" {
@@ -57,7 +57,7 @@ func (self *router) start() error {
 		pathExp = strings.Replace(pathExp, "%2A", "*", -1)
 
 		// insert in the Trie
-		err = self.trie.AddRoute(
+		err = rt.trie.AddRoute(
 			strings.ToUpper(route.HttpMethod), // work with the HttpMethod in uppercase
 			pathExp,
 			route,
@@ -67,24 +67,24 @@ func (self *router) start() error {
 		}
 
 		// index
-		self.index[route] = i
+		rt.index[route] = i
 	}
 
-	if self.disableTrieCompression == false {
-		self.trie.Compress()
+	if rt.disableTrieCompression == false {
+		rt.trie.Compress()
 	}
 
 	return nil
 }
 
 // return the result that has the route defined the earliest
-func (self *router) ofFirstDefinedRoute(matches []*trie.Match) *trie.Match {
+func (rt *router) ofFirstDefinedRoute(matches []*trie.Match) *trie.Match {
 	minIndex := -1
 	matchesByIndex := map[int]*trie.Match{}
 
 	for _, result := range matches {
 		route := result.Route.(*Route)
-		routeIndex := self.index[route]
+		routeIndex := rt.index[route]
 		matchesByIndex[routeIndex] = result
 		if minIndex == -1 || routeIndex < minIndex {
 			minIndex = routeIndex
@@ -95,10 +95,10 @@ func (self *router) ofFirstDefinedRoute(matches []*trie.Match) *trie.Match {
 }
 
 // Return the first matching Route and the corresponding parameters for a given URL object.
-func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string, bool) {
+func (rt *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route, map[string]string, bool) {
 
 	// lookup the routes in the Trie
-	matches, pathMatched := self.trie.FindRoutesAndPathMatched(
+	matches, pathMatched := rt.trie.FindRoutesAndPathMatched(
 		strings.ToUpper(httpMethod), // work with the httpMethod in uppercase
 		escapedPath(urlObj),         // work with the path urlencoded
 	)
@@ -115,12 +115,12 @@ func (self *router) findRouteFromURL(httpMethod string, urlObj *url.URL) (*Route
 	}
 
 	// multiple routes found, pick the first defined
-	result := self.ofFirstDefinedRoute(matches)
+	result := rt.ofFirstDefinedRoute(matches)
 	return result.Route.(*Route), result.Params, pathMatched
 }
 
 // Parse the url string (complete or just the path) and return the first matching Route and the corresponding parameters.
-func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, bool, error) {
+func (rt *router) findRoute(httpMethod, urlStr string) (*Route, map[string]string, bool, error) {
 
 	// parse the url
 	urlObj, err := url.Parse(urlStr)
@@ -128,6 +128,6 @@ func (self *router) findRoute(httpMethod, urlStr string) (*Route, map[string]str
 		return nil, nil, false, err
 	}
 
-	route, params, pathMatched := self.findRouteFromURL(httpMethod, urlObj)
+	route, params, pathMatched := rt.findRouteFromURL(httpMethod, urlObj)
 	return route, params, pathMatched, nil
 }

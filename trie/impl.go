@@ -32,20 +32,20 @@ type node struct {
 	SplatName         string
 }
 
-func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedParams []string) error {
+func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParams []string) error {
 
 	if len(pathExp) == 0 {
 		// end of the path, leaf node, update the map
-		if self.HttpMethodToRoute == nil {
-			self.HttpMethodToRoute = map[string]interface{}{
+		if n.HttpMethodToRoute == nil {
+			n.HttpMethodToRoute = map[string]interface{}{
 				httpMethod: route,
 			}
 			return nil
 		} else {
-			if self.HttpMethodToRoute[httpMethod] != nil {
+			if n.HttpMethodToRoute[httpMethod] != nil {
 				return errors.New("node.Route already set, duplicated path and method")
 			}
-			self.HttpMethodToRoute[httpMethod] = route
+			n.HttpMethodToRoute[httpMethod] = route
 			return nil
 		}
 	}
@@ -69,40 +69,40 @@ func (self *node) addRoute(httpMethod, pathExp string, route interface{}, usedPa
 		}
 		usedParams = append(usedParams, name)
 
-		if self.ParamChild == nil {
-			self.ParamChild = &node{}
-			self.ParamName = name
+		if n.ParamChild == nil {
+			n.ParamChild = &node{}
+			n.ParamName = name
 		} else {
-			if self.ParamName != name {
+			if n.ParamName != name {
 				return errors.New(
 					fmt.Sprintf(
 						"Routes sharing a common placeholder MUST name it consistently: %s != %s",
-						self.ParamName,
+						n.ParamName,
 						name,
 					),
 				)
 			}
 		}
-		nextNode = self.ParamChild
+		nextNode = n.ParamChild
 	} else if token[0] == '*' {
 		// *splat case
 		name := remaining
 		remaining = ""
-		if self.SplatChild == nil {
-			self.SplatChild = &node{}
-			self.SplatName = name
+		if n.SplatChild == nil {
+			n.SplatChild = &node{}
+			n.SplatName = name
 		}
-		nextNode = self.SplatChild
+		nextNode = n.SplatChild
 	} else {
 		// general case
-		if self.Children == nil {
-			self.Children = map[string]*node{}
-			self.ChildrenKeyLen = 1
+		if n.Children == nil {
+			n.Children = map[string]*node{}
+			n.ChildrenKeyLen = 1
 		}
-		if self.Children[token] == nil {
-			self.Children[token] = &node{}
+		if n.Children[token] == nil {
+			n.Children[token] = &node{}
 		}
-		nextNode = self.Children[token]
+		nextNode = n.Children[token]
 	}
 
 	return nextNode.addRoute(httpMethod, remaining, route, usedParams)
@@ -120,20 +120,20 @@ func newFindContext() *findContext {
 	}
 }
 
-func (self *findContext) pushParams(name, value string) {
-	self.paramStack = append(
-		self.paramStack,
+func (fc *findContext) pushParams(name, value string) {
+	fc.paramStack = append(
+		fc.paramStack,
 		map[string]string{name: value},
 	)
 }
 
-func (self *findContext) popParams() {
-	self.paramStack = self.paramStack[:len(self.paramStack)-1]
+func (fc *findContext) popParams() {
+	fc.paramStack = fc.paramStack[:len(fc.paramStack)-1]
 }
 
-func (self *findContext) paramsAsMap() map[string]string {
+func (fc *findContext) paramsAsMap() map[string]string {
 	r := map[string]string{}
-	for _, param := range self.paramStack {
+	for _, param := range fc.paramStack {
 		for key, value := range param {
 			if r[key] != "" {
 				// this is checked at addRoute time, and should never happen.
@@ -155,10 +155,10 @@ type Match struct {
 	Params map[string]string
 }
 
-func (self *node) find(httpMethod, path string, context *findContext) {
+func (n *node) find(httpMethod, path string, context *findContext) {
 
-	if self.HttpMethodToRoute != nil && path == "" {
-		context.matchFunc(httpMethod, path, self)
+	if n.HttpMethodToRoute != nil && path == "" {
+		context.matchFunc(httpMethod, path, n)
 	}
 
 	if len(path) == 0 {
@@ -166,48 +166,48 @@ func (self *node) find(httpMethod, path string, context *findContext) {
 	}
 
 	// *splat branch
-	if self.SplatChild != nil {
-		context.pushParams(self.SplatName, path)
-		self.SplatChild.find(httpMethod, "", context)
+	if n.SplatChild != nil {
+		context.pushParams(n.SplatName, path)
+		n.SplatChild.find(httpMethod, "", context)
 		context.popParams()
 	}
 
 	// :param branch
-	if self.ParamChild != nil {
+	if n.ParamChild != nil {
 		value, remaining := splitParam(path)
-		context.pushParams(self.ParamName, value)
-		self.ParamChild.find(httpMethod, remaining, context)
+		context.pushParams(n.ParamName, value)
+		n.ParamChild.find(httpMethod, remaining, context)
 		context.popParams()
 	}
 
 	// main branch
-	length := self.ChildrenKeyLen
+	length := n.ChildrenKeyLen
 	if len(path) < length {
 		return
 	}
 	token := path[0:length]
 	remaining := path[length:]
-	if self.Children[token] != nil {
-		self.Children[token].find(httpMethod, remaining, context)
+	if n.Children[token] != nil {
+		n.Children[token].find(httpMethod, remaining, context)
 	}
 }
 
-func (self *node) compress() {
+func (n *node) compress() {
 	// *splat branch
-	if self.SplatChild != nil {
-		self.SplatChild.compress()
+	if n.SplatChild != nil {
+		n.SplatChild.compress()
 	}
 	// :param branch
-	if self.ParamChild != nil {
-		self.ParamChild.compress()
+	if n.ParamChild != nil {
+		n.ParamChild.compress()
 	}
 	// main branch
-	if len(self.Children) == 0 {
+	if len(n.Children) == 0 {
 		return
 	}
 	// compressable ?
 	canCompress := true
-	for _, node := range self.Children {
+	for _, node := range n.Children {
 		if node.HttpMethodToRoute != nil || node.SplatChild != nil || node.ParamChild != nil {
 			canCompress = false
 		}
@@ -215,18 +215,18 @@ func (self *node) compress() {
 	// compress
 	if canCompress {
 		merged := map[string]*node{}
-		for key, node := range self.Children {
+		for key, node := range n.Children {
 			for gdKey, gdNode := range node.Children {
 				mergedKey := key + gdKey
 				merged[mergedKey] = gdNode
 			}
 		}
-		self.Children = merged
-		self.ChildrenKeyLen++
-		self.compress()
+		n.Children = merged
+		n.ChildrenKeyLen++
+		n.compress()
 		// continue
 	} else {
-		for _, node := range self.Children {
+		for _, node := range n.Children {
 			node.compress()
 		}
 	}
@@ -244,12 +244,12 @@ func New() *Trie {
 }
 
 // Insert the route in the Trie following or creating the nodes corresponding to the path.
-func (self *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error {
-	return self.root.addRoute(httpMethod, pathExp, route, []string{})
+func (t *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error {
+	return t.root.addRoute(httpMethod, pathExp, route, []string{})
 }
 
 // Given a path and an http method, return all the matching routes.
-func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
+func (t *Trie) FindRoutes(httpMethod, path string) []*Match {
 	context := newFindContext()
 	matches := []*Match{}
 	context.matchFunc = func(httpMethod, path string, node *node) {
@@ -264,13 +264,13 @@ func (self *Trie) FindRoutes(httpMethod, path string) []*Match {
 			)
 		}
 	}
-	self.root.find(httpMethod, path, context)
+	t.root.find(httpMethod, path, context)
 	return matches
 }
 
 // Same as FindRoutes, but return in addition a boolean indicating if the path was matched.
 // Useful to return 405
-func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, bool) {
+func (t *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, bool) {
 	context := newFindContext()
 	pathMatched := false
 	matches := []*Match{}
@@ -287,12 +287,12 @@ func (self *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, b
 			)
 		}
 	}
-	self.root.find(httpMethod, path, context)
+	t.root.find(httpMethod, path, context)
 	return matches, pathMatched
 }
 
 // Given a path, and whatever the http method, return all the matching routes.
-func (self *Trie) FindRoutesForPath(path string) []*Match {
+func (t *Trie) FindRoutesForPath(path string) []*Match {
 	context := newFindContext()
 	matches := []*Match{}
 	context.matchFunc = func(httpMethod, path string, node *node) {
@@ -307,11 +307,11 @@ func (self *Trie) FindRoutesForPath(path string) []*Match {
 			)
 		}
 	}
-	self.root.find("", path, context)
+	t.root.find("", path, context)
 	return matches
 }
 
 // Reduce the size of the tree, must be done after the last AddRoute.
-func (self *Trie) Compress() {
-	self.root.compress()
+func (t *Trie) Compress() {
+	t.root.compress()
 }
