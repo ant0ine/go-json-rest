@@ -14,24 +14,24 @@ type ResponseWriter struct {
 
 // Make rest.ResponseWriter implement the http.Flusher interface.
 // It propagates the Flush call to the wrapped ResponseWriter.
-func (self *ResponseWriter) Flush() {
-	flusher := self.ResponseWriter.(http.Flusher)
+func (w *ResponseWriter) Flush() {
+	flusher := w.ResponseWriter.(http.Flusher)
 	flusher.Flush()
 }
 
 // Make rest.ResponseWriter implement the http.CloseNotifier interface.
-func (self *ResponseWriter) CloseNotify() <-chan bool {
-	notifier := self.ResponseWriter.(http.CloseNotifier)
+func (w *ResponseWriter) CloseNotify() <-chan bool {
+	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
 // Encode the object in JSON, set the content-type header,
 // and call Write.
-func (self *ResponseWriter) WriteJson(v interface{}) error {
-	self.Header().Set("content-type", "application/json")
+func (w *ResponseWriter) WriteJson(v interface{}) error {
+	w.Header().Set("content-type", "application/json")
 	var b []byte
 	var err error
-	if self.isIndented {
+	if w.isIndented {
 		b, err = json.MarshalIndent(v, "", "  ")
 	} else {
 		b, err = json.Marshal(v)
@@ -39,7 +39,7 @@ func (self *ResponseWriter) WriteJson(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	self.Write(b)
+	w.Write(b)
 	return nil
 }
 

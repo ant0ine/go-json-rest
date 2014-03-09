@@ -16,14 +16,14 @@ type Request struct {
 }
 
 // Provide a convenient access to the PathParams map
-func (self *Request) PathParam(name string) string {
-	return self.PathParams[name]
+func (r *Request) PathParam(name string) string {
+	return r.PathParams[name]
 }
 
 // Read the request body and decode the JSON using json.Unmarshal
-func (self *Request) DecodeJsonPayload(v interface{}) error {
-	content, err := ioutil.ReadAll(self.Body)
-	self.Body.Close()
+func (r *Request) DecodeJsonPayload(v interface{}) error {
+	content, err := ioutil.ReadAll(r.Body)
+	r.Body.Close()
 	if err != nil {
 		return err
 	}
@@ -36,13 +36,13 @@ func (self *Request) DecodeJsonPayload(v interface{}) error {
 
 // Returns a URL structure for the base (scheme + host) of the application,
 // without the trailing slash in the host
-func (self *Request) UriBase() url.URL {
-	scheme := self.URL.Scheme
+func (r *Request) UriBase() url.URL {
+	scheme := r.URL.Scheme
 	if scheme == "" {
 		scheme = "http"
 	}
 
-	host := self.Host
+	host := r.Host
 	if len(host) > 0 && host[len(host)-1] == '/' {
 		host = host[:len(host)-1]
 	}
@@ -55,21 +55,21 @@ func (self *Request) UriBase() url.URL {
 }
 
 // Returns an URL structure from the base and an additional path.
-func (self *Request) UriFor(path string) url.URL {
-	baseUrl := self.UriBase()
+func (r *Request) UriFor(path string) url.URL {
+	baseUrl := r.UriBase()
 	baseUrl.Path = path
 	return baseUrl
 }
 
 // Returns an URL structure from the base, the path and the parameters.
-func (self *Request) UriForWithParams(path string, parameters map[string][]string) url.URL {
+func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL {
 	query := url.Values{}
 	for k, v := range parameters {
 		for _, vv := range v {
 			query.Add(k, vv)
 		}
 	}
-	baseUrl := self.UriFor(path)
+	baseUrl := r.UriFor(path)
 	baseUrl.RawQuery = query.Encode()
 	return baseUrl
 }
@@ -85,17 +85,17 @@ type CorsInfo struct {
 }
 
 // Derive CorsInfo from Request
-func (self *Request) GetCorsInfo() *CorsInfo {
+func (r *Request) GetCorsInfo() *CorsInfo {
 
-	origin := self.Header.Get("Origin")
+	origin := r.Header.Get("Origin")
 	originUrl, err := url.ParseRequestURI(origin)
 
-	isCors := err == nil && origin != "" && self.Host != originUrl.Host
+	isCors := err == nil && origin != "" && r.Host != originUrl.Host
 
-	reqMethod := self.Header.Get("Access-Control-Request-Method")
+	reqMethod := r.Header.Get("Access-Control-Request-Method")
 
 	reqHeaders := []string{}
-	rawReqHeaders := self.Header[http.CanonicalHeaderKey("Access-Control-Request-Headers")]
+	rawReqHeaders := r.Header[http.CanonicalHeaderKey("Access-Control-Request-Headers")]
 	for _, rawReqHeader := range rawReqHeaders {
 		// net/http does not handle comma delimited headers for us
 		for _, reqHeader := range strings.Split(rawReqHeader, ",") {
@@ -103,7 +103,7 @@ func (self *Request) GetCorsInfo() *CorsInfo {
 		}
 	}
 
-	isPreflight := isCors && self.Method == "OPTIONS" && reqMethod != ""
+	isPreflight := isCors && r.Method == "OPTIONS" && reqMethod != ""
 
 	return &CorsInfo{
 		IsCors:                      isCors,
