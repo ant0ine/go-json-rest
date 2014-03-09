@@ -8,16 +8,16 @@ import (
 	"time"
 )
 
-func (self *ResourceHandler) statusWrapper(h http.HandlerFunc) http.HandlerFunc {
+func (rh *ResourceHandler) statusWrapper(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// call the handler
 		h(w, r)
 
-		if self.statusService != nil {
-			self.statusService.update(
-				self.env.getVar(r, "statusCode").(int),
-				self.env.getVar(r, "elapsedTime").(*time.Duration),
+		if rh.statusService != nil {
+			rh.statusService.update(
+				rh.env.getVar(r, "statusCode").(int),
+				rh.env.getVar(r, "elapsedTime").(*time.Duration),
 			)
 		}
 	}
@@ -40,21 +40,21 @@ func newStatusService() *statusService {
 	}
 }
 
-func (self *statusService) getRoute() Route {
+func (s *statusService) getRoute() Route {
 	return Route{
 		HttpMethod: "GET",
 		PathExp:    "/.status",
 		Func: func(writer *ResponseWriter, request *Request) {
-			self.getStatus(writer, request)
+			s.getStatus(writer, request)
 		},
 	}
 }
 
-func (self *statusService) update(statusCode int, responseTime *time.Duration) {
-	self.lock.Lock()
-	self.responseCounts[fmt.Sprintf("%d", statusCode)]++
-	self.totalResponseTime = self.totalResponseTime.Add(*responseTime)
-	self.lock.Unlock()
+func (s *statusService) update(statusCode int, responseTime *time.Duration) {
+	s.lock.Lock()
+	s.responseCounts[fmt.Sprintf("%d", statusCode)]++
+	s.totalResponseTime = s.totalResponseTime.Add(*responseTime)
+	s.lock.Unlock()
 }
 
 type status struct {
@@ -71,18 +71,18 @@ type status struct {
 	AverageResponseTimeSec float64
 }
 
-func (self *statusService) getStatus(w *ResponseWriter, r *Request) {
+func (s *statusService) getStatus(w *ResponseWriter, r *Request) {
 
 	now := time.Now()
 
-	uptime := now.Sub(self.start)
+	uptime := now.Sub(s.start)
 
 	totalCount := 0
-	for _, count := range self.responseCounts {
+	for _, count := range s.responseCounts {
 		totalCount += count
 	}
 
-	totalResponseTime := self.totalResponseTime.Sub(time.Time{})
+	totalResponseTime := s.totalResponseTime.Sub(time.Time{})
 
 	averageResponseTime := time.Duration(0)
 	if totalCount > 0 {
@@ -91,12 +91,12 @@ func (self *statusService) getStatus(w *ResponseWriter, r *Request) {
 	}
 
 	st := &status{
-		Pid:                    self.pid,
+		Pid:                    s.pid,
 		UpTime:                 uptime.String(),
 		UpTimeSec:              uptime.Seconds(),
 		Time:                   now.String(),
 		TimeUnix:               now.Unix(),
-		StatusCodeCount:        self.responseCounts,
+		StatusCodeCount:        s.responseCounts,
 		TotalCount:             totalCount,
 		TotalResponseTime:      totalResponseTime.String(),
 		TotalResponseTimeSec:   totalResponseTime.Seconds(),

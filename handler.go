@@ -146,32 +146,32 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 
 // Define the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
-func (self *ResourceHandler) SetRoutes(routes ...Route) error {
+func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
 
-	self.internalRouter = &router{
+	rh.internalRouter = &router{
 		routes: routes,
 	}
 
 	// add the status route as the last route.
-	if self.EnableStatusService == true {
-		self.statusService = newStatusService()
-		self.internalRouter.routes = append(self.internalRouter.routes, self.statusService.getRoute())
+	if rh.EnableStatusService == true {
+		rh.statusService = newStatusService()
+		rh.internalRouter.routes = append(rh.internalRouter.routes, rh.statusService.getRoute())
 	}
 
 	// start the router
-	err := self.internalRouter.start()
+	err := rh.internalRouter.start()
 	if err != nil {
 		return err
 	}
 
 	// extra init actions
-	self.env = &env{}
+	rh.env = &env{}
 
 	return nil
 }
 
 // Middleware that handles the transition between http and rest objects.
-func (self *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
+func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
 
 		// catch user code's panic, and convert to http response
@@ -181,11 +181,11 @@ func (self *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 				trace := debug.Stack()
 
 				// log the trace
-				self.Logger.Printf("%s\n%s", reco, trace)
+				rh.Logger.Printf("%s\n%s", reco, trace)
 
 				// write error response
 				message := "Internal Server Error"
-				if self.EnableResponseStackTrace {
+				if rh.EnableResponseStackTrace {
 					message = fmt.Sprintf("%s\n\n%s", reco, trace)
 				}
 				http.Error(origWriter, message, http.StatusInternalServerError)
@@ -197,7 +197,7 @@ func (self *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 			nil,
 		}
 
-		isIndented := !self.DisableJsonIndent
+		isIndented := !rh.DisableJsonIndent
 
 		writer := ResponseWriter{
 			origWriter,
@@ -209,7 +209,7 @@ func (self *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 }
 
 // Handle the REST routing and run the user code.
-func (self *ResourceHandler) app() HandlerFunc {
+func (rh *ResourceHandler) app() HandlerFunc {
 	return func(writer *ResponseWriter, request *Request) {
 
 		// check the Content-Type
@@ -219,7 +219,7 @@ func (self *ResourceHandler) app() HandlerFunc {
 			charset = "UTF-8"
 		}
 
-		if self.EnableRelaxedContentType == false &&
+		if rh.EnableRelaxedContentType == false &&
 			request.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
 			!(mediatype == "application/json" && strings.ToUpper(charset) == "UTF-8") {
 
@@ -231,7 +231,7 @@ func (self *ResourceHandler) app() HandlerFunc {
 		}
 
 		// find the route
-		route, params, pathMatched := self.internalRouter.findRouteFromURL(request.Method, request.URL)
+		route, params, pathMatched := rh.internalRouter.findRouteFromURL(request.Method, request.URL)
 		if route == nil {
 			if pathMatched {
 				// no route found, but path was matched: 405 Method Not Allowed
@@ -255,24 +255,24 @@ func (self *ResourceHandler) app() HandlerFunc {
 
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
-func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
-	if self.PreRoutingMiddleware == nil {
-		self.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
+	if rh.PreRoutingMiddleware == nil {
+		rh.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
 			return func(writer *ResponseWriter, request *Request) {
 				handler(writer, request)
 			}
 		}
 	}
 
-	handlerFunc := self.logWrapper(
-		self.gzipWrapper(
-			self.statusWrapper(
-				self.timerWrapper(
-					self.recorderWrapper(
-						self.adapter(
-							self.PreRoutingMiddleware(
-								self.app(),
+	handlerFunc := rh.logWrapper(
+		rh.gzipWrapper(
+			rh.statusWrapper(
+				rh.timerWrapper(
+					rh.recorderWrapper(
+						rh.adapter(
+							rh.PreRoutingMiddleware(
+								rh.app(),
 							),
 						),
 					),
@@ -284,5 +284,5 @@ func (self *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handlerFunc(w, r)
 
 	// clear the env data for this request
-	self.env.clear(r)
+	rh.env.clear(r)
 }
