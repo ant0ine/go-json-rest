@@ -10,33 +10,33 @@ type recorderResponseWriter struct {
 	wroteHeader bool
 }
 
-func (self *recorderResponseWriter) WriteHeader(code int) {
-	self.Header().Add("X-Powered-By", "go-json-rest")
-	self.ResponseWriter.WriteHeader(code)
-	self.statusCode = code
-	self.wroteHeader = true
+func (w *recorderResponseWriter) WriteHeader(code int) {
+	w.Header().Add("X-Powered-By", "go-json-rest")
+	w.ResponseWriter.WriteHeader(code)
+	w.statusCode = code
+	w.wroteHeader = true
 }
 
-func (self *recorderResponseWriter) Flush() {
-	if !self.wroteHeader {
-		self.WriteHeader(http.StatusOK)
+func (w *recorderResponseWriter) Flush() {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
 	}
-	flusher := self.ResponseWriter.(http.Flusher)
+	flusher := w.ResponseWriter.(http.Flusher)
 	flusher.Flush()
 }
 
-func (self *recorderResponseWriter) CloseNotify() <-chan bool {
-	notifier := self.ResponseWriter.(http.CloseNotifier)
+func (w *recorderResponseWriter) CloseNotify() <-chan bool {
+	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
-func (self *recorderResponseWriter) Write(b []byte) (int, error) {
+func (w *recorderResponseWriter) Write(b []byte) (int, error) {
 
-	if !self.wroteHeader {
-		self.WriteHeader(http.StatusOK)
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
 	}
 
-	return self.ResponseWriter.Write(b)
+	return w.ResponseWriter.Write(b)
 }
 
 func (self *ResourceHandler) recorderWrapper(h http.HandlerFunc) http.HandlerFunc {
