@@ -233,15 +233,16 @@ func (rh *ResourceHandler) app() HandlerFunc {
 		// find the route
 		route, params, pathMatched := rh.internalRouter.findRouteFromURL(request.Method, request.URL)
 		if route == nil {
+
 			if pathMatched {
 				// no route found, but path was matched: 405 Method Not Allowed
 				Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
 				return
-			} else {
-				// no route found, the path was not matched: 404 Not Found
-				NotFound(writer, request)
-				return
 			}
+
+			// no route found, the path was not matched: 404 Not Found
+			NotFound(writer, request)
+			return
 		}
 
 		// a route was found, set the PathParams
