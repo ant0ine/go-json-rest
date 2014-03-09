@@ -54,10 +54,10 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func (self *ResourceHandler) gzipWrapper(h http.HandlerFunc) http.HandlerFunc {
+func (rh *ResourceHandler) gzipWrapper(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		if self.EnableGzip == true {
+		if rh.EnableGzip == true {
 			// gzip support enabled
 			canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 			// client accepts gzip ?

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (self *ResourceHandler) timerWrapper(h http.HandlerFunc) http.HandlerFunc {
+func (rh *ResourceHandler) timerWrapper(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		start := time.Now()
@@ -15,6 +15,6 @@ func (self *ResourceHandler) timerWrapper(h http.HandlerFunc) http.HandlerFunc {
 
 		end := time.Now()
 		elapsed := end.Sub(start)
-		self.env.setVar(r, "elapsedTime", &elapsed)
+		rh.env.setVar(r, "elapsedTime", &elapsed)
 	}
 }

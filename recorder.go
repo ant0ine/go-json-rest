@@ -39,7 +39,7 @@ func (w *recorderResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func (self *ResourceHandler) recorderWrapper(h http.HandlerFunc) http.HandlerFunc {
+func (rh *ResourceHandler) recorderWrapper(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		writer := &recorderResponseWriter{w, 0, false}
@@ -47,6 +47,6 @@ func (self *ResourceHandler) recorderWrapper(h http.HandlerFunc) http.HandlerFun
 		// call the handler
 		h(writer, r)
 
-		self.env.setVar(r, "statusCode", writer.statusCode)
+		rh.env.setVar(r, "statusCode", writer.statusCode)
 	}
 }
