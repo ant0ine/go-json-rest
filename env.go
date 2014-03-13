@@ -1,21 +1,20 @@
 package rest
 
 import (
-	"net/http"
 	"sync"
 )
 
 // inpired by https://groups.google.com/forum/#!msg/golang-nuts/teSBtPvv1GQ/U12qA9N51uIJ
 type env struct {
 	envLock sync.Mutex
-	envMap  map[*http.Request]map[string]interface{}
+	envMap  map[*Request]map[string]interface{}
 }
 
-func (e *env) setVar(r *http.Request, key string, value interface{}) {
+func (e *env) setVar(r *Request, key string, value interface{}) {
 	e.envLock.Lock()
 	defer e.envLock.Unlock()
 	if e.envMap == nil {
-		e.envMap = make(map[*http.Request]map[string]interface{})
+		e.envMap = make(map[*Request]map[string]interface{})
 	}
 	if e.envMap[r] == nil {
 		e.envMap[r] = make(map[string]interface{})
@@ -23,7 +22,7 @@ func (e *env) setVar(r *http.Request, key string, value interface{}) {
 	e.envMap[r][key] = value
 }
 
-func (e *env) getVar(r *http.Request, key string) interface{} {
+func (e *env) getVar(r *Request, key string) interface{} {
 	e.envLock.Lock()
 	defer e.envLock.Unlock()
 	if e.envMap == nil {
@@ -35,7 +34,7 @@ func (e *env) getVar(r *http.Request, key string) interface{} {
 	return e.envMap[r][key]
 }
 
-func (e *env) clear(r *http.Request) {
+func (e *env) clear(r *Request) {
 	e.envLock.Lock()
 	defer e.envLock.Unlock()
 	delete(e.envMap, r)

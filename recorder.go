@@ -5,18 +5,27 @@ import (
 )
 
 type recorderResponseWriter struct {
-	http.ResponseWriter
+	ResponseWriter
 	statusCode  int
 	wroteHeader bool
 }
 
+// Record the status code
 func (w *recorderResponseWriter) WriteHeader(code int) {
-	w.Header().Add("X-Powered-By", "go-json-rest")
 	w.ResponseWriter.WriteHeader(code)
 	w.statusCode = code
 	w.wroteHeader = true
 }
 
+// Make sure the this WriteHeader is called
+func (w *recorderResponseWriter) WriteJson(v interface{}) error {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.WriteJson(v)
+}
+
+// Provided in order to implement the http.Flusher interface.
 func (w *recorderResponseWriter) Flush() {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
@@ -25,22 +34,24 @@ func (w *recorderResponseWriter) Flush() {
 	flusher.Flush()
 }
 
+// Provided in order to implement the http.CloseNotifier interface.
 func (w *recorderResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
+// Provided in order to implement the http.ResponseWriter interface.
 func (w *recorderResponseWriter) Write(b []byte) (int, error) {
-
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
 	}
-
-	return w.ResponseWriter.Write(b)
+	writer := w.ResponseWriter.(http.ResponseWriter)
+	return writer.Write(b)
 }
 
-func (rh *ResourceHandler) recorderWrapper(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+// Middleware function.
+func (rh *ResourceHandler) recorderWrapper(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
 
 		writer := &recorderResponseWriter{w, 0, false}
 

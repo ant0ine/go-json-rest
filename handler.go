@@ -56,7 +56,7 @@ import (
 )
 
 // Signature of a handler method in the context of go-json-rest.
-type HandlerFunc func(*ResponseWriter, *Request)
+type HandlerFunc func(ResponseWriter, *Request)
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
@@ -130,7 +130,7 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 			value,
 		))
 	}
-	routeFunc := func(w *ResponseWriter, r *Request) {
+	routeFunc := func(w ResponseWriter, r *Request) {
 		funcValue.Call([]reflect.Value{
 			reflect.ValueOf(w),
 			reflect.ValueOf(r),
@@ -199,18 +199,22 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 
 		isIndented := !rh.DisableJsonIndent
 
-		writer := ResponseWriter{
+		writer := responseWriter{
 			origWriter,
 			isIndented,
+			false,
 		}
 
 		handler(&writer, &request)
+
+                // clear the env data for this request
+                rh.env.clear(&request)
 	}
 }
 
 // Handle the REST routing and run the user code.
 func (rh *ResourceHandler) app() HandlerFunc {
-	return func(writer *ResponseWriter, request *Request) {
+	return func(writer ResponseWriter, request *Request) {
 
 		// check the Content-Type
 		mediatype, params, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
@@ -260,18 +264,18 @@ func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if rh.PreRoutingMiddleware == nil {
 		rh.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
-			return func(writer *ResponseWriter, request *Request) {
+			return func(writer ResponseWriter, request *Request) {
 				handler(writer, request)
 			}
 		}
 	}
 
-	handlerFunc := rh.logWrapper(
-		rh.gzipWrapper(
-			rh.statusWrapper(
-				rh.timerWrapper(
-					rh.recorderWrapper(
-						rh.adapter(
+	handlerFunc := rh.adapter(
+		rh.logWrapper(
+			rh.gzipWrapper(
+				rh.statusWrapper(
+					rh.timerWrapper(
+						rh.recorderWrapper(
 							rh.PreRoutingMiddleware(
 								rh.app(),
 							),
@@ -283,7 +287,4 @@ func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 
 	handlerFunc(w, r)
-
-	// clear the env data for this request
-	rh.env.clear(r)
 }

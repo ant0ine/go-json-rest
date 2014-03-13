@@ -7,11 +7,12 @@ import (
 )
 
 type gzipResponseWriter struct {
-	http.ResponseWriter
+	ResponseWriter
 	wroteHeader bool
 	canGzip     bool
 }
 
+// Set the right headers for gzip encoded responses.
 func (w *gzipResponseWriter) WriteHeader(code int) {
 
 	// always set the Vary header, even if this particular request
@@ -26,6 +27,17 @@ func (w *gzipResponseWriter) WriteHeader(code int) {
 	w.wroteHeader = true
 }
 
+// Make sure to use the gzip Write method.
+func (w *gzipResponseWriter) WriteJson(v interface{}) error {
+	b, err := w.EncodeJson(v)
+	if err != nil {
+		return err
+	}
+	w.Write(b)
+	return nil
+}
+
+// Provided in order to implement the http.Flusher interface.
 func (w *gzipResponseWriter) Flush() {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
@@ -34,28 +46,33 @@ func (w *gzipResponseWriter) Flush() {
 	flusher.Flush()
 }
 
+// Provided in order to implement the http.CloseNotifier interface.
 func (w *gzipResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
+// Provided in order to implement the http.ResponseWriter interface.
 func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
 	}
 
+	writer := w.ResponseWriter.(http.ResponseWriter)
+
 	if w.canGzip {
-		gzipWriter := gzip.NewWriter(w.ResponseWriter)
+		gzipWriter := gzip.NewWriter(writer)
 		defer gzipWriter.Close()
 		return gzipWriter.Write(b)
 	}
 
-	return w.ResponseWriter.Write(b)
+	return writer.Write(b)
 }
 
-func (rh *ResourceHandler) gzipWrapper(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+// The middleware function.
+func (rh *ResourceHandler) gzipWrapper(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
 
 		if rh.EnableGzip == true {
 			// gzip support enabled

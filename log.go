@@ -3,7 +3,6 @@ package rest
 import (
 	"encoding/json"
 	"log"
-	"net/http"
 	"os"
 	"time"
 )
@@ -39,14 +38,15 @@ func (rh *ResourceHandler) logResponseRecord(record *responseLogRecord) {
 	}
 }
 
-func (rh *ResourceHandler) logWrapper(h http.HandlerFunc) http.HandlerFunc {
+// The middleware function.
+func (rh *ResourceHandler) logWrapper(h HandlerFunc) HandlerFunc {
 
 	// set a default Logger
 	if rh.Logger == nil {
 		rh.Logger = log.New(os.Stderr, "", log.LstdFlags)
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w ResponseWriter, r *Request) {
 
 		// call the handler
 		h(w, r)

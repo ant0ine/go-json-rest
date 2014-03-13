@@ -1,12 +1,11 @@
 package rest
 
 import (
-	"net/http"
 	"time"
 )
 
-func (rh *ResourceHandler) timerWrapper(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (rh *ResourceHandler) timerWrapper(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
 
 		start := time.Now()
 

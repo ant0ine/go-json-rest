@@ -2,14 +2,14 @@ package rest
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"sync"
 	"time"
 )
 
-func (rh *ResourceHandler) statusWrapper(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+// The middleware function.
+func (rh *ResourceHandler) statusWrapper(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
 
 		// call the handler
 		h(w, r)
@@ -44,7 +44,7 @@ func (s *statusService) getRoute() Route {
 	return Route{
 		HttpMethod: "GET",
 		PathExp:    "/.status",
-		Func: func(writer *ResponseWriter, request *Request) {
+		Func: func(writer ResponseWriter, request *Request) {
 			s.getStatus(writer, request)
 		},
 	}
@@ -71,7 +71,7 @@ type status struct {
 	AverageResponseTimeSec float64
 }
 
-func (s *statusService) getStatus(w *ResponseWriter, r *Request) {
+func (s *statusService) getStatus(w ResponseWriter, r *Request) {
 
 	now := time.Now()
 
@@ -106,6 +106,6 @@ func (s *statusService) getStatus(w *ResponseWriter, r *Request) {
 
 	err := w.WriteJson(st)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		Error(w, err.Error(), 500)
 	}
 }
