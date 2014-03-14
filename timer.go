@@ -14,6 +14,6 @@ func (rh *ResourceHandler) timerWrapper(h HandlerFunc) HandlerFunc {
 
 		end := time.Now()
 		elapsed := end.Sub(start)
-		rh.env.setVar(r, "elapsedTime", &elapsed)
+		r.Env["elapsedTime"] = &elapsed
 	}
 }

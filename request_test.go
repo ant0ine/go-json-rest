@@ -16,7 +16,11 @@ func defaultRequest(uri string, method string, t *testing.T) Request {
 		URL:    urlObj,
 		Host:   "localhost",
 	}
-	req := Request{&origReq, nil}
+	req := Request{
+		&origReq,
+		nil,
+		map[string]interface{}{},
+	}
 	return req
 }
 

@@ -58,6 +58,6 @@ func (rh *ResourceHandler) recorderWrapper(h HandlerFunc) HandlerFunc {
 		// call the handler
 		h(writer, r)
 
-		rh.env.setVar(r, "statusCode", writer.statusCode)
+		r.Env["statusCode"] = writer.statusCode
 	}
 }

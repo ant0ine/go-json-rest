@@ -16,8 +16,8 @@ func (rh *ResourceHandler) statusWrapper(h HandlerFunc) HandlerFunc {
 
 		if rh.statusService != nil {
 			rh.statusService.update(
-				rh.env.getVar(r, "statusCode").(int),
-				rh.env.getVar(r, "elapsedTime").(*time.Duration),
+				r.Env["statusCode"].(int),
+				r.Env["elapsedTime"].(*time.Duration),
 			)
 		}
 	}

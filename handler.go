@@ -64,7 +64,6 @@ type HandlerFunc func(ResponseWriter, *Request)
 type ResourceHandler struct {
 	internalRouter *router
 	statusService  *statusService
-	env            *env
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -164,9 +163,6 @@ func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
 		return err
 	}
 
-	// extra init actions
-	rh.env = &env{}
-
 	return nil
 }
 
@@ -195,6 +191,7 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 		request := Request{
 			origRequest,
 			nil,
+			map[string]interface{}{},
 		}
 
 		isIndented := !rh.DisableJsonIndent
@@ -206,9 +203,6 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 		}
 
 		handler(&writer, &request)
-
-                // clear the env data for this request
-                rh.env.clear(&request)
 	}
 }
 

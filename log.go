@@ -52,8 +52,8 @@ func (rh *ResourceHandler) logWrapper(h HandlerFunc) HandlerFunc {
 		h(w, r)
 
 		rh.logResponseRecord(&responseLogRecord{
-			rh.env.getVar(r, "statusCode").(int),
-			rh.env.getVar(r, "elapsedTime").(*time.Duration),
+			r.Env["statusCode"].(int),
+			r.Env["elapsedTime"].(*time.Duration),
 			r.Method,
 			r.URL.RequestURI(),
 		})

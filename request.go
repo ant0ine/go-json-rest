@@ -11,8 +11,12 @@ import (
 // Inherit from http.Request, and provide additional methods.
 type Request struct {
 	*http.Request
-	// map of parameters that have been matched in the URL Path.
+
+	// Map of parameters that have been matched in the URL Path.
 	PathParams map[string]string
+
+	// Environement used by middlewares to communicate.
+	Env map[string]interface{}
 }
 
 // Provide a convenient access to the PathParams map
