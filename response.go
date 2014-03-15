@@ -6,10 +6,10 @@ import (
 )
 
 // A ResponseWriter interface dedicated to JSON HTTP response.
-// Note that the object instanciated by the ResourceHandler that implements this interface,
+// Note that the object instantiated by the ResourceHandler that implements this interface,
 // also happens to implement http.ResponseWriter, http.Flusher and http.CloseNotifier.
-// (eg: flusher := w.(http.Flusher))
 type ResponseWriter interface {
+
 	// Identical to the http.ResponseWriter interface
 	Header() http.Header
 
@@ -24,8 +24,31 @@ type ResponseWriter interface {
 	WriteHeader(int)
 }
 
-// Inherit from an object implementing the http.ResponseWriter interface,
-// and provide additional methods.
+// Produce an error response in JSON with the following structure, '{"Error":"My error message"}'
+// The standard plain text net/http Error helper can still be called like this:
+// http.Error(w, "error message", code)
+func Error(w ResponseWriter, error string, code int) {
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(code)
+	err := w.WriteJson(map[string]string{"Error": error})
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Produce a 404 response with the following JSON, '{"Error":"Resource not found"}'
+// The standard plain text net/http NotFound helper can still be called like this:
+// http.NotFound(w, r.Request)
+func NotFound(w ResponseWriter, r *Request) {
+	Error(w, "Resource not found", http.StatusNotFound)
+}
+
+// Private responseWriter intantiated by the resource handler.
+// It implements the following interfaces:
+// ResponseWriter
+// http.ResponseWriter
+// http.Flusher
+// http.CloseNotifier
 type responseWriter struct {
 	http.ResponseWriter
 	wroteHeader bool
@@ -53,8 +76,7 @@ func (w *responseWriter) EncodeJson(v interface{}) ([]byte, error) {
 	return b, nil
 }
 
-// Encode the object in JSON, set the content-type header,
-// and call Write.
+// Encode the object in JSON and call Write.
 func (w *responseWriter) WriteJson(v interface{}) error {
 	b, err := w.EncodeJson(v)
 	if err != nil {
@@ -82,23 +104,4 @@ func (w *responseWriter) Flush() {
 func (w *responseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
-}
-
-// Produce an error response in JSON with the following structure, '{"Error":"My error message"}'
-// The standard plain text net/http Error helper can still be called like this:
-// http.Error(w, "error message", code)
-func Error(w ResponseWriter, error string, code int) {
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(code)
-	err := w.WriteJson(map[string]string{"Error": error})
-	if err != nil {
-		panic(err)
-	}
-}
-
-// Produce a 404 response with the following JSON, '{"Error":"Resource not found"}'
-// The standard plain text net/http NotFound helper can still be called like this:
-// http.NotFound(w, r.Request)
-func NotFound(w ResponseWriter, r *Request) {
-	Error(w, "Resource not found", http.StatusNotFound)
 }
