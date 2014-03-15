@@ -96,6 +96,9 @@ func (w *responseWriter) Write(b []byte) (int, error) {
 
 // Provided in order to implement the http.Flusher interface.
 func (w *responseWriter) Flush() {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
 	flusher := w.ResponseWriter.(http.Flusher)
 	flusher.Flush()
 }
