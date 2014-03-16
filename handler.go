@@ -148,20 +148,18 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
 
+	// start the router
 	rh.internalRouter = &router{
 		routes: routes,
 	}
-
-	// add the status route as the last route.
-	if rh.EnableStatusService == true {
-		rh.statusService = newStatusService()
-		rh.internalRouter.routes = append(rh.internalRouter.routes, rh.statusService.getRoute())
-	}
-
-	// start the router
 	err := rh.internalRouter.start()
 	if err != nil {
 		return err
+	}
+
+	// start the status service
+	if rh.EnableStatusService {
+		rh.statusService = newStatusService()
 	}
 
 	// assemble all the middlewares

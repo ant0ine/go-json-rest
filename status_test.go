@@ -16,6 +16,11 @@ func TestStatus(t *testing.T) {
 				w.WriteJson(map[string]string{"Id": "123"})
 			},
 		},
+		Route{"GET", "/.status",
+			func(w ResponseWriter, r *Request) {
+				w.WriteJson(handler.GetStatus())
+			},
+		},
 	)
 
 	// one request to the API
