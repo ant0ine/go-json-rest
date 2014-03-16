@@ -64,6 +64,7 @@ type HandlerFunc func(ResponseWriter, *Request)
 type ResourceHandler struct {
 	internalRouter *router
 	statusService  *statusService
+	handlerFunc    http.HandlerFunc
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -163,6 +164,30 @@ func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
 		return err
 	}
 
+	// assemble all the middlewares
+	if rh.PreRoutingMiddleware == nil {
+		rh.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
+			return func(writer ResponseWriter, request *Request) {
+				handler(writer, request)
+			}
+		}
+	}
+	rh.handlerFunc = rh.adapter(
+		rh.logWrapper(
+			rh.gzipWrapper(
+				rh.statusWrapper(
+					rh.timerWrapper(
+						rh.recorderWrapper(
+							rh.PreRoutingMiddleware(
+								rh.app(),
+							),
+						),
+					),
+				),
+			),
+		),
+	)
+
 	return nil
 }
 
@@ -188,6 +213,7 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 			}
 		}()
 
+		// instantiate the rest objects
 		request := Request{
 			origRequest,
 			nil,
@@ -202,6 +228,7 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 			false,
 		}
 
+		// call the wrapped handler
 		handler(&writer, &request)
 	}
 }
@@ -255,30 +282,5 @@ func (rh *ResourceHandler) app() HandlerFunc {
 // This makes ResourceHandler implement the http.Handler interface.
 // You probably don't want to use it directly.
 func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	if rh.PreRoutingMiddleware == nil {
-		rh.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
-			return func(writer ResponseWriter, request *Request) {
-				handler(writer, request)
-			}
-		}
-	}
-
-	handlerFunc := rh.adapter(
-		rh.logWrapper(
-			rh.gzipWrapper(
-				rh.statusWrapper(
-					rh.timerWrapper(
-						rh.recorderWrapper(
-							rh.PreRoutingMiddleware(
-								rh.app(),
-							),
-						),
-					),
-				),
-			),
-		),
-	)
-
-	handlerFunc(w, r)
+	rh.handlerFunc(w, r)
 }
