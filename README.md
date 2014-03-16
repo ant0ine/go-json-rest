@@ -66,6 +66,7 @@ More Examples
 - [Streaming](https://github.com/ant0ine/go-json-rest-examples/blob/master/streaming/main.go) Demo Line Delimited JSON stream
 - [CORS](https://github.com/ant0ine/go-json-rest-examples/blob/master/cors/main.go) Demo CORS support for all endpoints
 - [Basic Auth](https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go) Demo an Authentication Basic impl for all endpoints
+- [Status](https://github.com/ant0ine/go-json-rest-examples/blob/master/status/main.go) Demo how to setup the /.status endpoint
 
 
 Documentation
@@ -91,6 +92,7 @@ The Status Endpoint
 -------------------
 
 Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
+See the "status" example to install the following status route:
 
 GET /.status returns something like:
 
