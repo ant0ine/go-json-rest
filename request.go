@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// Inherit from http.Request, and provide additional methods.
+// Request inherits from http.Request, and provides additional methods.
 type Request struct {
 	*http.Request
 
@@ -19,12 +19,12 @@ type Request struct {
 	Env map[string]interface{}
 }
 
-// Provide a convenient access to the PathParams map
+// PathParam provides a convenient access to the PathParams map.
 func (r *Request) PathParam(name string) string {
 	return r.PathParams[name]
 }
 
-// Read the request body and decode the JSON using json.Unmarshal
+// DecodeJsonPayload reads the request body and decodes the JSON using json.Unmarshal.
 func (r *Request) DecodeJsonPayload(v interface{}) error {
 	content, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
@@ -38,8 +38,8 @@ func (r *Request) DecodeJsonPayload(v interface{}) error {
 	return nil
 }
 
-// Returns a URL structure for the base (scheme + host) of the application,
-// without the trailing slash in the host
+// UriBase returns a URL structure for the base (scheme + host) of the application,
+// without the trailing slash in the host.
 func (r *Request) UriBase() url.URL {
 	scheme := r.URL.Scheme
 	if scheme == "" {
@@ -58,14 +58,14 @@ func (r *Request) UriBase() url.URL {
 	return url
 }
 
-// Returns an URL structure from the base and an additional path.
+// UriFor returns an URL structure from the base and an additional path.
 func (r *Request) UriFor(path string) url.URL {
 	baseUrl := r.UriBase()
 	baseUrl.Path = path
 	return baseUrl
 }
 
-// Returns an URL structure from the base, the path and the parameters.
+// UriForWithParams returns an URL structure from the base, the path and the parameters.
 func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL {
 	query := url.Values{}
 	for k, v := range parameters {
@@ -78,7 +78,7 @@ func (r *Request) UriForWithParams(path string, parameters map[string][]string) 
 	return baseUrl
 }
 
-// CORS request info derived from a rest.Request.
+// CorsInfo contains the CORS request info derived from a rest.Request.
 type CorsInfo struct {
 	IsCors                      bool
 	IsPreflight                 bool
@@ -88,7 +88,7 @@ type CorsInfo struct {
 	AccessControlRequestHeaders []string
 }
 
-// Derive CorsInfo from Request
+// GetCorsInfo derives CorsInfo from Request.
 func (r *Request) GetCorsInfo() *CorsInfo {
 
 	origin := r.Header.Get("Origin")

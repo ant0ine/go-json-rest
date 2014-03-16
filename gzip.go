@@ -7,7 +7,7 @@ import (
 )
 
 // Private responseWriter intantiated by the gzip middleware.
-// It encodes the payload with gzip and se the proper headers.
+// It encodes the payload with gzip and set the proper headers.
 // It implements the following interfaces:
 // ResponseWriter
 // http.ResponseWriter

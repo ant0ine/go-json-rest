@@ -24,7 +24,7 @@ type ResponseWriter interface {
 	WriteHeader(int)
 }
 
-// Produce an error response in JSON with the following structure, '{"Error":"My error message"}'
+// Error produces an error response in JSON with the following structure, '{"Error":"My error message"}'
 // The standard plain text net/http Error helper can still be called like this:
 // http.Error(w, "error message", code)
 func Error(w ResponseWriter, error string, code int) {
@@ -35,7 +35,7 @@ func Error(w ResponseWriter, error string, code int) {
 	}
 }
 
-// Produce a 404 response with the following JSON, '{"Error":"Resource not found"}'
+// NotFound produces a 404 response with the following JSON, '{"Error":"Resource not found"}'
 // The standard plain text net/http NotFound helper can still be called like this:
 // http.NotFound(w, r.Request)
 func NotFound(w ResponseWriter, r *Request) {
