@@ -222,8 +222,8 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 
 		writer := responseWriter{
 			origWriter,
-			isIndented,
 			false,
+			isIndented,
 		}
 
 		// call the wrapped handler
