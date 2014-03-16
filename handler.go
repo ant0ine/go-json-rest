@@ -55,12 +55,12 @@ import (
 	"strings"
 )
 
-// Signature of a handler method in the context of go-json-rest.
+// HandlerFunc defines the handler function. It is the go-json-rest equivalent of http.HandlerFunc.
 type HandlerFunc func(ResponseWriter, *Request)
 
-// Implement the http.Handler interface and act as a router for the defined Routes.
+// ResourceHandler implements the http.Handler interface and acts a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
-// to turn on gzip and disable the JSON indentation.
+// to turn on gzip and disable the JSON indentation for instance.
 type ResourceHandler struct {
 	internalRouter *router
 	statusService  *statusService
@@ -100,7 +100,7 @@ type ResourceHandler struct {
 	Logger *log.Logger
 }
 
-// Used with SetRoutes.
+// Route defines a route. It's used with SetRoutes.
 type Route struct {
 
 	// Any http method. It will be used as uppercase to avoid common mistakes.
@@ -117,8 +117,9 @@ type Route struct {
 	Func HandlerFunc
 }
 
-// Create a Route that points to an object method. It can be convenient to point to an object method instead
-// of a function, this helper makes it easy by passing the object instance and the method name as parameters.
+// RouteObjectMethod creates a Route that points to an object method. It can be convenient to point to
+// an object method instead of a function, this helper makes it easy by passing the object instance and
+// the method name as parameters.
 func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) Route {
 
 	value := reflect.ValueOf(objectInstance)
@@ -144,7 +145,7 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 	}
 }
 
-// Define the Routes. The order the Routes matters,
+// SetRoutes defines the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
 
