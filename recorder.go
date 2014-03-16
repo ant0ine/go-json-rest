@@ -4,20 +4,27 @@ import (
 	"net/http"
 )
 
+// Private responseWriter intantiated by the recorder middleware.
+// It keeps a record of the HTTP status code of the response.
+// It implements the following interfaces:
+// ResponseWriter
+// http.ResponseWriter
+// http.Flusher
+// http.CloseNotifier
 type recorderResponseWriter struct {
 	ResponseWriter
 	statusCode  int
 	wroteHeader bool
 }
 
-// Record the status code
+// Record the status code.
 func (w *recorderResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 	w.statusCode = code
 	w.wroteHeader = true
 }
 
-// Make sure the this WriteHeader is called
+// Make sure the local WriteHeader is called, and call the parent WriteJson.
 func (w *recorderResponseWriter) WriteJson(v interface{}) error {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
@@ -25,6 +32,7 @@ func (w *recorderResponseWriter) WriteJson(v interface{}) error {
 	return w.ResponseWriter.WriteJson(v)
 }
 
+// Make sure the local WriteHeader is called, and call the parent Flush.
 // Provided in order to implement the http.Flusher interface.
 func (w *recorderResponseWriter) Flush() {
 	if !w.wroteHeader {
@@ -34,12 +42,14 @@ func (w *recorderResponseWriter) Flush() {
 	flusher.Flush()
 }
 
+// Call the parent CloseNotify.
 // Provided in order to implement the http.CloseNotifier interface.
 func (w *recorderResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
+// Make sure the local WriteHeader is called, and call the parent Write.
 // Provided in order to implement the http.ResponseWriter interface.
 func (w *recorderResponseWriter) Write(b []byte) (int, error) {
 	if !w.wroteHeader {
