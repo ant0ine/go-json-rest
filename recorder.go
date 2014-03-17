@@ -4,6 +4,22 @@ import (
 	"net/http"
 )
 
+// recorderMiddleware keeps a record of the HTTP status code of the response.
+// The result is available to the wrapping handlers in request.Env["statusCode"] as an int.
+type recorderMiddleware struct{}
+
+func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
+
+		writer := &recorderResponseWriter{w, 0, false}
+
+		// call the handler
+		h(writer, r)
+
+		r.Env["statusCode"] = writer.statusCode
+	}
+}
+
 // Private responseWriter intantiated by the recorder middleware.
 // It keeps a record of the HTTP status code of the response.
 // It implements the following interfaces:
@@ -57,17 +73,4 @@ func (w *recorderResponseWriter) Write(b []byte) (int, error) {
 	}
 	writer := w.ResponseWriter.(http.ResponseWriter)
 	return writer.Write(b)
-}
-
-// Middleware function.
-func (rh *ResourceHandler) recorderWrapper(h HandlerFunc) HandlerFunc {
-	return func(w ResponseWriter, r *Request) {
-
-		writer := &recorderResponseWriter{w, 0, false}
-
-		// call the handler
-		h(writer, r)
-
-		r.Env["statusCode"] = writer.statusCode
-	}
 }

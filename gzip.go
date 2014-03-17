@@ -6,6 +6,21 @@ import (
 	"strings"
 )
 
+// gzipMiddleware is responsible for compressing the payload with gzip
+// and setting the proper headers when supported by the client.
+type gzipMiddleware struct{}
+
+func (mw *gzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
+		// gzip support enabled
+		canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
+		// client accepts gzip ?
+		writer := &gzipResponseWriter{w, false, canGzip}
+		// call the handler with the wrapped writer
+		h(writer, r)
+	}
+}
+
 // Private responseWriter intantiated by the gzip middleware.
 // It encodes the payload with gzip and set the proper headers.
 // It implements the following interfaces:
@@ -78,22 +93,4 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	}
 
 	return writer.Write(b)
-}
-
-// The middleware function.
-func (rh *ResourceHandler) gzipWrapper(h HandlerFunc) HandlerFunc {
-	return func(w ResponseWriter, r *Request) {
-
-		if rh.EnableGzip == true {
-			// gzip support enabled
-			canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-			// client accepts gzip ?
-			writer := &gzipResponseWriter{w, false, canGzip}
-			// call the handler with the wrapped writer
-			h(writer, r)
-		} else {
-			// gzip support disabled, don't do anything
-			h(w, r)
-		}
-	}
 }

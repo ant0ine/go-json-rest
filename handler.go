@@ -58,13 +58,19 @@ import (
 // HandlerFunc defines the handler function. It is the go-json-rest equivalent of http.HandlerFunc.
 type HandlerFunc func(ResponseWriter, *Request)
 
+// Middleware defines the interface that objects must implement in order to wrap a HandlerFunc and
+// be used in the middleware stack.
+type Middleware interface {
+	MiddlewareFunc(handler HandlerFunc) HandlerFunc
+}
+
 // ResourceHandler implements the http.Handler interface and acts a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation for instance.
 type ResourceHandler struct {
-	internalRouter *router
-	statusService  *statusService
-	handlerFunc    http.HandlerFunc
+	internalRouter   *router
+	statusMiddleware *statusMiddleware
+	handlerFunc      http.HandlerFunc
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -90,11 +96,12 @@ type ResourceHandler struct {
 	// Note: If a charset parameter exists, it MUST be UTF-8
 	EnableRelaxedContentType bool
 
-	// Optional middleware that can be used to wrap the REST endpoints.
-	// It can be used for instance to manage CORS or authentication.
+	// Optional global middlewares that can be used to wrap the all REST endpoints.
+	// They are used in the defined order, the first wrapping the second, ...
+	// They can be used for instance to manage CORS or authentication.
 	// (see the CORS example in go-json-rest-example)
-	// This is run pre REST routing, request.PathParams is not set yet.
-	PreRoutingMiddleware func(handler HandlerFunc) HandlerFunc
+	// They are run pre REST routing, request.PathParams is not set yet.
+	PreRoutingMiddlewares []Middleware
 
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
@@ -158,36 +165,47 @@ func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
 		return err
 	}
 
-	// start the status service
-	if rh.EnableStatusService {
-		rh.statusService = newStatusService()
-	}
-
-	// assemble all the middlewares
-	if rh.PreRoutingMiddleware == nil {
-		rh.PreRoutingMiddleware = func(handler HandlerFunc) HandlerFunc {
-			return func(writer ResponseWriter, request *Request) {
-				handler(writer, request)
-			}
-		}
-	}
-	rh.handlerFunc = rh.adapter(
-		rh.logWrapper(
-			rh.gzipWrapper(
-				rh.statusWrapper(
-					rh.timerWrapper(
-						rh.recorderWrapper(
-							rh.PreRoutingMiddleware(
-								rh.app(),
-							),
-						),
-					),
-				),
-			),
-		),
-	)
+	rh.instantiateMiddlewares()
 
 	return nil
+}
+
+func (rh *ResourceHandler) instantiateMiddlewares() {
+
+	// instantiate all the middlewares
+	middlewares := []Middleware{
+		// log as the first, depend on timer and recorder.
+		&logMiddleware{
+			rh.Logger,
+			rh.EnableLogAsJson,
+		},
+	}
+
+	if rh.EnableGzip {
+		middlewares = append(middlewares, &gzipMiddleware{})
+	}
+
+	if rh.EnableStatusService {
+		// keep track of this middleware for GetStatus()
+		rh.statusMiddleware = newStatusMiddleware()
+		middlewares = append(middlewares, rh.statusMiddleware)
+	}
+
+	middlewares = append(middlewares,
+		&timerMiddleware{},
+		&recorderMiddleware{},
+	)
+
+	middlewares = append(middlewares,
+		rh.PreRoutingMiddlewares...,
+	)
+
+	handler := rh.app()
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		handler = middlewares[i].MiddlewareFunc(handler)
+	}
+
+	rh.handlerFunc = rh.adapter(handler)
 }
 
 // Middleware that handles the transition between http and rest objects.
@@ -282,4 +300,9 @@ func (rh *ResourceHandler) app() HandlerFunc {
 // You probably don't want to use it directly.
 func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rh.handlerFunc(w, r)
+}
+
+// GetStatus returns a Status object. EnableStatusService must be true.
+func (rh *ResourceHandler) GetStatus() *Status {
+	return rh.statusMiddleware.getStatus()
 }

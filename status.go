@@ -7,6 +7,45 @@ import (
 	"time"
 )
 
+// statusMiddleware keeps track of various stats about the processed requests.
+// It depends on request.Env["statusCode"] and request.Env["elapsedTime"]
+type statusMiddleware struct {
+	lock              sync.Mutex
+	start             time.Time
+	pid               int
+	responseCounts    map[string]int
+	totalResponseTime time.Time
+}
+
+func newStatusMiddleware() *statusMiddleware {
+	return &statusMiddleware{
+		start:             time.Now(),
+		pid:               os.Getpid(),
+		responseCounts:    map[string]int{},
+		totalResponseTime: time.Time{},
+	}
+}
+
+func (mw *statusMiddleware) update(statusCode int, responseTime *time.Duration) {
+	mw.lock.Lock()
+	mw.responseCounts[fmt.Sprintf("%d", statusCode)]++
+	mw.totalResponseTime = mw.totalResponseTime.Add(*responseTime)
+	mw.lock.Unlock()
+}
+
+func (mw *statusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+	return func(w ResponseWriter, r *Request) {
+
+		// call the handler
+		h(w, r)
+
+		mw.update(
+			r.Env["statusCode"].(int),
+			r.Env["elapsedTime"].(*time.Duration),
+		)
+	}
+}
+
 // Status contains stats and status information. It is returned by GetStatus.
 // These information can be made available as an API endpoint, see the "status"
 // example to install the following status route.
@@ -42,41 +81,17 @@ type Status struct {
 	AverageResponseTimeSec float64
 }
 
-type statusService struct {
-	lock              sync.Mutex
-	start             time.Time
-	pid               int
-	responseCounts    map[string]int
-	totalResponseTime time.Time
-}
-
-func newStatusService() *statusService {
-	return &statusService{
-		start:             time.Now(),
-		pid:               os.Getpid(),
-		responseCounts:    map[string]int{},
-		totalResponseTime: time.Time{},
-	}
-}
-
-func (s *statusService) update(statusCode int, responseTime *time.Duration) {
-	s.lock.Lock()
-	s.responseCounts[fmt.Sprintf("%d", statusCode)]++
-	s.totalResponseTime = s.totalResponseTime.Add(*responseTime)
-	s.lock.Unlock()
-}
-
-func (s *statusService) getStatus() *Status {
+func (mw *statusMiddleware) getStatus() *Status {
 	now := time.Now()
 
-	uptime := now.Sub(s.start)
+	uptime := now.Sub(mw.start)
 
 	totalCount := 0
-	for _, count := range s.responseCounts {
+	for _, count := range mw.responseCounts {
 		totalCount += count
 	}
 
-	totalResponseTime := s.totalResponseTime.Sub(time.Time{})
+	totalResponseTime := mw.totalResponseTime.Sub(time.Time{})
 
 	averageResponseTime := time.Duration(0)
 	if totalCount > 0 {
@@ -85,37 +100,16 @@ func (s *statusService) getStatus() *Status {
 	}
 
 	return &Status{
-		Pid:                    s.pid,
+		Pid:                    mw.pid,
 		UpTime:                 uptime.String(),
 		UpTimeSec:              uptime.Seconds(),
 		Time:                   now.String(),
 		TimeUnix:               now.Unix(),
-		StatusCodeCount:        s.responseCounts,
+		StatusCodeCount:        mw.responseCounts,
 		TotalCount:             totalCount,
 		TotalResponseTime:      totalResponseTime.String(),
 		TotalResponseTimeSec:   totalResponseTime.Seconds(),
 		AverageResponseTime:    averageResponseTime.String(),
 		AverageResponseTimeSec: averageResponseTime.Seconds(),
-	}
-}
-
-// GetStatus returns a Status object. EnableStatusService must be true.
-func (rh *ResourceHandler) GetStatus() *Status {
-	return rh.statusService.getStatus()
-}
-
-// The middleware function.
-func (rh *ResourceHandler) statusWrapper(h HandlerFunc) HandlerFunc {
-	return func(w ResponseWriter, r *Request) {
-
-		// call the handler
-		h(w, r)
-
-		if rh.statusService != nil {
-			rh.statusService.update(
-				r.Env["statusCode"].(int),
-				r.Env["elapsedTime"].(*time.Duration),
-			)
-		}
 	}
 }
