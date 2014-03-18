@@ -5,7 +5,7 @@ import (
 )
 
 // recorderMiddleware keeps a record of the HTTP status code of the response.
-// The result is available to the wrapping handlers in request.Env["statusCode"] as an int.
+// The result is available to the wrapping handlers in request.Env["STATUS_CODE"] as an int.
 type recorderMiddleware struct{}
 
 func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
@@ -16,7 +16,7 @@ func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		// call the handler
 		h(writer, r)
 
-		r.Env["statusCode"] = writer.statusCode
+		r.Env["STATUS_CODE"] = writer.statusCode
 	}
 }
 

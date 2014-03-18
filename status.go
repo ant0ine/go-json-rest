@@ -8,7 +8,7 @@ import (
 )
 
 // statusMiddleware keeps track of various stats about the processed requests.
-// It depends on request.Env["statusCode"] and request.Env["elapsedTime"]
+// It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"]
 type statusMiddleware struct {
 	lock              sync.Mutex
 	start             time.Time
@@ -40,8 +40,8 @@ func (mw *statusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		h(w, r)
 
 		mw.update(
-			r.Env["statusCode"].(int),
-			r.Env["elapsedTime"].(*time.Duration),
+			r.Env["STATUS_CODE"].(int),
+			r.Env["ELAPSED_TIME"].(*time.Duration),
 		)
 	}
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // logMiddleware manages the Logger.
-// It depends on request.Env["statusCode"] and request.Env["elapsedTime"].
+// It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"].
 type logMiddleware struct {
 	Logger          *log.Logger
 	EnableLogAsJson bool
@@ -27,8 +27,8 @@ func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		h(w, r)
 
 		mw.logResponseRecord(&responseLogRecord{
-			r.Env["statusCode"].(int),
-			r.Env["elapsedTime"].(*time.Duration),
+			r.Env["STATUS_CODE"].(int),
+			r.Env["ELAPSED_TIME"].(*time.Duration),
 			r.Method,
 			r.URL.RequestURI(),
 		})

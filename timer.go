@@ -5,7 +5,7 @@ import (
 )
 
 // timerMiddleware computes the elapsed time spent during the execution of the wrapped handler.
-// The result is available to the wrapping handlers in request.Env["elapsedTime"] as a time.Duration.
+// The result is available to the wrapping handlers in request.Env["ELAPSED_TIME"] as a time.Duration.
 type timerMiddleware struct{}
 
 func (mw *timerMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
@@ -18,6 +18,6 @@ func (mw *timerMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 		end := time.Now()
 		elapsed := end.Sub(start)
-		r.Env["elapsedTime"] = &elapsed
+		r.Env["ELAPSED_TIME"] = &elapsed
 	}
 }
