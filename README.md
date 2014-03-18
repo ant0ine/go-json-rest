@@ -68,8 +68,10 @@ More Examples
 - [GORM](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/gorm/main.go) Demo basic CRUD operations using MySQL and GORM
 - [Streaming](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/streaming/main.go) Demo Line Delimited JSON stream
 - [CORS](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/cors/main.go) Demo CORS support for all endpoints
-- [Basic Auth](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go) Demo an Authentication Basic impl for all endpoints
+- [Basic Auth](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go) Demo how to setup AuthBasicMiddleware as a pre-routing middleware
+- [Basic Auth Custom](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic-custom/main.go) Demo a custom implementation of Authentication Basic
 - [Status](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go) Demo how to setup the /.status endpoint
+- [Status Auth](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go) Demo how to setup the /.status endpoint protected with basic authentication
 
 
 Documentation
