@@ -32,7 +32,7 @@ func (rt *router) start() error {
 	rt.trie = trie.New()
 	rt.index = map[*Route]int{}
 
-	for i, _ := range rt.routes {
+	for i := range rt.routes {
 
 		// pointer to the Route
 		route := &rt.routes[i]
