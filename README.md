@@ -23,7 +23,7 @@ Install
 
 This package is "go-gettable", just do:
 
-    go get github.com/ant0ine/go-json-rest
+    go get github.com/ant0ine/go-json-rest/rest
 
 
 Example
@@ -32,7 +32,7 @@ Example
 ~~~ go
 package main
 import (
-        "github.com/ant0ine/go-json-rest"
+        "github.com/ant0ine/go-json-rest/rest"
         "net/http"
 )
 type User struct {
