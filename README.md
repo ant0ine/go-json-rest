@@ -121,18 +121,6 @@ GET /.status returns something like:
     }
 
 
-Migration from v1 to v2
------------------------
-
-A few breaking changes have been introduced to the v2. (go-json-rest follows [Semver](http://semver.org/))
-
-- The import path has changed to github.com/ant0ine/go-json-rest/rest which is more conform to the Go style, and makes [goimports](https://godoc.org/code.google.com/p/go.tools/cmd/goimports) working.
-- rest.ResponseWriter is now an interface. This is the main change, and most of the program will be migrated with a simple s/\*\.rest\.ResponseWriter/rest\.ResponseWriter/g
-- Flush(), CloseNotify() and Write() are not directly exposed anymore. A type assertion of the corresponding interface is necessary. eg: writer.(http.Flusher).Flush()
-- The /.status endpoint is not created automatically anymore. The route has to be manually set as shown on the "status" example.
-- The notion of Middleware is now formally defined, and code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects. See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go).
-
-
 Thanks
 ------
 - [Franck Cuny](https://github.com/franckcuny)
