@@ -86,7 +86,9 @@ type CorsInfo struct {
 	OriginUrl   *url.URL
 
 	// The header value is converted to uppercase to avoid common mistakes.
-	AccessControlRequestMethod  string
+	AccessControlRequestMethod string
+
+	// The header values are normalized with http.CanonicalHeaderKey.
 	AccessControlRequestHeaders []string
 }
 
