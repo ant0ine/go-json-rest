@@ -80,10 +80,12 @@ func (r *Request) UriForWithParams(path string, parameters map[string][]string) 
 
 // CorsInfo contains the CORS request info derived from a rest.Request.
 type CorsInfo struct {
-	IsCors                      bool
-	IsPreflight                 bool
-	Origin                      string
-	OriginUrl                   *url.URL
+	IsCors      bool
+	IsPreflight bool
+	Origin      string
+	OriginUrl   *url.URL
+
+	// The header value is converted to uppercase to avoid common mistakes.
 	AccessControlRequestMethod  string
 	AccessControlRequestHeaders []string
 }
@@ -114,7 +116,7 @@ func (r *Request) GetCorsInfo() *CorsInfo {
 		IsPreflight:                 isPreflight,
 		Origin:                      origin,
 		OriginUrl:                   originUrl,
-		AccessControlRequestMethod:  reqMethod,
+		AccessControlRequestMethod:  strings.ToUpper(reqMethod),
 		AccessControlRequestHeaders: reqHeaders,
 	}
 }
