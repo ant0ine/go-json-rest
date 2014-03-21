@@ -67,7 +67,7 @@ More Examples
 - [GAE](https://github.com/ant0ine/go-json-rest-examples/tree/v2-alpha/gae) Demo go-json-rest on Google App Engine
 - [GORM](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/gorm/main.go) Demo basic CRUD operations using MySQL and GORM
 - [Streaming](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/streaming/main.go) Demo Line Delimited JSON stream
-- [CORS](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/cors/main.go) Demo CORS support for all endpoints
+- [CORS Custom](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/cors-custom/main.go) Demo a custom implementation of CORS
 - [Basic Auth](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go) Demo how to setup AuthBasicMiddleware as a pre-routing middleware
 - [Basic Auth Custom](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic-custom/main.go) Demo a custom implementation of Authentication Basic
 - [Status](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go) Demo how to setup the /.status endpoint
