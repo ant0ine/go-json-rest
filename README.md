@@ -39,7 +39,7 @@ type User struct {
         Id   string
         Name string
 }
-func GetUser(w *rest.ResponseWriter, req *rest.Request) {
+func GetUser(w rest.ResponseWriter, req *rest.Request) {
         user := User{
                 Id:   req.PathParam("id"),
                 Name: "Antoine",
