@@ -26,6 +26,14 @@ This package is "go-gettable", just do:
     go get github.com/ant0ine/go-json-rest/rest
 
 
+Vendoring
+---------
+
+The recommended way of using this library in your project is to use the **"vendoring"** method,
+where this library code is copied in your repository at a specific revision.
+[This page](http://nathany.com/go-packages/) is a good summary of package management in Go.
+
+
 Example
 -------
 
