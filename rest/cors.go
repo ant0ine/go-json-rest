@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+// Possible improvements:
+// If AllowedMethods["*"] then Access-Control-Allow-Methods is set to the requested methods
+// If AllowedHeaderss["*"] then Access-Control-Allow-Headers is set to the requested headers
+// Put some presets in AllowedHeaders
+// Put some presets in AccessControlExposeHeaders
+
 // CorsMiddleware provides a configurable CORS implementation.
 type CorsMiddleware struct {
 	allowedMethods map[string]bool
@@ -25,10 +31,13 @@ type CorsMiddleware struct {
 	AllowedMethods []string
 
 	// List of allowed HTTP Headers. Note that the comparison will be made with
-	// noarmalized names (AccessControlRequestHeaders). And that the response header
+	// noarmalized names (http.CanonicalHeaderKey). And that the response header
 	// also uses normalized names.
 	// (see CorsInfo.AccessControlRequestHeaders)
 	AllowedHeaders []string
+
+	// List of headers used to set the Access-Control-Expose-Headers header.
+	AccessControlExposeHeaders []string
 
 	// User to se the Access-Control-Allow-Credentials response header.
 	AccessControlAllowCredentials bool
@@ -103,7 +112,9 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 			writer.WriteHeader(http.StatusOK)
 			return
 		} else {
-			writer.Header().Set("Access-Control-Expose-Headers", "X-Powered-By") // TODO
+			for _, exposed := range mw.AccessControlExposeHeaders {
+				writer.Header().Add("Access-Control-Expose-Headers", exposed)
+			}
 			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
 			if mw.AccessControlAllowCredentials == true {
 				writer.Header().Set("Access-Control-Allow-Credentials", "true")
