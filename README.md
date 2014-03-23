@@ -6,16 +6,20 @@ Go-Json-Rest
 
 [![Build Status](https://travis-ci.org/ant0ine/go-json-rest.png?branch=master)](https://travis-ci.org/ant0ine/go-json-rest)
 
+
+**Warning: This is v2-alpha, a work in progress for the version 2 of Go-Json-Rest**
+
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
 
 
 Features
 --------
-- Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
-- Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.
-- Test package to help writing tests for the API.
-- Monitoring statistics.
 - Many examples.
+- Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.
+- Use Middlewares in order to extend the functionalities.
+- Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
+- Test package to help writing tests for the API.
+- Monitoring statistics inspired by Memcached.
 
 
 Install
@@ -41,7 +45,7 @@ Examples
 
 #### Hello World!
 
-Traditions!
+Tradition!
 
 ~~~ go
 /* The minimal example: Hello World!
@@ -1045,10 +1049,13 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 ~~~
 
 
-Documentation
--------------
+External Documentation
+----------------------
 
 - [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
+
+Old v1 blog posts:
+
 - [(Blog Post) Introducing Go-Json-Rest] (http://blog.ant0ine.com/typepad/2013/04/introducing-go-json-rest.html)
 - [(Blog Post) Better URL Routing ?] (http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html)
 
