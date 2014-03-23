@@ -38,17 +38,20 @@
 
 <p><a href="https://travis-ci.org/ant0ine/go-json-rest"><img src="https://travis-ci.org/ant0ine/go-json-rest.png?branch=master" alt="Build Status"></a></p>
 
+<p><strong>Warning: This is v2-alpha, a work in progress for the version 2 of Go-Json-Rest</strong></p>
+
 <p><strong>Go-Json-Rest</strong> is a thin layer on top of <code>net/http</code> that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...</p>
 
 <h2>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
 
 <ul>
-<li>Implemented as a <code>net/http</code> Handler. This standard interface allows combinations with other Handlers.</li>
-<li>Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.</li>
-<li>Test package to help writing tests for the API.</li>
-<li>Monitoring statistics.</li>
 <li>Many examples.</li>
+<li>Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.</li>
+<li>Use Middlewares in order to extend the functionalities.</li>
+<li>Implemented as a <code>net/http</code> Handler. This standard interface allows combinations with other Handlers.</li>
+<li>Test package to help writing tests for the API.</li>
+<li>Monitoring statistics inspired by Memcached.</li>
 </ul><h2>
 <a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h2>
 
@@ -72,7 +75,7 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="hello-world" class="anchor" href="#hello-world"><span class="octicon octicon-link"></span></a>Hello World!</h4>
 
-<p>Traditions!</p>
+<p>Tradition!</p>
 
 <div class="highlight highlight-go"><pre><span class="cm">/* The minimal example: Hello World!</span>
 
@@ -1074,10 +1077,13 @@ See the "status" example to install the following status route:</p>
 </pre></div>
 
 <h2>
-<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
+<a name="external-documentation" class="anchor" href="#external-documentation"><span class="octicon octicon-link"></span></a>External Documentation</h2>
 
 <ul>
 <li><a href="http://godoc.org/github.com/ant0ine/go-json-rest">Online Documentation (godoc.org)</a></li>
+</ul><p>Old v1 blog posts:</p>
+
+<ul>
 <li><a href="http://blog.ant0ine.com/typepad/2013/04/introducing-go-json-rest.html">(Blog Post) Introducing Go-Json-Rest</a></li>
 <li><a href="http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html">(Blog Post) Better URL Routing ?</a></li>
 </ul><h2>
