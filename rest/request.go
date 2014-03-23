@@ -38,9 +38,9 @@ func (r *Request) DecodeJsonPayload(v interface{}) error {
 	return nil
 }
 
-// UriBase returns a URL structure for the base (scheme + host) of the application,
-// without the trailing slash in the host.
-func (r *Request) UriBase() url.URL {
+// BaseUrl returns a new URL object with the Host and Scheme taken from the request.
+// (without the trailing slash in the host)
+func (r *Request) BaseUrl() *url.URL {
 	scheme := r.URL.Scheme
 	if scheme == "" {
 		scheme = "http"
@@ -51,30 +51,26 @@ func (r *Request) UriBase() url.URL {
 		host = host[:len(host)-1]
 	}
 
-	url := url.URL{
+	return &url.URL{
 		Scheme: scheme,
 		Host:   host,
 	}
-	return url
 }
 
-// UriFor returns an URL structure from the base and an additional path.
-func (r *Request) UriFor(path string) url.URL {
-	baseUrl := r.UriBase()
+// UrlFor returns the URL object from UriBase with the Path set to path, and the query
+// string built with queryParams.
+func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL {
+	baseUrl := r.BaseUrl()
 	baseUrl.Path = path
-	return baseUrl
-}
-
-// UriForWithParams returns an URL structure from the base, the path and the parameters.
-func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL {
-	query := url.Values{}
-	for k, v := range parameters {
-		for _, vv := range v {
-			query.Add(k, vv)
+	if queryParams != nil {
+		query := url.Values{}
+		for k, v := range queryParams {
+			for _, vv := range v {
+				query.Add(k, vv)
+			}
 		}
+		baseUrl.RawQuery = query.Encode()
 	}
-	baseUrl := r.UriFor(path)
-	baseUrl.RawQuery = query.Encode()
 	return baseUrl
 }
 

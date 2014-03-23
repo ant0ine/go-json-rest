@@ -67,5 +67,12 @@ type Middleware interface {
 Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
 See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go).
 
+#### Request utility methods have changed
+
+Overall, they provide the same features, but with two methods instead of three, better names, and without the confusing `UriForWithParams`.
+
+`func (r *Request) UriBase() url.URL` is now `func (r *Request) BaseUrl() *url.URL`, Note the pointer as the returned value.
+
+`func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL` is now `func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL` and `func (r *Request) UriFor(path string) url.URL` has be removed.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/v2-alpha/MigrationGuide-v1tov2.md)](https://github.com/igrigorik/ga-beacon)

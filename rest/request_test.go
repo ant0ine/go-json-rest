@@ -18,54 +18,55 @@ func defaultRequest(method string, urlStr string, body io.Reader, t *testing.T) 
 	}
 }
 
-func TestRequestUriBase(t *testing.T) {
+func TestRequestBaseUrl(t *testing.T) {
 	req := defaultRequest("GET", "http://localhost", nil, t)
-	uriBase := req.UriBase()
-	uriString := uriBase.String()
+	urlBase := req.BaseUrl()
+	urlString := urlBase.String()
 
 	expected := "http://localhost"
-	if uriString != expected {
-		t.Error(expected + " was the expected URI base, but instead got " + uriString)
+	if urlString != expected {
+		t.Error(expected + " was the expected URL base, but instead got " + urlString)
 	}
 }
 
-func TestRequestUriScheme(t *testing.T) {
+func TestRequestUrlScheme(t *testing.T) {
 	req := defaultRequest("GET", "https://localhost", nil, t)
-	uriBase := req.UriBase()
+	urlBase := req.BaseUrl()
 
 	expected := "https"
-	if uriBase.Scheme != expected {
-		t.Error(expected + " was the expected scheme, but instead got " + uriBase.Scheme)
+	if urlBase.Scheme != expected {
+		t.Error(expected + " was the expected scheme, but instead got " + urlBase.Scheme)
 	}
 }
 
-func TestRequestUriFor(t *testing.T) {
+func TestRequestUrlFor(t *testing.T) {
 	req := defaultRequest("GET", "http://localhost", nil, t)
 
 	path := "/foo/bar"
 
-	uri := req.UriFor(path)
-	if uri.Path != path {
-		t.Error(path + " was expected to be the path, but got " + uri.Path)
+	urlObj := req.UrlFor(path, nil)
+	if urlObj.Path != path {
+		t.Error(path + " was expected to be the path, but got " + urlObj.Path)
 	}
 
 	expected := "http://localhost/foo/bar"
-	if uri.String() != expected {
-		t.Error(expected + " was expected, but the returned URI was " + uri.String())
+	if urlObj.String() != expected {
+		t.Error(expected + " was expected, but the returned URL was " + urlObj.String())
 	}
 }
 
-func TestRequestUriForParams(t *testing.T) {
+func TestRequestUrlForQueryString(t *testing.T) {
 	req := defaultRequest("GET", "http://localhost", nil, t)
 
-	params := make(map[string][]string)
-	params["id"] = []string{"foo", "bar"}
+	params := map[string][]string{
+		"id": []string{"foo", "bar"},
+	}
 
-	uri := req.UriForWithParams("/foo/bar", params)
+	urlObj := req.UrlFor("/foo/bar", params)
 
 	expected := "http://localhost/foo/bar?id=foo&id=bar"
-	if uri.String() != expected {
-		t.Error(expected + " was expected, but the returned URI was " + uri.String())
+	if urlObj.String() != expected {
+		t.Error(expected + " was expected, but the returned URL was " + urlObj.String())
 	}
 }
 
