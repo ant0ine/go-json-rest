@@ -1149,8 +1149,6 @@ Overall, they provide the same features, but with two methods instead of three, 
 
 `func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL` is now `func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL` and `func (r *Request) UriFor(path string) url.URL` has be removed.
 
-[![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/v2-alpha/MigrationGuide-v1tov2.md)](https://github.com/igrigorik/ga-beacon)
-
 Thanks
 ------
 - [Franck Cuny](https://github.com/franckcuny)
