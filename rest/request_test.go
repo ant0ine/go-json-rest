@@ -1,31 +1,25 @@
 package rest
 
 import (
+	"io"
 	"net/http"
-	"net/url"
 	"testing"
 )
 
-func defaultRequest(uri string, method string, t *testing.T) Request {
-	urlObj, err := url.Parse(uri)
+func defaultRequest(method string, urlStr string, body io.Reader, t *testing.T) *Request {
+	origReq, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
 		t.Fatal()
 	}
-	origReq := http.Request{
-		Method: method,
-		URL:    urlObj,
-		Host:   "localhost",
-	}
-	req := Request{
-		&origReq,
+	return &Request{
+		origReq,
 		nil,
 		map[string]interface{}{},
 	}
-	return req
 }
 
 func TestRequestUriBase(t *testing.T) {
-	req := defaultRequest("http://localhost", "GET", t)
+	req := defaultRequest("GET", "http://localhost", nil, t)
 	uriBase := req.UriBase()
 	uriString := uriBase.String()
 
@@ -36,7 +30,7 @@ func TestRequestUriBase(t *testing.T) {
 }
 
 func TestRequestUriScheme(t *testing.T) {
-	req := defaultRequest("https://localhost", "GET", t)
+	req := defaultRequest("GET", "https://localhost", nil, t)
 	uriBase := req.UriBase()
 
 	expected := "https"
@@ -46,7 +40,7 @@ func TestRequestUriScheme(t *testing.T) {
 }
 
 func TestRequestUriFor(t *testing.T) {
-	req := defaultRequest("http://locahost", "GET", t)
+	req := defaultRequest("GET", "http://localhost", nil, t)
 
 	path := "/foo/bar"
 
@@ -62,7 +56,7 @@ func TestRequestUriFor(t *testing.T) {
 }
 
 func TestRequestUriForParams(t *testing.T) {
-	req := defaultRequest("http://localhost", "GET", t)
+	req := defaultRequest("GET", "http://localhost", nil, t)
 
 	params := make(map[string][]string)
 	params["id"] = []string{"foo", "bar"}
@@ -72,5 +66,50 @@ func TestRequestUriForParams(t *testing.T) {
 	expected := "http://localhost/foo/bar?id=foo&id=bar"
 	if uri.String() != expected {
 		t.Error(expected + " was expected, but the returned URI was " + uri.String())
+	}
+}
+
+func TestCorsInfoSimpleCors(t *testing.T) {
+	req := defaultRequest("GET", "http://localhost", nil, t)
+	req.Request.Header.Set("Origin", "http://another.host")
+
+	corsInfo := req.GetCorsInfo()
+	if corsInfo == nil {
+		t.Error("Expected non nil CorsInfo")
+	}
+	if corsInfo.IsCors == false {
+		t.Error("This is a CORS request")
+	}
+	if corsInfo.IsPreflight == true {
+		t.Error("This is not a Preflight request")
+	}
+}
+
+func TestCorsInfoPreflightCors(t *testing.T) {
+	req := defaultRequest("OPTIONS", "http://localhost", nil, t)
+	req.Request.Header.Set("Origin", "http://another.host")
+
+	corsInfo := req.GetCorsInfo()
+	if corsInfo == nil {
+		t.Error("Expected non nil CorsInfo")
+	}
+	if corsInfo.IsCors == false {
+		t.Error("This is a CORS request")
+	}
+	if corsInfo.IsPreflight == true {
+		t.Error("This is NOT a Preflight request")
+	}
+
+	// Preflight must have the Access-Control-Request-Method header
+	req.Request.Header.Set("Access-Control-Request-Method", "PUT")
+	corsInfo = req.GetCorsInfo()
+	if corsInfo == nil {
+		t.Error("Expected non nil CorsInfo")
+	}
+	if corsInfo.IsCors == false {
+		t.Error("This is a CORS request")
+	}
+	if corsInfo.IsPreflight == false {
+		t.Error("This is a Preflight request")
 	}
 }
