@@ -34,53 +34,952 @@ where this library code is copied in your repository at a specific revision.
 [This page](http://nathany.com/go-packages/) is a good summary of package management in Go.
 
 
-Example
--------
-
-~~~ go
-package main
-import (
-        "github.com/ant0ine/go-json-rest/rest"
-        "net/http"
-)
-type User struct {
-        Id   string
-        Name string
-}
-func GetUser(w rest.ResponseWriter, req *rest.Request) {
-        user := User{
-                Id:   req.PathParam("id"),
-                Name: "Antoine",
-        }
-        w.WriteJson(&user)
-}
-func main() {
-        handler := rest.ResourceHandler{}
-        handler.SetRoutes(
-                rest.Route{"GET", "/users/:id", GetUser},
-        )
-        http.ListenAndServe(":8080", &handler)
-}
-~~~
-
-
-More Examples
--------------
+Examples
+--------
 
 (See the dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples)
 
-- [Countries](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/countries/main.go) Demo very simple GET, POST, DELETE operations
-- [Users](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/users/main.go) Demo the mapping to object methods
-- [SPDY](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/spdy/main.go) Demo SPDY using github.com/shykes/spdy-go
-- [GAE](https://github.com/ant0ine/go-json-rest-examples/tree/v2-alpha/gae) Demo go-json-rest on Google App Engine
-- [GORM](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/gorm/main.go) Demo basic CRUD operations using MySQL and GORM
-- [Streaming](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/streaming/main.go) Demo Line Delimited JSON stream
-- [CORS](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/cors/main.go) Demo how to setup CorsMiddleware as a pre-routing middleware
-- [CORS Custom](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/cors-custom/main.go) Demo a custom implementation of CORS
-- [Basic Auth](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go) Demo how to setup AuthBasicMiddleware as a pre-routing middleware
-- [Basic Auth Custom](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic-custom/main.go) Demo a custom implementation of Authentication Basic
-- [Status](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go) Demo how to setup the /.status endpoint
-- [Status Auth](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go) Demo how to setup the /.status endpoint protected with basic authentication
+#### Countries
+
+Demo very simple GET, POST, DELETE operations
+
+~~~ go
+/* Demonstrate simple POST GET and DELETE operations
+
+The Curl Demo:
+
+        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+        curl -i http://127.0.0.1:8080/countries/FR
+        curl -i http://127.0.0.1:8080/countries/US
+        curl -i http://127.0.0.1:8080/countries
+        curl -i -X DELETE http://127.0.0.1:8080/countries/FR
+        curl -i http://127.0.0.1:8080/countries
+        curl -i -X DELETE http://127.0.0.1:8080/countries/US
+        curl -i http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{
+                EnableRelaxedContentType: true,
+        }
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+		rest.Route{"POST", "/countries", PostCountry},
+		rest.Route{"GET", "/countries/:code", GetCountry},
+		rest.Route{"DELETE", "/countries/:code", DeleteCountry},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+var store = map[string]*Country{}
+
+func GetCountry(w rest.ResponseWriter, r *rest.Request) {
+	code := r.PathParam("code")
+	country := store[code]
+	if country == nil {
+		rest.NotFound(w, r)
+		return
+	}
+	w.WriteJson(&country)
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	countries := make([]*Country, len(store))
+	i := 0
+	for _, country := range store {
+		countries[i] = country
+		i++
+	}
+	w.WriteJson(&countries)
+}
+
+func PostCountry(w rest.ResponseWriter, r *rest.Request) {
+	country := Country{}
+	err := r.DecodeJsonPayload(&country)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if country.Code == "" {
+		rest.Error(w, "country code required", 400)
+		return
+	}
+	if country.Name == "" {
+		rest.Error(w, "country name required", 400)
+		return
+	}
+	store[country.Code] = &country
+	w.WriteJson(&country)
+}
+
+func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
+	code := r.PathParam("code")
+	delete(store, code)
+}
+
+~~~
+
+#### Users
+
+Demo the mapping to object methods
+
+~~~ go
+/* Demonstrate how to use rest.RouteObjectMethod
+
+rest.RouteObjectMethod helps create a Route that points to
+an object method instead of just a function.
+
+The Curl Demo:
+
+        curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+        curl -i http://127.0.0.1:8080/users/0
+        curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+        curl -i -X DELETE http://127.0.0.1:8080/users/0
+        curl -i http://127.0.0.1:8080/users
+
+*/
+package main
+
+import (
+	"fmt"
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+
+	users := Users{
+		Store: map[string]*User{},
+	}
+
+	handler := rest.ResourceHandler{
+                EnableRelaxedContentType: true,
+        }
+	handler.SetRoutes(
+		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
+		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
+		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
+		rest.RouteObjectMethod("PUT", "/users/:id", &users, "PutUser"),
+		rest.RouteObjectMethod("DELETE", "/users/:id", &users, "DeleteUser"),
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type User struct {
+	Id   string
+	Name string
+}
+
+type Users struct {
+	Store map[string]*User
+}
+
+func (self *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
+	users := make([]*User, len(self.Store))
+	i := 0
+	for _, user := range self.Store {
+		users[i] = user
+		i++
+	}
+	w.WriteJson(&users)
+}
+
+func (self *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	user := self.Store[id]
+	if user == nil {
+		rest.NotFound(w, r)
+		return
+	}
+	w.WriteJson(&user)
+}
+
+func (self *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
+	user := User{}
+	err := r.DecodeJsonPayload(&user)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	id := fmt.Sprintf("%d", len(self.Store)) // stupid
+	user.Id = id
+	self.Store[id] = &user
+	w.WriteJson(&user)
+}
+
+func (self *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	if self.Store[id] == nil {
+		rest.NotFound(w, r)
+		return
+	}
+	user := User{}
+	err := r.DecodeJsonPayload(&user)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	user.Id = id
+	self.Store[id] = &user
+	w.WriteJson(&user)
+}
+
+func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	delete(self.Store, id)
+}
+
+~~~
+
+#### SPDY
+
+Demo SPDY using raw.githubusercontent.com/shykes/spdy-go
+
+~~~ go
+// Demonstrate how to use SPDY with github.com/shykes/spdy-go
+//
+// For a command line client, install spdycat from:
+// https://github.com/tatsuhiro-t/spdylay
+//
+// Then:
+//
+// spdycat -v --no-tls -2 http://localhost:8080/users/0
+//
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/shykes/spdy-go"
+	"log"
+)
+
+type User struct {
+	Id   string
+	Name string
+}
+
+func GetUser(w rest.ResponseWriter, req *rest.Request) {
+	user := User{
+		Id:   req.PathParam("id"),
+		Name: "Antoine",
+	}
+	w.WriteJson(&user)
+}
+
+func main() {
+	handler := rest.ResourceHandler{}
+	handler.SetRoutes(
+		rest.Route{"GET", "/users/:id", GetUser},
+	)
+	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
+}
+
+~~~
+
+#### GAE
+
+Demo go-json-rest on Google App Engine
+
+~~~ go
+Not Found
+~~~
+
+#### GORM
+
+Demo basic CRUD operations using MySQL and GORM
+
+~~~ go
+/* Demonstrate basic CRUD operation using a store based on MySQL and GORM
+
+The Curl Demo:
+
+        curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+        curl -i http://127.0.0.1:8080/reminders/1
+        curl -i http://127.0.0.1:8080/reminders
+        curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+        curl -i -X DELETE http://127.0.0.1:8080/reminders/1
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	"log"
+	"net/http"
+	"time"
+)
+
+func main() {
+
+	api := Api{}
+	api.InitDB()
+	api.InitSchema()
+
+	handler := rest.ResourceHandler{
+		EnableRelaxedContentType: true,
+	}
+	handler.SetRoutes(
+		rest.RouteObjectMethod("GET", "/reminders", &api, "GetAllReminders"),
+		rest.RouteObjectMethod("POST", "/reminders", &api, "PostReminder"),
+		rest.RouteObjectMethod("GET", "/reminders/:id", &api, "GetReminder"),
+		rest.RouteObjectMethod("PUT", "/reminders/:id", &api, "PutReminder"),
+		rest.RouteObjectMethod("DELETE", "/reminders/:id", &api, "DeleteReminder"),
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Reminder struct {
+	Id        int64     `json:"id"`
+	Message   string    `sql:"size:1024" json:"message"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	DeletedAt time.Time `json:"-"`
+}
+
+type Api struct {
+	DB gorm.DB
+}
+
+func (api *Api) InitDB() {
+	var err error
+	api.DB, err = gorm.Open("mysql", "gorm:gorm@/gorm?charset=utf8&parseTime=True")
+	if err != nil {
+		log.Fatalf("Got error when connect database, the error is '%v'", err)
+	}
+	api.DB.LogMode(true)
+}
+
+func (api *Api) InitSchema() {
+	api.DB.AutoMigrate(Reminder{})
+}
+
+func (api *Api) GetAllReminders(w rest.ResponseWriter, r *rest.Request) {
+	reminders := []Reminder{}
+	api.DB.Find(&reminders)
+	w.WriteJson(&reminders)
+}
+
+func (api *Api) GetReminder(w rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	reminder := Reminder{}
+	if api.DB.First(&reminder, id).Error != nil {
+		rest.NotFound(w, r)
+		return
+	}
+	w.WriteJson(&reminder)
+}
+
+func (api *Api) PostReminder(w rest.ResponseWriter, r *rest.Request) {
+	reminder := Reminder{}
+	if err := r.DecodeJsonPayload(&reminder); err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := api.DB.Save(&reminder).Error; err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteJson(&reminder)
+}
+
+func (api *Api) PutReminder(w rest.ResponseWriter, r *rest.Request) {
+
+	id := r.PathParam("id")
+	reminder := Reminder{}
+	if api.DB.First(&reminder, id).Error != nil {
+		rest.NotFound(w, r)
+		return
+	}
+
+	updated := Reminder{}
+	if err := r.DecodeJsonPayload(&updated); err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	reminder.Message = updated.Message
+
+	if err := api.DB.Save(&reminder).Error; err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteJson(&reminder)
+}
+
+func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
+	id := r.PathParam("id")
+	reminder := Reminder{}
+	if api.DB.First(&reminder, id).Error != nil {
+		rest.NotFound(w, r)
+		return
+	}
+	if err := api.DB.Delete(&reminder).Error; err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+~~~
+
+#### Streaming
+
+Demo Line Delimited JSON stream
+
+~~~ go
+/* Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.
+
+The stream format is a Line Delimited JSON.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/stream
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+        Date: Sun, 16 Feb 2014 00:39:19 GMT
+        Transfer-Encoding: chunked
+
+        {"Name":"thing #1"}
+        {"Name":"thing #2"}
+        {"Name":"thing #3"}
+
+*/
+package main
+
+import (
+	"fmt"
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+	"time"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		EnableRelaxedContentType: true,
+		DisableJsonIndent:        true,
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/stream", StreamThings},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Thing struct {
+	Name string
+}
+
+func StreamThings(w rest.ResponseWriter, r *rest.Request) {
+	cpt := 0
+	for {
+		cpt++
+		w.WriteJson(
+			&Thing{
+				Name: fmt.Sprintf("thing #%d", cpt),
+			},
+		)
+		w.(http.ResponseWriter).Write([]byte("\n"))
+		// Flush the buffer to client
+		w.(http.Flusher).Flush()
+		// wait 3 seconds
+		time.Sleep(time.Duration(3) * time.Second)
+	}
+}
+
+~~~
+
+#### CORS
+
+Demo how to setup CorsMiddleware as a pre-routing middleware
+
+~~~ go
+/* Demonstrate how to setup CorsMiddleware around all the API endpoints.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		PreRoutingMiddlewares: []rest.Middleware{
+			&rest.CorsMiddleware{
+				RejectNonCorsRequests: false,
+				OriginValidator: func(origin string, request *rest.Request) bool {
+					return origin == "http://my.other.host"
+				},
+				AllowedMethods:                []string{"GET", "POST", "PUT"},
+				AllowedHeaders:                []string{"Accept", "Content-Type", "X-Custom-Header"},
+				AccessControlAllowCredentials: true,
+				AccessControlMaxAge:           3600,
+			},
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
+#### CORS Custom
+
+Demo a custom implementation of CORS
+
+~~~ go
+/* Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+type MyCorsMiddleware struct{}
+
+func (mw *MyCorsMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
+	return func(writer rest.ResponseWriter, request *rest.Request) {
+
+		corsInfo := request.GetCorsInfo()
+
+		// Be nice with non CORS requests, continue
+		// Alternatively, you may also chose to only allow CORS requests, and return an error.
+		if !corsInfo.IsCors {
+			// continure, execute the wrapped middleware
+			handler(writer, request)
+			return
+		}
+
+		// Validate the Origin
+		// More sophisticated validations can be implemented, regexps, DB lookups, ...
+		if corsInfo.Origin != "http://my.other.host" {
+			rest.Error(writer, "Invalid Origin", http.StatusForbidden)
+			return
+		}
+
+		if corsInfo.IsPreflight {
+			// check the request methods
+			allowedMethods := map[string]bool{
+				"GET":  true,
+				"POST": true,
+				"PUT":  true,
+				// don't allow DELETE, for instance
+			}
+			if !allowedMethods[corsInfo.AccessControlRequestMethod] {
+				rest.Error(writer, "Invalid Preflight Request", http.StatusForbidden)
+				return
+			}
+			// check the request headers
+			allowedHeaders := map[string]bool{
+				"Accept":          true,
+				"Content-Type":    true,
+				"X-Custom-Header": true,
+			}
+			for _, requestedHeader := range corsInfo.AccessControlRequestHeaders {
+				if !allowedHeaders[requestedHeader] {
+					rest.Error(writer, "Invalid Preflight Request", http.StatusForbidden)
+					return
+				}
+			}
+
+			for allowedMethod, _ := range allowedMethods {
+				writer.Header().Add("Access-Control-Allow-Methods", allowedMethod)
+			}
+			for allowedHeader, _ := range allowedHeaders {
+				writer.Header().Add("Access-Control-Allow-Headers", allowedHeader)
+			}
+			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
+			writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			writer.Header().Set("Access-Control-Max-Age", "3600")
+			writer.WriteHeader(http.StatusOK)
+			return
+		} else {
+			writer.Header().Set("Access-Control-Expose-Headers", "X-Powered-By")
+			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
+			writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			// continure, execute the wrapped middleware
+			handler(writer, request)
+			return
+		}
+	}
+}
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		PreRoutingMiddlewares: []rest.Middleware{
+			&MyCorsMiddleware{},
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
+#### Basic Auth
+
+Demo how to setup AuthBasicMiddleware as a pre-routing middleware
+
+~~~ go
+/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+        curl -i -u admin:admin http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		PreRoutingMiddlewares: []rest.Middleware{
+			&rest.AuthBasicMiddleware{
+				Realm: "test zone",
+				Authenticator: func(userId string, password string) bool {
+					if userId == "admin" && password == "admin" {
+						return true
+					}
+					return false
+				},
+			},
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
+#### Basic Auth Custom
+
+Demo a custom implementation of Authentication Basic
+
+~~~ go
+/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
+
+This is a very simple version supporting only one user.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"encoding/base64"
+	"errors"
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+	"strings"
+)
+
+type MyAuthBasicMiddleware struct {
+	Realm    string
+	UserId   string
+	Password string
+}
+
+func (mw *MyAuthBasicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
+	return func(writer rest.ResponseWriter, request *rest.Request) {
+
+		authHeader := request.Header.Get("Authorization")
+		if authHeader == "" {
+			mw.unauthorized(writer)
+			return
+		}
+
+		providedUserId, providedPassword, err := mw.decodeBasicAuthHeader(authHeader)
+
+		if err != nil {
+			rest.Error(writer, "Invalid authentication", http.StatusBadRequest)
+			return
+		}
+
+		if !(providedUserId == mw.UserId && providedPassword == mw.Password) {
+			mw.unauthorized(writer)
+			return
+		}
+
+		handler(writer, request)
+	}
+}
+
+func (mw *MyAuthBasicMiddleware) unauthorized(writer rest.ResponseWriter) {
+	writer.Header().Set("WWW-Authenticate", "Basic realm="+mw.Realm)
+	rest.Error(writer, "Not Authorized", http.StatusUnauthorized)
+}
+
+func (mw *MyAuthBasicMiddleware) decodeBasicAuthHeader(header string) (user string, password string, err error) {
+
+	parts := strings.SplitN(header, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Basic") {
+		return "", "", errors.New("Invalid authentication")
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", "", errors.New("Invalid base64")
+	}
+
+	creds := strings.SplitN(string(decoded), ":", 2)
+	if len(creds) != 2 {
+		return "", "", errors.New("Invalid authentication")
+	}
+
+	return creds[0], creds[1], nil
+}
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		PreRoutingMiddlewares: []rest.Middleware{
+			&MyAuthBasicMiddleware{
+				Realm:    "Administration",
+				UserId:   "admin",
+				Password: "admin",
+			},
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
+#### Status
+
+Demo how to setup the /.status endpoint
+
+~~~ go
+/* Demonstrate how to setup a /.status endpoint
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/.status
+        curl -i http://127.0.0.1:8080/.status
+        ...
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+	handler := rest.ResourceHandler{
+                EnableStatusService: true,
+        }
+	handler.SetRoutes(
+		rest.Route{"GET", "/.status",
+			func(w rest.ResponseWriter, r *rest.Request) {
+				w.WriteJson(handler.GetStatus())
+			},
+                },
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+~~~
+
+#### Status Auth
+
+Demo how to setup the /.status endpoint protected with basic authentication
+
+~~~ go
+/* Demonstrate how to setup a /.status endpoint protected with basic authentication.
+
+This is a good use case of middleware applied to only one API endpoint.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+        curl -i http://127.0.0.1:8080/.status
+        curl -i -u admin:admin http://127.0.0.1:8080/.status
+        ...
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+	handler := rest.ResourceHandler{
+		EnableStatusService: true,
+	}
+	auth := &rest.AuthBasicMiddleware{
+		Realm: "test zone",
+		Authenticator: func(userId string, password string) bool {
+			if userId == "admin" && password == "admin" {
+				return true
+			}
+			return false
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+		rest.Route{"GET", "/.status",
+			auth.MiddlewareFunc(
+				func(w rest.ResponseWriter, r *rest.Request) {
+					w.WriteJson(handler.GetStatus())
+				},
+			),
+		},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
 
 
 Documentation
