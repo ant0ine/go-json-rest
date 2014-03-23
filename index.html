@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Go-json-rest by ant0ine</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Go-json-rest</h1>
+        <h2>A quick and easy way to setup a RESTful JSON API</h2>
+        <a href="https://github.com/ant0ine/go-json-rest" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a name="go-json-rest" class="anchor" href="#go-json-rest"><span class="octicon octicon-link"></span></a>Go-Json-Rest</h1>
+
+<p><em>A quick and easy way to setup a RESTful JSON API</em></p>
+
+<p><strong>Version 2 of Go-Json-Rest is currently in development, you can try it by checking out the <a href="https://github.com/ant0ine/go-json-rest/tree/v2-alpha">“v2-alpha” branch</a>. Thanks in advance for your feedback.</strong></p>
+
+<p><a href="https://travis-ci.org/ant0ine/go-json-rest"><img src="https://travis-ci.org/ant0ine/go-json-rest.png?branch=master" alt="Build Status"></a></p>
+
+<p><strong>Go-Json-Rest</strong> is a thin layer on top of <code>net/http</code> that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, and helpers to deal with JSON requests and responses. It is not a high-level REST framework that transparently maps HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
+<code>net/http</code> objects.</p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Implemented as a <code>net/http</code> Handler. This standard interface allows combinations with other Handlers.</li>
+<li>Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.</li>
+<li>Test package to help writing tests for the API.</li>
+<li>Optional /.status endpoint for easy monitoring.</li>
+<li>Examples</li>
+</ul><h2>
+<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install</h2>
+
+<p>This package is "go-gettable", just do:</p>
+
+<pre><code>go get github.com/ant0ine/go-json-rest
+</code></pre>
+
+<h2>
+<a name="vendoring" class="anchor" href="#vendoring"><span class="octicon octicon-link"></span></a>Vendoring</h2>
+
+<p>The recommended way of using this library in your project is to use the <strong>"vendoring"</strong> method,
+where this library code is copied in your repository at a specific revision.
+<a href="http://nathany.com/go-packages/">This page</a> is a good summary of package management in Go.</p>
+
+<h2>
+<a name="example" class="anchor" href="#example"><span class="octicon octicon-link"></span></a>Example</h2>
+
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
+<span class="kn">import</span> <span class="p">(</span>
+        <span class="s">"github.com/ant0ine/go-json-rest"</span>
+        <span class="s">"net/http"</span>
+<span class="p">)</span>
+<span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">Id</span>   <span class="kt">string</span>
+        <span class="nx">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nx">GetUser</span><span class="p">(</span><span class="nx">w</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{</span>
+                <span class="nx">Id</span><span class="p">:</span>   <span class="nx">req</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">),</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"Antoine"</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+        <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+                <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="nx">GetUser</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+<h2>
+<a name="more-examples" class="anchor" href="#more-examples"><span class="octicon octicon-link"></span></a>More Examples</h2>
+
+<p>(See the dedicated examples repository: <a href="https://github.com/ant0ine/go-json-rest-examples">https://github.com/ant0ine/go-json-rest-examples</a>)</p>
+
+<ul>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/countries/main.go">Countries</a> Demo very simple GET, POST, DELETE operations</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/users/main.go">Users</a> Demo the mapping to object methods</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/spdy/main.go">SPDY</a> Demo SPDY using github.com/shykes/spdy-go</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/tree/master/gae">GAE</a> Demo go-json-rest on Google App Engine</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/gorm/main.go">GORM</a> Demo basic CRUD operations using MySQL and GORM</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/streaming/main.go">Streaming</a> Demo Line Delimited JSON stream</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/cors/main.go">CORS</a> Demo CORS support for all endpoints</li>
+<li>
+<a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go">Basic Auth</a> Demo an Authentication Basic impl for all endpoints</li>
+</ul><h2>
+<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
+
+<ul>
+<li><a href="http://godoc.org/github.com/ant0ine/go-json-rest">Online Documentation (godoc.org)</a></li>
+<li><a href="http://blog.ant0ine.com/typepad/2013/04/introducing-go-json-rest.html">(Blog Post) Introducing Go-Json-Rest</a></li>
+<li><a href="http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html">(Blog Post) Better URL Routing ?</a></li>
+</ul><h2>
+<a name="options" class="anchor" href="#options"><span class="octicon octicon-link"></span></a>Options</h2>
+
+<p>Things to enable in production:</p>
+
+<ul>
+<li>Gzip compression (default: disabled)</li>
+<li>Custom Logger (default: Go default)</li>
+</ul><p>Things to enable in development:</p>
+
+<ul>
+<li>Json indentation (default: enabled)</li>
+<li>Relaxed ContentType (default: disabled)</li>
+<li>Error stack trace in the response body (default: disabled)</li>
+</ul><h2>
+<a name="the-status-endpoint" class="anchor" href="#the-status-endpoint"><span class="octicon octicon-link"></span></a>The Status Endpoint</h2>
+
+<p>Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.</p>
+
+<p>GET /.status returns something like:</p>
+
+<pre><code>{
+  "Pid": 21732,
+  "UpTime": "1m15.926272s",
+  "UpTimeSec": 75.926272,
+  "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+  "TimeUnix": 1362384027,
+  "StatusCodeCount": {
+    "200": 53,
+    "404": 11
+  },
+  "TotalCount": 64,
+  "TotalResponseTime": "16.777ms",
+  "TotalResponseTimeSec": 0.016777,
+  "AverageResponseTime": "262.14us",
+  "AverageResponseTimeSec": 0.00026214
+}
+</code></pre>
+
+<h2>
+<a name="thanks" class="anchor" href="#thanks"><span class="octicon octicon-link"></span></a>Thanks</h2>
+
+<ul>
+<li><a href="https://github.com/franckcuny">Franck Cuny</a></li>
+<li><a href="https://github.com/yannk">Yann Kerhervé</a></li>
+<li><a href="https://github.com/abh">Ask Bjørn Hansen</a></li>
+</ul><p>Copyright (c) 2013-2014 Antoine Imbert</p>
+
+<p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
+
+<p><a href="https://github.com/igrigorik/ga-beacon"><img src="https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/readme" alt="Analytics"></a></p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/ant0ine/go-json-rest/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/ant0ine/go-json-rest/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/ant0ine/go-json-rest"></a> is maintained by <a href="https://github.com/ant0ine">ant0ine</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
