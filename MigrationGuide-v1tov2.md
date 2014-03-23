@@ -6,16 +6,44 @@
 #### The import path has changed to `github.com/ant0ine/go-json-rest/rest`
 
 This is more conform to Go style, and makes [goimports](https://godoc.org/code.google.com/p/go.tools/cmd/goimports) work.
+This:
+~~~ go
+import (
+        "github.com/ant0ine/go-json-rest"
+)
+~~~
+has to be changed to this:
+~~~ go
+import (
+        "github.com/ant0ine/go-json-rest/rest"
+)
+~~~
 
 #### rest.ResponseWriter is now an interface
 
-This is the main change, and most of the program will be migrated with a simple s/\*\.rest\.ResponseWriter/rest\.ResponseWriter/g
+This change allows the `ResponseWriter` to be wrapped, like the one of the `net/http` package. Middlewares like Gzip used this to encode the payload (see gzip.go)
+This:
+~~~ go
+func (w *rest.ResponseWriter, req *rest.Request) {
+        ...
+}
+~~~
+has to be changed to this:
+~~~ go
+func (w rest.ResponseWriter, req *rest.Request) {
+        ...
+}
+~~~
 
 #### Flush(), CloseNotify() and Write() are not directly exposed anymore
 
 A type assertion of the corresponding interface is necessary.
 
-example:
+This:
+~~~ go
+writer.Flush()
+~~~
+has to be changed to this:
 ~~~ go
 writer.(http.Flusher).Flush()
 ~~~
@@ -27,6 +55,7 @@ See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/v
 
 ####  The notion of Middleware is now formally defined
 
+A middleware is an object satisfying this interface:
 ~~~ go
 type Middleware interface {
 	MiddlewareFunc(handler HandlerFunc) HandlerFunc
