@@ -6,6 +6,7 @@
 #### The import path has changed to `github.com/ant0ine/go-json-rest/rest`
 
 This is more conform to Go style, and makes [goimports](https://godoc.org/code.google.com/p/go.tools/cmd/goimports) work.
+
 This:
 ~~~ go
 import (
@@ -21,7 +22,8 @@ import (
 
 #### rest.ResponseWriter is now an interface
 
-This change allows the `ResponseWriter` to be wrapped, like the one of the `net/http` package. Middlewares like Gzip used this to encode the payload (see gzip.go)
+This change allows the `ResponseWriter` to be wrapped, like the one of the `net/http` package. Middlewares like Gzip used this to encode the payload (see gzip.go).
+
 This:
 ~~~ go
 func (w *rest.ResponseWriter, req *rest.Request) {
