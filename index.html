@@ -70,6 +70,45 @@ where this library code is copied in your repository at a specific revision.
 <p>(See the dedicated examples repository: <a href="https://github.com/ant0ine/go-json-rest-examples">https://github.com/ant0ine/go-json-rest-examples</a>)</p>
 
 <h4>
+<a name="hello-world" class="anchor" href="#hello-world"><span class="octicon octicon-link"></span></a>Hello World!</h4>
+
+<p>Traditions!</p>
+
+<div class="highlight highlight-go"><pre><span class="cm">/* The minimal example: Hello World!</span>
+
+<span class="cm">The Curl Demo:</span>
+
+<span class="cm">        curl -i http://127.0.0.1:8080/message</span>
+
+<span class="cm">*/</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Message</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Body</span>   <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span>
+                        <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
+                                        <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
+                                <span class="p">})</span>
+                        <span class="p">},</span>
+                <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
 <a name="countries" class="anchor" href="#countries"><span class="octicon octicon-link"></span></a>Countries</h4>
 
 <p>Demo very simple GET, POST, DELETE operations</p>
@@ -276,59 +315,6 @@ where this library code is copied in your repository at a specific revision.
 </pre></div>
 
 <h4>
-<a name="spdy" class="anchor" href="#spdy"><span class="octicon octicon-link"></span></a>SPDY</h4>
-
-<p>Demo SPDY using raw.githubusercontent.com/shykes/spdy-go</p>
-
-<div class="highlight highlight-go"><pre><span class="c1">// Demonstrate how to use SPDY with github.com/shykes/spdy-go</span>
-<span class="c1">//</span>
-<span class="c1">// For a command line client, install spdycat from:</span>
-<span class="c1">// https://github.com/tatsuhiro-t/spdylay</span>
-<span class="c1">//</span>
-<span class="c1">// Then:</span>
-<span class="c1">//</span>
-<span class="c1">// spdycat -v --no-tls -2 http://localhost:8080/users/0</span>
-<span class="c1">//</span>
-<span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
-    <span class="s">"github.com/shykes/spdy-go"</span>
-    <span class="s">"log"</span>
-<span class="p">)</span>
-
-<span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">Id</span>   <span class="kt">string</span>
-    <span class="nx">Name</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">GetUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{</span>
-        <span class="nx">Id</span><span class="p">:</span>   <span class="nx">req</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">),</span>
-        <span class="nx">Name</span><span class="p">:</span> <span class="s">"Antoine"</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="nx">GetUser</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">spdy</span><span class="p">.</span><span class="nx">ListenAndServeTCP</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
-<span class="p">}</span>
-
-</pre></div>
-
-<h4>
-<a name="gae" class="anchor" href="#gae"><span class="octicon octicon-link"></span></a>GAE</h4>
-
-<p>Demo go-json-rest on Google App Engine</p>
-
-<div class="highlight highlight-go"><pre><span class="nx">Not</span> <span class="nx">Found</span>
-</pre></div>
-
-<h4>
 <a name="gorm" class="anchor" href="#gorm"><span class="octicon octicon-link"></span></a>GORM</h4>
 
 <p>Demo basic CRUD operations using MySQL and GORM</p>
@@ -468,6 +454,264 @@ where this library code is copied in your repository at a specific revision.
 </pre></div>
 
 <h4>
+<a name="cors" class="anchor" href="#cors"><span class="octicon octicon-link"></span></a>CORS</h4>
+
+<p>Demo how to setup CorsMiddleware as a pre-routing middleware</p>
+
+<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup CorsMiddleware around all the API endpoints.</span>
+
+<span class="cm">The Curl Demo:</span>
+
+<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
+
+<span class="cm">*/</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
+        <span class="nx">PreRoutingMiddlewares</span><span class="p">:</span> <span class="p">[]</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">{</span>
+            <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">CorsMiddleware</span><span class="p">{</span>
+                <span class="nx">RejectNonCorsRequests</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="nx">OriginValidator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">origin</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+                    <span class="k">return</span> <span class="nx">origin</span> <span class="o">==</span> <span class="s">"http://my.other.host"</span>
+                <span class="p">},</span>
+                <span class="nx">AllowedMethods</span><span class="p">:</span>                <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"POST"</span><span class="p">,</span> <span class="s">"PUT"</span><span class="p">},</span>
+                <span class="nx">AllowedHeaders</span><span class="p">:</span>                <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"Accept"</span><span class="p">,</span> <span class="s">"Content-Type"</span><span class="p">,</span> <span class="s">"X-Custom-Header"</span><span class="p">},</span>
+                <span class="nx">AccessControlAllowCredentials</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+                <span class="nx">AccessControlMaxAge</span><span class="p">:</span>           <span class="mi">3600</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Code</span> <span class="kt">string</span>
+    <span class="nx">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span>
+        <span class="p">[]</span><span class="nx">Country</span><span class="p">{</span>
+            <span class="nx">Country</span><span class="p">{</span>
+                <span class="nx">Code</span><span class="p">:</span> <span class="s">"FR"</span><span class="p">,</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"France"</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="nx">Country</span><span class="p">{</span>
+                <span class="nx">Code</span><span class="p">:</span> <span class="s">"US"</span><span class="p">,</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"United States"</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
+<a name="basic-auth" class="anchor" href="#basic-auth"><span class="octicon octicon-link"></span></a>Basic Auth</h4>
+
+<p>Demo how to setup AuthBasicMiddleware as a pre-routing middleware</p>
+
+<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.</span>
+
+<span class="cm">The Curl Demo:</span>
+
+<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
+<span class="cm">        curl -i -u admin:admin http://127.0.0.1:8080/countries</span>
+
+<span class="cm">*/</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
+        <span class="nx">PreRoutingMiddlewares</span><span class="p">:</span> <span class="p">[]</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">{</span>
+            <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">AuthBasicMiddleware</span><span class="p">{</span>
+                <span class="nx">Realm</span><span class="p">:</span> <span class="s">"test zone"</span><span class="p">,</span>
+                <span class="nx">Authenticator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">userId</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="nx">userId</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="o">&amp;&amp;</span> <span class="nx">password</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="kc">true</span>
+                    <span class="p">}</span>
+                    <span class="k">return</span> <span class="kc">false</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Code</span> <span class="kt">string</span>
+    <span class="nx">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span>
+        <span class="p">[]</span><span class="nx">Country</span><span class="p">{</span>
+            <span class="nx">Country</span><span class="p">{</span>
+                <span class="nx">Code</span><span class="p">:</span> <span class="s">"FR"</span><span class="p">,</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"France"</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="nx">Country</span><span class="p">{</span>
+                <span class="nx">Code</span><span class="p">:</span> <span class="s">"US"</span><span class="p">,</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"United States"</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
+<a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h4>
+
+<p>Demo how to setup the /.status endpoint</p>
+
+<p>Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
+See the "status" example to install the following status route:</p>
+
+<p>GET /.status returns something like:</p>
+
+<div class="highlight highlight-json"><pre><span class="p">{</span>
+  <span class="nt">"Pid"</span><span class="p">:</span> <span class="mi">21732</span><span class="p">,</span>
+  <span class="nt">"UpTime"</span><span class="p">:</span> <span class="s2">"1m15.926272s"</span><span class="p">,</span>
+  <span class="nt">"UpTimeSec"</span><span class="p">:</span> <span class="mf">75.926272</span><span class="p">,</span>
+  <span class="nt">"Time"</span><span class="p">:</span> <span class="s2">"2013-03-04 08:00:27.152986 +0000 UTC"</span><span class="p">,</span>
+  <span class="nt">"TimeUnix"</span><span class="p">:</span> <span class="mi">1362384027</span><span class="p">,</span>
+  <span class="nt">"StatusCodeCount"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"200"</span><span class="p">:</span> <span class="mi">53</span><span class="p">,</span>
+    <span class="nt">"404"</span><span class="p">:</span> <span class="mi">11</span>
+  <span class="p">},</span>
+  <span class="nt">"TotalCount"</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+  <span class="nt">"TotalResponseTime"</span><span class="p">:</span> <span class="s2">"16.777ms"</span><span class="p">,</span>
+  <span class="nt">"TotalResponseTimeSec"</span><span class="p">:</span> <span class="mf">0.016777</span><span class="p">,</span>
+  <span class="nt">"AverageResponseTime"</span><span class="p">:</span> <span class="s2">"262.14us"</span><span class="p">,</span>
+  <span class="nt">"AverageResponseTimeSec"</span><span class="p">:</span> <span class="mf">0.00026214</span>
+<span class="p">}</span>
+</pre></div>
+
+<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup a /.status endpoint</span>
+
+<span class="cm">The Curl Demo:</span>
+
+<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
+<span class="cm">        ...</span>
+
+<span class="cm">*/</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
+                <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
+            <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
+            <span class="p">},</span>
+                <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
+<a name="status-auth" class="anchor" href="#status-auth"><span class="octicon octicon-link"></span></a>Status Auth</h4>
+
+<p>Demo how to setup the /.status endpoint protected with basic authentication</p>
+
+<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup a /.status endpoint protected with basic authentication.</span>
+
+<span class="cm">This is a good use case of middleware applied to only one API endpoint.</span>
+
+<span class="cm">The Curl Demo:</span>
+
+<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
+<span class="cm">        curl -i -u admin:admin http://127.0.0.1:8080/.status</span>
+<span class="cm">        ...</span>
+
+<span class="cm">*/</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
+        <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="nx">auth</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">AuthBasicMiddleware</span><span class="p">{</span>
+        <span class="nx">Realm</span><span class="p">:</span> <span class="s">"test zone"</span><span class="p">,</span>
+        <span class="nx">Authenticator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">userId</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="nx">userId</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="o">&amp;&amp;</span> <span class="nx">password</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="kc">true</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="kc">false</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
+            <span class="nx">auth</span><span class="p">.</span><span class="nx">MiddlewareFunc</span><span class="p">(</span>
+                <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
+                <span class="p">},</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Code</span> <span class="kt">string</span>
+    <span class="nx">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span>
+        <span class="p">[]</span><span class="nx">Country</span><span class="p">{</span>
+            <span class="nx">Country</span><span class="p">{</span>
+                <span class="nx">Code</span><span class="p">:</span> <span class="s">"FR"</span><span class="p">,</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"France"</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="nx">Country</span><span class="p">{</span>
+                <span class="nx">Code</span><span class="p">:</span> <span class="s">"US"</span><span class="p">,</span>
+                <span class="nx">Name</span><span class="p">:</span> <span class="s">"United States"</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
 <a name="streaming" class="anchor" href="#streaming"><span class="octicon octicon-link"></span></a>Streaming</h4>
 
 <p>Demo Line Delimited JSON stream</p>
@@ -535,11 +779,66 @@ where this library code is copied in your repository at a specific revision.
 </pre></div>
 
 <h4>
-<a name="cors" class="anchor" href="#cors"><span class="octicon octicon-link"></span></a>CORS</h4>
+<a name="spdy" class="anchor" href="#spdy"><span class="octicon octicon-link"></span></a>SPDY</h4>
 
-<p>Demo how to setup CorsMiddleware as a pre-routing middleware</p>
+<p>Demo SPDY using raw.githubusercontent.com/shykes/spdy-go</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup CorsMiddleware around all the API endpoints.</span>
+<div class="highlight highlight-go"><pre><span class="c1">// Demonstrate how to use SPDY with github.com/shykes/spdy-go</span>
+<span class="c1">//</span>
+<span class="c1">// For a command line client, install spdycat from:</span>
+<span class="c1">// https://github.com/tatsuhiro-t/spdylay</span>
+<span class="c1">//</span>
+<span class="c1">// Then:</span>
+<span class="c1">//</span>
+<span class="c1">// spdycat -v --no-tls -2 http://localhost:8080/users/0</span>
+<span class="c1">//</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"github.com/shykes/spdy-go"</span>
+    <span class="s">"log"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Id</span>   <span class="kt">string</span>
+    <span class="nx">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">GetUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{</span>
+        <span class="nx">Id</span><span class="p">:</span>   <span class="nx">req</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">),</span>
+        <span class="nx">Name</span><span class="p">:</span> <span class="s">"Antoine"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="nx">GetUser</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">spdy</span><span class="p">.</span><span class="nx">ListenAndServeTCP</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
+<a name="gae" class="anchor" href="#gae"><span class="octicon octicon-link"></span></a>GAE</h4>
+
+<p>Demo go-json-rest on Google App Engine</p>
+
+<div class="highlight highlight-go"><pre><span class="nx">Not</span> <span class="nx">Found</span>
+</pre></div>
+
+<h4>
+<a name="basic-auth-custom" class="anchor" href="#basic-auth-custom"><span class="octicon octicon-link"></span></a>Basic Auth Custom</h4>
+
+<p>Demo a custom implementation of Authentication Basic</p>
+
+<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.</span>
+
+<span class="cm">This is a very simple version supporting only one user.</span>
 
 <span class="cm">The Curl Demo:</span>
 
@@ -549,23 +848,77 @@ where this library code is copied in your repository at a specific revision.
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"encoding/base64"</span>
+    <span class="s">"errors"</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
     <span class="s">"net/http"</span>
+    <span class="s">"strings"</span>
 <span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">MyAuthBasicMiddleware</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Realm</span>    <span class="kt">string</span>
+    <span class="nx">UserId</span>   <span class="kt">string</span>
+    <span class="nx">Password</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">)</span> <span class="nx">MiddlewareFunc</span><span class="p">(</span><span class="nx">handler</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">)</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kd">func</span><span class="p">(</span><span class="nx">writer</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nx">authHeader</span> <span class="o">:=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Get</span><span class="p">(</span><span class="s">"Authorization"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">authHeader</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
+            <span class="nx">mw</span><span class="p">.</span><span class="nx">unauthorized</span><span class="p">(</span><span class="nx">writer</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="nx">providedUserId</span><span class="p">,</span> <span class="nx">providedPassword</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">decodeBasicAuthHeader</span><span class="p">(</span><span class="nx">authHeader</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Invalid authentication"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">!(</span><span class="nx">providedUserId</span> <span class="o">==</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">UserId</span> <span class="o">&amp;&amp;</span> <span class="nx">providedPassword</span> <span class="o">==</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">Password</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">mw</span><span class="p">.</span><span class="nx">unauthorized</span><span class="p">(</span><span class="nx">writer</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="nx">handler</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="nx">request</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">)</span> <span class="nx">unauthorized</span><span class="p">(</span><span class="nx">writer</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">writer</span><span class="p">.</span><span class="nx">Header</span><span class="p">().</span><span class="nx">Set</span><span class="p">(</span><span class="s">"WWW-Authenticate"</span><span class="p">,</span> <span class="s">"Basic realm="</span><span class="o">+</span><span class="nx">mw</span><span class="p">.</span><span class="nx">Realm</span><span class="p">)</span>
+    <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Not Authorized"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnauthorized</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">)</span> <span class="nx">decodeBasicAuthHeader</span><span class="p">(</span><span class="nx">header</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">user</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="nx">parts</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">SplitN</span><span class="p">(</span><span class="nx">header</span><span class="p">,</span> <span class="s">" "</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">!(</span><span class="nb">len</span><span class="p">(</span><span class="nx">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="nx">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">"Basic"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="s">"Invalid authentication"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">decoded</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">base64</span><span class="p">.</span><span class="nx">StdEncoding</span><span class="p">.</span><span class="nx">DecodeString</span><span class="p">(</span><span class="nx">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="s">"Invalid base64"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">creds</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">SplitN</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">decoded</span><span class="p">),</span> <span class="s">":"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">creds</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="s">"Invalid authentication"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">creds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">creds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="kc">nil</span>
+<span class="p">}</span>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
 
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
         <span class="nx">PreRoutingMiddlewares</span><span class="p">:</span> <span class="p">[]</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">{</span>
-            <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">CorsMiddleware</span><span class="p">{</span>
-                <span class="nx">RejectNonCorsRequests</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-                <span class="nx">OriginValidator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">origin</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-                    <span class="k">return</span> <span class="nx">origin</span> <span class="o">==</span> <span class="s">"http://my.other.host"</span>
-                <span class="p">},</span>
-                <span class="nx">AllowedMethods</span><span class="p">:</span>                <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"POST"</span><span class="p">,</span> <span class="s">"PUT"</span><span class="p">},</span>
-                <span class="nx">AllowedHeaders</span><span class="p">:</span>                <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"Accept"</span><span class="p">,</span> <span class="s">"Content-Type"</span><span class="p">,</span> <span class="s">"X-Custom-Header"</span><span class="p">},</span>
-                <span class="nx">AccessControlAllowCredentials</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-                <span class="nx">AccessControlMaxAge</span><span class="p">:</span>           <span class="mi">3600</span><span class="p">,</span>
+            <span class="o">&amp;</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">{</span>
+                <span class="nx">Realm</span><span class="p">:</span>    <span class="s">"Administration"</span><span class="p">,</span>
+                <span class="nx">UserId</span><span class="p">:</span>   <span class="s">"admin"</span><span class="p">,</span>
+                <span class="nx">Password</span><span class="p">:</span> <span class="s">"admin"</span><span class="p">,</span>
             <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">}</span>
@@ -720,297 +1073,6 @@ where this library code is copied in your repository at a specific revision.
 
 </pre></div>
 
-<h4>
-<a name="basic-auth" class="anchor" href="#basic-auth"><span class="octicon octicon-link"></span></a>Basic Auth</h4>
-
-<p>Demo how to setup AuthBasicMiddleware as a pre-routing middleware</p>
-
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.</span>
-
-<span class="cm">The Curl Demo:</span>
-
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -u admin:admin http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
-<span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
-    <span class="s">"net/http"</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-
-    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-        <span class="nx">PreRoutingMiddlewares</span><span class="p">:</span> <span class="p">[]</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">{</span>
-            <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">AuthBasicMiddleware</span><span class="p">{</span>
-                <span class="nx">Realm</span><span class="p">:</span> <span class="s">"test zone"</span><span class="p">,</span>
-                <span class="nx">Authenticator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">userId</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-                    <span class="k">if</span> <span class="nx">userId</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="o">&amp;&amp;</span> <span class="nx">password</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="p">{</span>
-                        <span class="k">return</span> <span class="kc">true</span>
-                    <span class="p">}</span>
-                    <span class="k">return</span> <span class="kc">false</span>
-                <span class="p">},</span>
-            <span class="p">},</span>
-        <span class="p">},</span>
-    <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">Code</span> <span class="kt">string</span>
-    <span class="nx">Name</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span>
-        <span class="p">[]</span><span class="nx">Country</span><span class="p">{</span>
-            <span class="nx">Country</span><span class="p">{</span>
-                <span class="nx">Code</span><span class="p">:</span> <span class="s">"FR"</span><span class="p">,</span>
-                <span class="nx">Name</span><span class="p">:</span> <span class="s">"France"</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="nx">Country</span><span class="p">{</span>
-                <span class="nx">Code</span><span class="p">:</span> <span class="s">"US"</span><span class="p">,</span>
-                <span class="nx">Name</span><span class="p">:</span> <span class="s">"United States"</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">},</span>
-    <span class="p">)</span>
-<span class="p">}</span>
-
-</pre></div>
-
-<h4>
-<a name="basic-auth-custom" class="anchor" href="#basic-auth-custom"><span class="octicon octicon-link"></span></a>Basic Auth Custom</h4>
-
-<p>Demo a custom implementation of Authentication Basic</p>
-
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.</span>
-
-<span class="cm">This is a very simple version supporting only one user.</span>
-
-<span class="cm">The Curl Demo:</span>
-
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
-<span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"encoding/base64"</span>
-    <span class="s">"errors"</span>
-    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
-    <span class="s">"net/http"</span>
-    <span class="s">"strings"</span>
-<span class="p">)</span>
-
-<span class="kd">type</span> <span class="nx">MyAuthBasicMiddleware</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">Realm</span>    <span class="kt">string</span>
-    <span class="nx">UserId</span>   <span class="kt">string</span>
-    <span class="nx">Password</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">)</span> <span class="nx">MiddlewareFunc</span><span class="p">(</span><span class="nx">handler</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">)</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="kd">func</span><span class="p">(</span><span class="nx">writer</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-
-        <span class="nx">authHeader</span> <span class="o">:=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Get</span><span class="p">(</span><span class="s">"Authorization"</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nx">authHeader</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
-            <span class="nx">mw</span><span class="p">.</span><span class="nx">unauthorized</span><span class="p">(</span><span class="nx">writer</span><span class="p">)</span>
-            <span class="k">return</span>
-        <span class="p">}</span>
-
-        <span class="nx">providedUserId</span><span class="p">,</span> <span class="nx">providedPassword</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">decodeBasicAuthHeader</span><span class="p">(</span><span class="nx">authHeader</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-            <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Invalid authentication"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
-            <span class="k">return</span>
-        <span class="p">}</span>
-
-        <span class="k">if</span> <span class="p">!(</span><span class="nx">providedUserId</span> <span class="o">==</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">UserId</span> <span class="o">&amp;&amp;</span> <span class="nx">providedPassword</span> <span class="o">==</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">Password</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nx">mw</span><span class="p">.</span><span class="nx">unauthorized</span><span class="p">(</span><span class="nx">writer</span><span class="p">)</span>
-            <span class="k">return</span>
-        <span class="p">}</span>
-
-        <span class="nx">handler</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="nx">request</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">)</span> <span class="nx">unauthorized</span><span class="p">(</span><span class="nx">writer</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">writer</span><span class="p">.</span><span class="nx">Header</span><span class="p">().</span><span class="nx">Set</span><span class="p">(</span><span class="s">"WWW-Authenticate"</span><span class="p">,</span> <span class="s">"Basic realm="</span><span class="o">+</span><span class="nx">mw</span><span class="p">.</span><span class="nx">Realm</span><span class="p">)</span>
-    <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Not Authorized"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnauthorized</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">)</span> <span class="nx">decodeBasicAuthHeader</span><span class="p">(</span><span class="nx">header</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">user</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-
-    <span class="nx">parts</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">SplitN</span><span class="p">(</span><span class="nx">header</span><span class="p">,</span> <span class="s">" "</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">!(</span><span class="nb">len</span><span class="p">(</span><span class="nx">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="o">&amp;&amp;</span> <span class="nx">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">"Basic"</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="s">"Invalid authentication"</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="nx">decoded</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">base64</span><span class="p">.</span><span class="nx">StdEncoding</span><span class="p">.</span><span class="nx">DecodeString</span><span class="p">(</span><span class="nx">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="s">"Invalid base64"</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="nx">creds</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nx">SplitN</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">decoded</span><span class="p">),</span> <span class="s">":"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">creds</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="s">""</span><span class="p">,</span> <span class="s">""</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nx">New</span><span class="p">(</span><span class="s">"Invalid authentication"</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="k">return</span> <span class="nx">creds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">creds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="kc">nil</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-
-    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-        <span class="nx">PreRoutingMiddlewares</span><span class="p">:</span> <span class="p">[]</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">{</span>
-            <span class="o">&amp;</span><span class="nx">MyAuthBasicMiddleware</span><span class="p">{</span>
-                <span class="nx">Realm</span><span class="p">:</span>    <span class="s">"Administration"</span><span class="p">,</span>
-                <span class="nx">UserId</span><span class="p">:</span>   <span class="s">"admin"</span><span class="p">,</span>
-                <span class="nx">Password</span><span class="p">:</span> <span class="s">"admin"</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">},</span>
-    <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">Code</span> <span class="kt">string</span>
-    <span class="nx">Name</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span>
-        <span class="p">[]</span><span class="nx">Country</span><span class="p">{</span>
-            <span class="nx">Country</span><span class="p">{</span>
-                <span class="nx">Code</span><span class="p">:</span> <span class="s">"FR"</span><span class="p">,</span>
-                <span class="nx">Name</span><span class="p">:</span> <span class="s">"France"</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="nx">Country</span><span class="p">{</span>
-                <span class="nx">Code</span><span class="p">:</span> <span class="s">"US"</span><span class="p">,</span>
-                <span class="nx">Name</span><span class="p">:</span> <span class="s">"United States"</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">},</span>
-    <span class="p">)</span>
-<span class="p">}</span>
-
-</pre></div>
-
-<h4>
-<a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h4>
-
-<p>Demo how to setup the /.status endpoint</p>
-
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup a /.status endpoint</span>
-
-<span class="cm">The Curl Demo:</span>
-
-<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
-<span class="cm">        ...</span>
-
-<span class="cm">*/</span>
-<span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
-    <span class="s">"net/http"</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-                <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
-            <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-                <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
-            <span class="p">},</span>
-                <span class="p">},</span>
-    <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
-<span class="p">}</span>
-
-</pre></div>
-
-<h4>
-<a name="status-auth" class="anchor" href="#status-auth"><span class="octicon octicon-link"></span></a>Status Auth</h4>
-
-<p>Demo how to setup the /.status endpoint protected with basic authentication</p>
-
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup a /.status endpoint protected with basic authentication.</span>
-
-<span class="cm">This is a good use case of middleware applied to only one API endpoint.</span>
-
-<span class="cm">The Curl Demo:</span>
-
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
-<span class="cm">        curl -i -u admin:admin http://127.0.0.1:8080/.status</span>
-<span class="cm">        ...</span>
-
-<span class="cm">*/</span>
-<span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
-    <span class="s">"net/http"</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-        <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-    <span class="p">}</span>
-    <span class="nx">auth</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">AuthBasicMiddleware</span><span class="p">{</span>
-        <span class="nx">Realm</span><span class="p">:</span> <span class="s">"test zone"</span><span class="p">,</span>
-        <span class="nx">Authenticator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">userId</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="nx">userId</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="o">&amp;&amp;</span> <span class="nx">password</span> <span class="o">==</span> <span class="s">"admin"</span> <span class="p">{</span>
-                <span class="k">return</span> <span class="kc">true</span>
-            <span class="p">}</span>
-            <span class="k">return</span> <span class="kc">false</span>
-        <span class="p">},</span>
-    <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
-            <span class="nx">auth</span><span class="p">.</span><span class="nx">MiddlewareFunc</span><span class="p">(</span>
-                <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-                    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
-                <span class="p">},</span>
-            <span class="p">),</span>
-        <span class="p">},</span>
-    <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">Code</span> <span class="kt">string</span>
-    <span class="nx">Name</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span>
-        <span class="p">[]</span><span class="nx">Country</span><span class="p">{</span>
-            <span class="nx">Country</span><span class="p">{</span>
-                <span class="nx">Code</span><span class="p">:</span> <span class="s">"FR"</span><span class="p">,</span>
-                <span class="nx">Name</span><span class="p">:</span> <span class="s">"France"</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="nx">Country</span><span class="p">{</span>
-                <span class="nx">Code</span><span class="p">:</span> <span class="s">"US"</span><span class="p">,</span>
-                <span class="nx">Name</span><span class="p">:</span> <span class="s">"United States"</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">},</span>
-    <span class="p">)</span>
-<span class="p">}</span>
-
-</pre></div>
-
 <h2>
 <a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
 
@@ -1033,30 +1095,91 @@ where this library code is copied in your repository at a specific revision.
 <li>Relaxed ContentType (default: disabled)</li>
 <li>Error stack trace in the response body (default: disabled)</li>
 </ul><h2>
-<a name="the-status-endpoint" class="anchor" href="#the-status-endpoint"><span class="octicon octicon-link"></span></a>The Status Endpoint</h2>
+<a name="migration-guide-from-v1-to-v2" class="anchor" href="#migration-guide-from-v1-to-v2"><span class="octicon octicon-link"></span></a>Migration guide from v1 to v2</h2>
 
-<p>Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
-See the "status" example to install the following status route:</p>
+<p><strong>Go-Json-Rest</strong> follows <a href="http://semver.org/">Semver</a> and a few breaking changes have been introduced with the v2.</p>
 
-<p>GET /.status returns something like:</p>
+<h4>
+<a name="the-import-path-has-changed-to-githubcomant0inego-json-restrest" class="anchor" href="#the-import-path-has-changed-to-githubcomant0inego-json-restrest"><span class="octicon octicon-link"></span></a>The import path has changed to <code>github.com/ant0ine/go-json-rest/rest</code>
+</h4>
 
-<pre><code>{
-  "Pid": 21732,
-  "UpTime": "1m15.926272s",
-  "UpTimeSec": 75.926272,
-  "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
-  "TimeUnix": 1362384027,
-  "StatusCodeCount": {
-    "200": 53,
-    "404": 11
-  },
-  "TotalCount": 64,
-  "TotalResponseTime": "16.777ms",
-  "TotalResponseTimeSec": 0.016777,
-  "AverageResponseTime": "262.14us",
-  "AverageResponseTimeSec": 0.00026214
-}
-</code></pre>
+<p>This is more conform to Go style, and makes <a href="https://godoc.org/code.google.com/p/go.tools/cmd/goimports">goimports</a> work.</p>
+
+<p>This:</p>
+
+<div class="highlight highlight-go"><pre><span class="kn">import</span> <span class="p">(</span>
+        <span class="s">"github.com/ant0ine/go-json-rest"</span>
+<span class="p">)</span>
+</pre></div>
+
+<p>has to be changed to this:</p>
+
+<div class="highlight highlight-go"><pre><span class="kn">import</span> <span class="p">(</span>
+        <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+<span class="p">)</span>
+</pre></div>
+
+<h4>
+<a name="restresponsewriter-is-now-an-interface" class="anchor" href="#restresponsewriter-is-now-an-interface"><span class="octicon octicon-link"></span></a>rest.ResponseWriter is now an interface</h4>
+
+<p>This change allows the <code>ResponseWriter</code> to be wrapped, like the one of the <code>net/http</code> package. Middlewares like Gzip used this to encode the payload (see gzip.go).</p>
+
+<p>This:</p>
+
+<div class="highlight highlight-go"><pre><span class="kd">func</span> <span class="p">(</span><span class="nx">w</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>has to be changed to this:</p>
+
+<div class="highlight highlight-go"><pre><span class="kd">func</span> <span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+
+<h4>
+<a name="the-notion-of-middleware-is-now-formally-defined" class="anchor" href="#the-notion-of-middleware-is-now-formally-defined"><span class="octicon octicon-link"></span></a>The notion of Middleware is now formally defined</h4>
+
+<p>A middleware is an object satisfying this interface:</p>
+
+<div class="highlight highlight-go"><pre><span class="kd">type</span> <span class="nx">Middleware</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nx">MiddlewareFunc</span><span class="p">(</span><span class="nx">handler</span> <span class="nx">HandlerFunc</span><span class="p">)</span> <span class="nx">HandlerFunc</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
+See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go">Basic Auth example</a>.</p>
+
+<h4>
+<a name="flush-closenotify-and-write-are-not-directly-exposed-anymore" class="anchor" href="#flush-closenotify-and-write-are-not-directly-exposed-anymore"><span class="octicon octicon-link"></span></a>Flush(), CloseNotify() and Write() are not directly exposed anymore</h4>
+
+<p>A type assertion of the corresponding interface is necessary.</p>
+
+<p>This:</p>
+
+<div class="highlight highlight-go"><pre><span class="nx">writer</span><span class="p">.</span><span class="nx">Flush</span><span class="p">()</span>
+</pre></div>
+
+<p>has to be changed to this:</p>
+
+<div class="highlight highlight-go"><pre><span class="nx">writer</span><span class="p">.(</span><span class="nx">http</span><span class="p">.</span><span class="nx">Flusher</span><span class="p">).</span><span class="nx">Flush</span><span class="p">()</span>
+</pre></div>
+
+<h4>
+<a name="the-status-endpoint-is-not-created-automatically-anymore" class="anchor" href="#the-status-endpoint-is-not-created-automatically-anymore"><span class="octicon octicon-link"></span></a>The /.status endpoint is not created automatically anymore</h4>
+
+<p>The route has to be manually defined.
+See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go">Status example</a>.</p>
+
+<h4>
+<a name="request-utility-methods-have-changed" class="anchor" href="#request-utility-methods-have-changed"><span class="octicon octicon-link"></span></a>Request utility methods have changed</h4>
+
+<p>Overall, they provide the same features, but with two methods instead of three, better names, and without the confusing <code>UriForWithParams</code>.</p>
+
+<p><code>func (r *Request) UriBase() url.URL</code> is now <code>func (r *Request) BaseUrl() *url.URL</code>, Note the pointer as the returned value.</p>
+
+<p><code>func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL</code> is now <code>func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL</code> and <code>func (r *Request) UriFor(path string) url.URL</code> has be removed.</p>
 
 <h2>
 <a name="thanks" class="anchor" href="#thanks"><span class="octicon octicon-link"></span></a>Thanks</h2>
@@ -1068,8 +1191,6 @@ See the "status" example to install the following status route:</p>
 </ul><p>Copyright (c) 2013-2014 Antoine Imbert</p>
 
 <p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
-
-<p><a href="https://github.com/igrigorik/ga-beacon"><img src="https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/v2-alpha/readme" alt="Analytics"></a></p>
       </section>
     </div>
 
