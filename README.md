@@ -245,59 +245,6 @@ func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
-#### SPDY
-
-Demo SPDY using raw.githubusercontent.com/shykes/spdy-go
-
-~~~ go
-// Demonstrate how to use SPDY with github.com/shykes/spdy-go
-//
-// For a command line client, install spdycat from:
-// https://github.com/tatsuhiro-t/spdylay
-//
-// Then:
-//
-// spdycat -v --no-tls -2 http://localhost:8080/users/0
-//
-package main
-
-import (
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/shykes/spdy-go"
-	"log"
-)
-
-type User struct {
-	Id   string
-	Name string
-}
-
-func GetUser(w rest.ResponseWriter, req *rest.Request) {
-	user := User{
-		Id:   req.PathParam("id"),
-		Name: "Antoine",
-	}
-	w.WriteJson(&user)
-}
-
-func main() {
-	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
-		rest.Route{"GET", "/users/:id", GetUser},
-	)
-	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
-}
-
-~~~
-
-#### GAE
-
-Demo go-json-rest on Google App Engine
-
-~~~ go
-Not Found
-~~~
-
 #### GORM
 
 Demo basic CRUD operations using MySQL and GORM
@@ -437,6 +384,265 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+#### CORS
+
+Demo how to setup CorsMiddleware as a pre-routing middleware
+
+~~~ go
+/* Demonstrate how to setup CorsMiddleware around all the API endpoints.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		PreRoutingMiddlewares: []rest.Middleware{
+			&rest.CorsMiddleware{
+				RejectNonCorsRequests: false,
+				OriginValidator: func(origin string, request *rest.Request) bool {
+					return origin == "http://my.other.host"
+				},
+				AllowedMethods:                []string{"GET", "POST", "PUT"},
+				AllowedHeaders:                []string{"Accept", "Content-Type", "X-Custom-Header"},
+				AccessControlAllowCredentials: true,
+				AccessControlMaxAge:           3600,
+			},
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
+#### Basic Auth
+
+Demo how to setup AuthBasicMiddleware as a pre-routing middleware
+
+~~~ go
+/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+        curl -i -u admin:admin http://127.0.0.1:8080/countries
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{
+		PreRoutingMiddlewares: []rest.Middleware{
+			&rest.AuthBasicMiddleware{
+				Realm: "test zone",
+				Authenticator: func(userId string, password string) bool {
+					if userId == "admin" && password == "admin" {
+						return true
+					}
+					return false
+				},
+			},
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
+#### Status
+
+Demo how to setup the /.status endpoint
+
+Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
+See the "status" example to install the following status route:
+
+GET /.status returns something like:
+
+~~~ json
+{
+  "Pid": 21732,
+  "UpTime": "1m15.926272s",
+  "UpTimeSec": 75.926272,
+  "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+  "TimeUnix": 1362384027,
+  "StatusCodeCount": {
+	"200": 53,
+	"404": 11
+  },
+  "TotalCount": 64,
+  "TotalResponseTime": "16.777ms",
+  "TotalResponseTimeSec": 0.016777,
+  "AverageResponseTime": "262.14us",
+  "AverageResponseTimeSec": 0.00026214
+}
+~~~
+
+~~~ go
+/* Demonstrate how to setup a /.status endpoint
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/.status
+        curl -i http://127.0.0.1:8080/.status
+        ...
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+	handler := rest.ResourceHandler{
+                EnableStatusService: true,
+        }
+	handler.SetRoutes(
+		rest.Route{"GET", "/.status",
+			func(w rest.ResponseWriter, r *rest.Request) {
+				w.WriteJson(handler.GetStatus())
+			},
+                },
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+~~~
+
+#### Status Auth
+
+Demo how to setup the /.status endpoint protected with basic authentication
+
+~~~ go
+/* Demonstrate how to setup a /.status endpoint protected with basic authentication.
+
+This is a good use case of middleware applied to only one API endpoint.
+
+The Curl Demo:
+
+        curl -i http://127.0.0.1:8080/countries
+        curl -i http://127.0.0.1:8080/.status
+        curl -i -u admin:admin http://127.0.0.1:8080/.status
+        ...
+
+*/
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"net/http"
+)
+
+func main() {
+	handler := rest.ResourceHandler{
+		EnableStatusService: true,
+	}
+	auth := &rest.AuthBasicMiddleware{
+		Realm: "test zone",
+		Authenticator: func(userId string, password string) bool {
+			if userId == "admin" && password == "admin" {
+				return true
+			}
+			return false
+		},
+	}
+	handler.SetRoutes(
+		rest.Route{"GET", "/countries", GetAllCountries},
+		rest.Route{"GET", "/.status",
+			auth.MiddlewareFunc(
+				func(w rest.ResponseWriter, r *rest.Request) {
+					w.WriteJson(handler.GetStatus())
+				},
+			),
+		},
+	)
+	http.ListenAndServe(":8080", &handler)
+}
+
+type Country struct {
+	Code string
+	Name string
+}
+
+func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(
+		[]Country{
+			Country{
+				Code: "FR",
+				Name: "France",
+			},
+			Country{
+				Code: "US",
+				Name: "United States",
+			},
+		},
+	)
+}
+
+~~~
+
 #### Streaming
 
 Demo Line Delimited JSON stream
@@ -504,12 +710,67 @@ func StreamThings(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
-#### CORS
+#### SPDY
 
-Demo how to setup CorsMiddleware as a pre-routing middleware
+Demo SPDY using raw.githubusercontent.com/shykes/spdy-go
 
 ~~~ go
-/* Demonstrate how to setup CorsMiddleware around all the API endpoints.
+// Demonstrate how to use SPDY with github.com/shykes/spdy-go
+//
+// For a command line client, install spdycat from:
+// https://github.com/tatsuhiro-t/spdylay
+//
+// Then:
+//
+// spdycat -v --no-tls -2 http://localhost:8080/users/0
+//
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/shykes/spdy-go"
+	"log"
+)
+
+type User struct {
+	Id   string
+	Name string
+}
+
+func GetUser(w rest.ResponseWriter, req *rest.Request) {
+	user := User{
+		Id:   req.PathParam("id"),
+		Name: "Antoine",
+	}
+	w.WriteJson(&user)
+}
+
+func main() {
+	handler := rest.ResourceHandler{}
+	handler.SetRoutes(
+		rest.Route{"GET", "/users/:id", GetUser},
+	)
+	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
+}
+
+~~~
+
+#### GAE
+
+Demo go-json-rest on Google App Engine
+
+~~~ go
+Not Found
+~~~
+
+#### Basic Auth Custom
+
+Demo a custom implementation of Authentication Basic
+
+~~~ go
+/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
+
+This is a very simple version supporting only one user.
 
 The Curl Demo:
 
@@ -519,23 +780,77 @@ The Curl Demo:
 package main
 
 import (
+	"encoding/base64"
+	"errors"
 	"github.com/ant0ine/go-json-rest/rest"
 	"net/http"
+	"strings"
 )
+
+type MyAuthBasicMiddleware struct {
+	Realm    string
+	UserId   string
+	Password string
+}
+
+func (mw *MyAuthBasicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
+	return func(writer rest.ResponseWriter, request *rest.Request) {
+
+		authHeader := request.Header.Get("Authorization")
+		if authHeader == "" {
+			mw.unauthorized(writer)
+			return
+		}
+
+		providedUserId, providedPassword, err := mw.decodeBasicAuthHeader(authHeader)
+
+		if err != nil {
+			rest.Error(writer, "Invalid authentication", http.StatusBadRequest)
+			return
+		}
+
+		if !(providedUserId == mw.UserId && providedPassword == mw.Password) {
+			mw.unauthorized(writer)
+			return
+		}
+
+		handler(writer, request)
+	}
+}
+
+func (mw *MyAuthBasicMiddleware) unauthorized(writer rest.ResponseWriter) {
+	writer.Header().Set("WWW-Authenticate", "Basic realm="+mw.Realm)
+	rest.Error(writer, "Not Authorized", http.StatusUnauthorized)
+}
+
+func (mw *MyAuthBasicMiddleware) decodeBasicAuthHeader(header string) (user string, password string, err error) {
+
+	parts := strings.SplitN(header, " ", 2)
+	if !(len(parts) == 2 && parts[0] == "Basic") {
+		return "", "", errors.New("Invalid authentication")
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", "", errors.New("Invalid base64")
+	}
+
+	creds := strings.SplitN(string(decoded), ":", 2)
+	if len(creds) != 2 {
+		return "", "", errors.New("Invalid authentication")
+	}
+
+	return creds[0], creds[1], nil
+}
 
 func main() {
 
 	handler := rest.ResourceHandler{
 		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.CorsMiddleware{
-				RejectNonCorsRequests: false,
-				OriginValidator: func(origin string, request *rest.Request) bool {
-					return origin == "http://my.other.host"
-				},
-				AllowedMethods:                []string{"GET", "POST", "PUT"},
-				AllowedHeaders:                []string{"Accept", "Content-Type", "X-Custom-Header"},
-				AccessControlAllowCredentials: true,
-				AccessControlMaxAge:           3600,
+			&MyAuthBasicMiddleware{
+				Realm:    "Administration",
+				UserId:   "admin",
+				Password: "admin",
 			},
 		},
 	}
@@ -690,297 +1005,6 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
-#### Basic Auth
-
-Demo how to setup AuthBasicMiddleware as a pre-routing middleware
-
-~~~ go
-/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
-
-The Curl Demo:
-
-        curl -i http://127.0.0.1:8080/countries
-        curl -i -u admin:admin http://127.0.0.1:8080/countries
-
-*/
-package main
-
-import (
-	"github.com/ant0ine/go-json-rest/rest"
-	"net/http"
-)
-
-func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.AuthBasicMiddleware{
-				Realm: "test zone",
-				Authenticator: func(userId string, password string) bool {
-					if userId == "admin" && password == "admin" {
-						return true
-					}
-					return false
-				},
-			},
-		},
-	}
-	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	http.ListenAndServe(":8080", &handler)
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
-}
-
-~~~
-
-#### Basic Auth Custom
-
-Demo a custom implementation of Authentication Basic
-
-~~~ go
-/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
-
-This is a very simple version supporting only one user.
-
-The Curl Demo:
-
-        curl -i http://127.0.0.1:8080/countries
-
-*/
-package main
-
-import (
-	"encoding/base64"
-	"errors"
-	"github.com/ant0ine/go-json-rest/rest"
-	"net/http"
-	"strings"
-)
-
-type MyAuthBasicMiddleware struct {
-	Realm    string
-	UserId   string
-	Password string
-}
-
-func (mw *MyAuthBasicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
-	return func(writer rest.ResponseWriter, request *rest.Request) {
-
-		authHeader := request.Header.Get("Authorization")
-		if authHeader == "" {
-			mw.unauthorized(writer)
-			return
-		}
-
-		providedUserId, providedPassword, err := mw.decodeBasicAuthHeader(authHeader)
-
-		if err != nil {
-			rest.Error(writer, "Invalid authentication", http.StatusBadRequest)
-			return
-		}
-
-		if !(providedUserId == mw.UserId && providedPassword == mw.Password) {
-			mw.unauthorized(writer)
-			return
-		}
-
-		handler(writer, request)
-	}
-}
-
-func (mw *MyAuthBasicMiddleware) unauthorized(writer rest.ResponseWriter) {
-	writer.Header().Set("WWW-Authenticate", "Basic realm="+mw.Realm)
-	rest.Error(writer, "Not Authorized", http.StatusUnauthorized)
-}
-
-func (mw *MyAuthBasicMiddleware) decodeBasicAuthHeader(header string) (user string, password string, err error) {
-
-	parts := strings.SplitN(header, " ", 2)
-	if !(len(parts) == 2 && parts[0] == "Basic") {
-		return "", "", errors.New("Invalid authentication")
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", "", errors.New("Invalid base64")
-	}
-
-	creds := strings.SplitN(string(decoded), ":", 2)
-	if len(creds) != 2 {
-		return "", "", errors.New("Invalid authentication")
-	}
-
-	return creds[0], creds[1], nil
-}
-
-func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&MyAuthBasicMiddleware{
-				Realm:    "Administration",
-				UserId:   "admin",
-				Password: "admin",
-			},
-		},
-	}
-	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	http.ListenAndServe(":8080", &handler)
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
-}
-
-~~~
-
-#### Status
-
-Demo how to setup the /.status endpoint
-
-~~~ go
-/* Demonstrate how to setup a /.status endpoint
-
-The Curl Demo:
-
-        curl -i http://127.0.0.1:8080/.status
-        curl -i http://127.0.0.1:8080/.status
-        ...
-
-*/
-package main
-
-import (
-	"github.com/ant0ine/go-json-rest/rest"
-	"net/http"
-)
-
-func main() {
-	handler := rest.ResourceHandler{
-                EnableStatusService: true,
-        }
-	handler.SetRoutes(
-		rest.Route{"GET", "/.status",
-			func(w rest.ResponseWriter, r *rest.Request) {
-				w.WriteJson(handler.GetStatus())
-			},
-                },
-	)
-	http.ListenAndServe(":8080", &handler)
-}
-
-~~~
-
-#### Status Auth
-
-Demo how to setup the /.status endpoint protected with basic authentication
-
-~~~ go
-/* Demonstrate how to setup a /.status endpoint protected with basic authentication.
-
-This is a good use case of middleware applied to only one API endpoint.
-
-The Curl Demo:
-
-        curl -i http://127.0.0.1:8080/countries
-        curl -i http://127.0.0.1:8080/.status
-        curl -i -u admin:admin http://127.0.0.1:8080/.status
-        ...
-
-*/
-package main
-
-import (
-	"github.com/ant0ine/go-json-rest/rest"
-	"net/http"
-)
-
-func main() {
-	handler := rest.ResourceHandler{
-		EnableStatusService: true,
-	}
-	auth := &rest.AuthBasicMiddleware{
-		Realm: "test zone",
-		Authenticator: func(userId string, password string) bool {
-			if userId == "admin" && password == "admin" {
-				return true
-			}
-			return false
-		},
-	}
-	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-		rest.Route{"GET", "/.status",
-			auth.MiddlewareFunc(
-				func(w rest.ResponseWriter, r *rest.Request) {
-					w.WriteJson(handler.GetStatus())
-				},
-			),
-		},
-	)
-	http.ListenAndServe(":8080", &handler)
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
-}
-
-~~~
-
 
 Documentation
 -------------
@@ -1001,32 +1025,6 @@ Things to enable in development:
 - Json indentation (default: enabled)
 - Relaxed ContentType (default: disabled)
 - Error stack trace in the response body (default: disabled)
-
-
-The Status Endpoint
--------------------
-
-Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
-See the "status" example to install the following status route:
-
-GET /.status returns something like:
-
-    {
-      "Pid": 21732,
-      "UpTime": "1m15.926272s",
-      "UpTimeSec": 75.926272,
-      "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
-      "TimeUnix": 1362384027,
-      "StatusCodeCount": {
-        "200": 53,
-        "404": 11
-      },
-      "TotalCount": 64,
-      "TotalResponseTime": "16.777ms",
-      "TotalResponseTimeSec": 0.016777,
-      "AverageResponseTime": "262.14us",
-      "AverageResponseTimeSec": 0.00026214
-    }
 
 
 Thanks
