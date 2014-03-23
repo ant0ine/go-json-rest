@@ -36,7 +36,7 @@
 
 <p><em>A quick and easy way to setup a RESTful JSON API</em></p>
 
-<p><a href="https://travis-ci.org/ant0ine/go-json-rest"><img src="https://travis-ci.org/ant0ine/go-json-rest.png?branch=master" alt="Build Status"></a></p>
+<p><a href="https://travis-ci.org/ant0ine/go-json-rest"><img src="https://travis-ci.org/ant0ine/go-json-rest.png?branch=master" alt="Build Status"></a> <a href="https://godoc.org/github.com/ant0ine/go-json-rest"><img src="https://godoc.org/github.com/ant0ine/go-json-rest?status.png" alt="GoDoc"></a></p>
 
 <p><strong>Warning: This is v2-alpha, a work in progress for the version 2 of Go-Json-Rest</strong></p>
 
@@ -831,7 +831,91 @@ See the "status" example to install the following status route:</p>
 
 <p>Demo go-json-rest on Google App Engine</p>
 
-<div class="highlight highlight-go"><pre><span class="nx">Not</span> <span class="nx">Found</span>
+<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate a simple Google App Engine app</span>
+
+<span class="cm">The Curl Demo:</span>
+
+<span class="cm">        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries</span>
+<span class="cm">        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/countries/FR</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/countries/US</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
+<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/countries/FR</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
+<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/countries/US</span>
+<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
+
+<span class="cm">*/</span>
+<span class="kn">package</span> <span class="nx">gaecountries</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Code</span> <span class="kt">string</span>
+    <span class="nx">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">store</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">Country</span><span class="p">{}</span>
+
+<span class="kd">func</span> <span class="nx">GetCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
+    <span class="nx">country</span> <span class="o">:=</span> <span class="nx">store</span><span class="p">[</span><span class="nx">code</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nx">country</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">countries</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">Country</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">store</span><span class="p">))</span>
+    <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">country</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">store</span> <span class="p">{</span>
+        <span class="nx">countries</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">country</span>
+        <span class="nx">i</span><span class="o">++</span>
+    <span class="p">}</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">countries</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">PostCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">country</span> <span class="o">:=</span> <span class="nx">Country</span><span class="p">{}</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">DecodeJsonPayload</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nx">country</span><span class="p">.</span><span class="nx">Code</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"country code required"</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="nx">country</span><span class="p">.</span><span class="nx">Name</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"country name required"</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="nx">store</span><span class="p">[</span><span class="nx">country</span><span class="p">.</span><span class="nx">Code</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">country</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">DeleteCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
+    <span class="nb">delete</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">code</span><span class="p">)</span>
+<span class="p">}</span>
+
 </pre></div>
 
 <h4>
