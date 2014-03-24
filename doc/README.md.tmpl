@@ -1,6 +1,5 @@
 
-Go-Json-Rest
-============
+# Go-Json-Rest
 
 *A quick and easy way to setup a RESTful JSON API*
 
@@ -12,8 +11,8 @@ Go-Json-Rest
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
 
 
-Table of content
-----------------
+## Table of content
+
 - [Features](#features)
 - [Install](#install)
 - [Vendoring](#vendoring)
@@ -24,8 +23,8 @@ Table of content
 - [Thanks](#thanks)
 
 
-Features
---------
+## Features
+
 - Many examples.
 - Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.
 - Use Middlewares in order to extend the functionalities.
@@ -34,24 +33,21 @@ Features
 - Monitoring statistics inspired by Memcached.
 
 
-Install
--------
+## Install
 
 This package is "go-gettable", just do:
 
     go get github.com/ant0ine/go-json-rest/rest
 
 
-Vendoring
----------
+## Vendoring
 
 The recommended way of using this library in your project is to use the **"vendoring"** method,
 where this library code is copied in your repository at a specific revision.
 [This page](http://nathany.com/go-packages/) is a good summary of package management in Go.
 
 
-Examples
---------
+## Examples
 
 (See the dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples)
 
@@ -184,8 +180,7 @@ Demo a custom implementation of CORS
 ~~~
 
 
-External Documentation
-----------------------
+## External Documentation
 
 - [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
 
@@ -195,8 +190,7 @@ Old v1 blog posts:
 - [(Blog Post) Better URL Routing ?] (http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html)
 
 
-Options
--------
+## Options
 
 Things to enable in production:
 - Gzip compression (default: disabled)
@@ -208,8 +202,7 @@ Things to enable in development:
 - Error stack trace in the response body (default: disabled)
 
 
-Migration guide from v1 to v2
------------------------------
+## Migration guide from v1 to v2
 
 **Go-Json-Rest** follows [Semver](http://semver.org/) and a few breaking changes have been introduced with the v2.
 
@@ -291,8 +284,8 @@ Overall, they provide the same features, but with two methods instead of three, 
 
 `func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL` is now `func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL` and `func (r *Request) UriFor(path string) url.URL` has be removed.
 
-Thanks
-------
+## Thanks
+
 - [Franck Cuny](https://github.com/franckcuny)
 - [Yann Kerhervé](https://github.com/yannk)
 - [Ask Bjørn Hansen](https://github.com/abh)
