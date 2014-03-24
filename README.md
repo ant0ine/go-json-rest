@@ -14,11 +14,14 @@ Go-Json-Rest
 
 Table of content
 ----------------
-- [Features](#Features)
-- [Install](#Install)
-- [Vendoring](#Vendoring)
-- [Examples](#Examples)
-- [Thanks](#Thanks)
+- [Features](#features)
+- [Install](#install)
+- [Vendoring](#vendoring)
+- [Examples](#examples)
+- [External Documentation](#external-documentation)
+- [Options](#options)
+- [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
+- [Thanks](#thanks)
 
 
 Features
