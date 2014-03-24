@@ -17,6 +17,8 @@
 - [Install](#install)
 - [Vendoring](#vendoring)
 - [Examples](#examples)
+  - [Hello World!](#hello-world)
+  - [Countries](#countries)
 - [External Documentation](#external-documentation)
 - [Options](#options)
 - [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
