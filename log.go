@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+// Logger interface
+type Logger interface {
+	Printf(string, ...interface{})
+}
+
 type responseLogRecord struct {
 	StatusCode   int
 	ResponseTime *time.Duration
