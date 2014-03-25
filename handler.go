@@ -47,7 +47,6 @@ package rest
 
 import (
 	"fmt"
-	"log"
 	"mime"
 	"net/http"
 	"reflect"
@@ -97,7 +96,7 @@ type ResourceHandler struct {
 	PreRoutingMiddleware func(handler HandlerFunc) HandlerFunc
 
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
-	Logger *log.Logger
+	Logger Logger
 }
 
 // Used with SetRoutes.
