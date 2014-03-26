@@ -67,9 +67,7 @@ where this library code is copied in your repository at a specific revision.
 
 Tradition!
 
-The minimal example: Hello World!
-
-The Curl Demo:
+The curl demo:
 
         curl -i http://127.0.0.1:8080/message
 
@@ -107,11 +105,9 @@ func main() {
 
 #### Countries
 
-Demo very simple GET, POST, DELETE operations
-
 Demonstrate simple POST GET and DELETE operations
 
-The Curl Demo:
+The curl demo:
 
         curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
         curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
@@ -204,14 +200,12 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 
 #### Users
 
-Demo the mapping to object methods
-
 Demonstrate how to use rest.RouteObjectMethod
 
 rest.RouteObjectMethod helps create a Route that points to
 an object method instead of just a function.
 
-The Curl Demo:
+The curl demo:
 
         curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
         curl -i http://127.0.0.1:8080/users/0
@@ -319,11 +313,12 @@ func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 
 #### GORM
 
-Demo basic CRUD operations using MySQL and GORM
-
 Demonstrate basic CRUD operation using a store based on MySQL and GORM
 
-The Curl Demo:
+GORM (github.com/jinzhu/gorm) is simple ORM library.
+In this example the same struct is used both as the GORM model and as the JSON model.
+
+The curl demo:
 
         curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
         curl -i http://127.0.0.1:8080/reminders/1
@@ -461,11 +456,9 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 
 #### CORS
 
-Demo how to setup CorsMiddleware as a pre-routing middleware
-
 Demonstrate how to setup CorsMiddleware around all the API endpoints.
 
-The Curl Demo:
+The curl demo:
 
         curl -i http://127.0.0.1:8080/countries
 
@@ -527,11 +520,9 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 #### Basic Auth
 
-Demo how to setup AuthBasicMiddleware as a pre-routing middleware
-
 Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
 
-The Curl Demo:
+The curl demo:
 
         curl -i http://127.0.0.1:8080/countries
         curl -i -u admin:admin http://127.0.0.1:8080/countries
@@ -593,39 +584,36 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 #### Status
 
-Demo how to setup the /.status endpoint
-
-Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
-See the "status" example to install the following status route:
-
-GET /.status returns something like:
-
-~~~ json
-{
-  "Pid": 21732,
-  "UpTime": "1m15.926272s",
-  "UpTimeSec": 75.926272,
-  "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
-  "TimeUnix": 1362384027,
-  "StatusCodeCount": {
-	"200": 53,
-	"404": 11
-  },
-  "TotalCount": 64,
-  "TotalResponseTime": "16.777ms",
-  "TotalResponseTimeSec": 0.016777,
-  "AverageResponseTime": "262.14us",
-  "AverageResponseTimeSec": 0.00026214
-}
-~~~
-
 Demonstrate how to setup a /.status endpoint
 
-The Curl Demo:
+Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
+This example shows how to enable the stats, and how to setup the /.status route.
+
+
+The curl demo:
 
         curl -i http://127.0.0.1:8080/.status
         curl -i http://127.0.0.1:8080/.status
         ...
+
+
+
+        {
+          "Pid": 21732,
+          "UpTime": "1m15.926272s",
+          "UpTimeSec": 75.926272,
+          "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+          "TimeUnix": 1362384027,
+          "StatusCodeCount": {
+                "200": 53,
+                "404": 11
+          },
+          "TotalCount": 64,
+          "TotalResponseTime": "16.777ms",
+          "TotalResponseTimeSec": 0.016777,
+          "AverageResponseTime": "262.14us",
+          "AverageResponseTimeSec": 0.00026214
+        }
 
 
 
@@ -732,15 +720,15 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 #### Streaming
 
-Demo Line Delimited JSON stream
-
 Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.
 
 The stream format is a Line Delimited JSON.
 
-The Curl Demo:
+The curl demo:
 
         curl -i http://127.0.0.1:8080/stream
+
+
 
         HTTP/1.1 200 OK
         Content-Type: application/json
@@ -802,20 +790,19 @@ func StreamThings(w rest.ResponseWriter, r *rest.Request) {
 
 #### SPDY
 
-Demo SPDY using raw.githubusercontent.com/shykes/spdy-go
+Demonstrate how to use SPDY with github.com/shykes/spdy-go
+
+For a command line client, install spdycat from:
+https://github.com/tatsuhiro-t/spdylay
+
+The spdycat demo:
+
+        spdycat -v --no-tls -2 http://localhost:8080/users/0
 
 
 
 ~~~ go
-// Demonstrate how to use SPDY with github.com/shykes/spdy-go
-//
-// For a command line client, install spdycat from:
-// https://github.com/tatsuhiro-t/spdylay
-//
-// Then:
-//
-// spdycat -v --no-tls -2 http://localhost:8080/users/0
-//
+
 package main
 
 import (
@@ -850,11 +837,9 @@ func main() {
 
 #### GAE
 
-Demo go-json-rest on Google App Engine
-
 Demonstrate a simple Google App Engine app
 
-The Curl Demo:
+The curl demo:
 
         curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
         curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
@@ -945,13 +930,11 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 
 #### Basic Auth Custom
 
-Demo a custom implementation of Authentication Basic
-
 Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
 
 This is a very simple version supporting only one user.
 
-The Curl Demo:
+The curl demo:
 
         curl -i http://127.0.0.1:8080/countries
 
@@ -1067,11 +1050,9 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 #### CORS Custom
 
-Demo a custom implementation of CORS
-
 Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
 
-The Curl Demo:
+The curl demo:
 
         curl -i http://127.0.0.1:8080/countries
 
