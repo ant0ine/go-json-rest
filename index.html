@@ -106,13 +106,12 @@ where this library code is copied in your repository at a specific revision.
 
 <p>Tradition!</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* The minimal example: Hello World!</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/message
+</code></pre>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/message</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -127,7 +126,9 @@ where this library code is copied in your repository at a specific revision.
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span>
+                        <span class="s">"GET"</span><span class="p">,</span>
+                        <span class="s">"/message"</span><span class="p">,</span>
                         <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
                                 <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
                                         <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
@@ -143,23 +144,22 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="countries" class="anchor" href="#countries"><span class="octicon octicon-link"></span></a>Countries</h4>
 
-<p>Demo very simple GET, POST, DELETE operations</p>
+<p>Demonstrate simple POST GET and DELETE operations</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate simple POST GET and DELETE operations</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+    curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+    curl -i http://127.0.0.1:8080/countries/FR
+    curl -i http://127.0.0.1:8080/countries/US
+    curl -i http://127.0.0.1:8080/countries
+    curl -i -X DELETE http://127.0.0.1:8080/countries/FR
+    curl -i http://127.0.0.1:8080/countries
+    curl -i -X DELETE http://127.0.0.1:8080/countries/US
+    curl -i http://127.0.0.1:8080/countries
+</code></pre>
 
-<span class="cm">        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries/FR</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries/US</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/countries/FR</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/countries/US</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -237,22 +237,21 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="users" class="anchor" href="#users"><span class="octicon octicon-link"></span></a>Users</h4>
 
-<p>Demo the mapping to object methods</p>
+<p>Demonstrate how to use rest.RouteObjectMethod</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to use rest.RouteObjectMethod</span>
+<p>rest.RouteObjectMethod helps create a Route that points to
+an object method instead of just a function.</p>
 
-<span class="cm">rest.RouteObjectMethod helps create a Route that points to</span>
-<span class="cm">an object method instead of just a function.</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+    curl -i http://127.0.0.1:8080/users/0
+    curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+    curl -i -X DELETE http://127.0.0.1:8080/users/0
+    curl -i http://127.0.0.1:8080/users
+</code></pre>
 
-<span class="cm">        curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/users/0</span>
-<span class="cm">        curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0</span>
-<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/users/0</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/users</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -349,19 +348,21 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="gorm" class="anchor" href="#gorm"><span class="octicon octicon-link"></span></a>GORM</h4>
 
-<p>Demo basic CRUD operations using MySQL and GORM</p>
+<p>Demonstrate basic CRUD operation using a store based on MySQL and GORM</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate basic CRUD operation using a store based on MySQL and GORM</span>
+<p>GORM (<a href="https://github.com/jinzhu/gorm">https://github.com/jinzhu/gorm</a>) is simple ORM library.
+In this example the same struct is used both as the GORM model and as the JSON model.</p>
 
-<span class="cm">The Curl Demo:</span>
+<p>The curl demo:</p>
 
-<span class="cm">        curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/reminders/1</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/reminders</span>
-<span class="cm">        curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1</span>
-<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/reminders/1</span>
+<pre><code>    curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+    curl -i http://127.0.0.1:8080/reminders/1
+    curl -i http://127.0.0.1:8080/reminders
+    curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+    curl -i -X DELETE http://127.0.0.1:8080/reminders/1
+</code></pre>
 
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -488,15 +489,14 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="cors" class="anchor" href="#cors"><span class="octicon octicon-link"></span></a>CORS</h4>
 
-<p>Demo how to setup CorsMiddleware as a pre-routing middleware</p>
+<p>Demonstrate how to setup CorsMiddleware around all the API endpoints.</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup CorsMiddleware around all the API endpoints.</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/countries
+</code></pre>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -551,16 +551,15 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="basic-auth" class="anchor" href="#basic-auth"><span class="octicon octicon-link"></span></a>Basic Auth</h4>
 
-<p>Demo how to setup AuthBasicMiddleware as a pre-routing middleware</p>
+<p>Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/countries
+    curl -i -u admin:admin http://127.0.0.1:8080/countries
+</code></pre>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -u admin:admin http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -614,40 +613,38 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h4>
 
-<p>Demo how to setup the /.status endpoint</p>
+<p>Demonstrate how to setup a /.status endpoint</p>
 
 <p>Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
-See the "status" example to install the following status route:</p>
+This example shows how to enable the stats, and how to setup the /.status route.</p>
 
-<p>GET /.status returns something like:</p>
+<p>The curl demo:</p>
 
-<div class="highlight highlight-json"><pre><span class="p">{</span>
-  <span class="nt">"Pid"</span><span class="p">:</span> <span class="mi">21732</span><span class="p">,</span>
-  <span class="nt">"UpTime"</span><span class="p">:</span> <span class="s2">"1m15.926272s"</span><span class="p">,</span>
-  <span class="nt">"UpTimeSec"</span><span class="p">:</span> <span class="mf">75.926272</span><span class="p">,</span>
-  <span class="nt">"Time"</span><span class="p">:</span> <span class="s2">"2013-03-04 08:00:27.152986 +0000 UTC"</span><span class="p">,</span>
-  <span class="nt">"TimeUnix"</span><span class="p">:</span> <span class="mi">1362384027</span><span class="p">,</span>
-  <span class="nt">"StatusCodeCount"</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">"200"</span><span class="p">:</span> <span class="mi">53</span><span class="p">,</span>
-    <span class="nt">"404"</span><span class="p">:</span> <span class="mi">11</span>
-  <span class="p">},</span>
-  <span class="nt">"TotalCount"</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
-  <span class="nt">"TotalResponseTime"</span><span class="p">:</span> <span class="s2">"16.777ms"</span><span class="p">,</span>
-  <span class="nt">"TotalResponseTimeSec"</span><span class="p">:</span> <span class="mf">0.016777</span><span class="p">,</span>
-  <span class="nt">"AverageResponseTime"</span><span class="p">:</span> <span class="s2">"262.14us"</span><span class="p">,</span>
-  <span class="nt">"AverageResponseTimeSec"</span><span class="p">:</span> <span class="mf">0.00026214</span>
-<span class="p">}</span>
-</pre></div>
+<pre><code>    curl -i http://127.0.0.1:8080/.status
+    curl -i http://127.0.0.1:8080/.status
+    ...
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup a /.status endpoint</span>
 
-<span class="cm">The Curl Demo:</span>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
-<span class="cm">        ...</span>
+    {
+      "Pid": 21732,
+      "UpTime": "1m15.926272s",
+      "UpTimeSec": 75.926272,
+      "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+      "TimeUnix": 1362384027,
+      "StatusCodeCount": {
+            "200": 53,
+            "404": 11
+      },
+      "TotalCount": 64,
+      "TotalResponseTime": "16.777ms",
+      "TotalResponseTimeSec": 0.016777,
+      "AverageResponseTime": "262.14us",
+      "AverageResponseTimeSec": 0.00026214
+    }
+</code></pre>
 
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -674,20 +671,19 @@ See the "status" example to install the following status route:</p>
 <h4>
 <a name="status-auth" class="anchor" href="#status-auth"><span class="octicon octicon-link"></span></a>Status Auth</h4>
 
-<p>Demo how to setup the /.status endpoint protected with basic authentication</p>
+<p>Demonstrate how to setup a /.status endpoint protected with basic authentication.</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to setup a /.status endpoint protected with basic authentication.</span>
+<p>This is a good use case of middleware applied to only one API endpoint.</p>
 
-<span class="cm">This is a good use case of middleware applied to only one API endpoint.</span>
+<p>The Curl Demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/countries
+    curl -i http://127.0.0.1:8080/.status
+    curl -i -u admin:admin http://127.0.0.1:8080/.status
+    ...
+</code></pre>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/.status</span>
-<span class="cm">        curl -i -u admin:admin http://127.0.0.1:8080/.status</span>
-<span class="cm">        ...</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -746,26 +742,25 @@ See the "status" example to install the following status route:</p>
 <h4>
 <a name="streaming" class="anchor" href="#streaming"><span class="octicon octicon-link"></span></a>Streaming</h4>
 
-<p>Demo Line Delimited JSON stream</p>
+<p>Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.</span>
+<p>The stream format is a Line Delimited JSON.</p>
 
-<span class="cm">The stream format is a Line Delimited JSON.</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/stream
 
-<span class="cm">        curl -i http://127.0.0.1:8080/stream</span>
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+    Date: Sun, 16 Feb 2014 00:39:19 GMT
+    Transfer-Encoding: chunked
 
-<span class="cm">        HTTP/1.1 200 OK</span>
-<span class="cm">        Content-Type: application/json</span>
-<span class="cm">        Date: Sun, 16 Feb 2014 00:39:19 GMT</span>
-<span class="cm">        Transfer-Encoding: chunked</span>
+    {"Name":"thing #1"}
+    {"Name":"thing #2"}
+    {"Name":"thing #3"}
+</code></pre>
 
-<span class="cm">        {"Name":"thing #1"}</span>
-<span class="cm">        {"Name":"thing #2"}</span>
-<span class="cm">        {"Name":"thing #3"}</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -813,17 +808,17 @@ See the "status" example to install the following status route:</p>
 <h4>
 <a name="spdy" class="anchor" href="#spdy"><span class="octicon octicon-link"></span></a>SPDY</h4>
 
-<p>Demo SPDY using raw.githubusercontent.com/shykes/spdy-go</p>
+<p>Demonstrate how to use SPDY with <a href="https://github.com/shykes/spdy-go">https://github.com/shykes/spdy-go</a></p>
 
-<div class="highlight highlight-go"><pre><span class="c1">// Demonstrate how to use SPDY with github.com/shykes/spdy-go</span>
-<span class="c1">//</span>
-<span class="c1">// For a command line client, install spdycat from:</span>
-<span class="c1">// https://github.com/tatsuhiro-t/spdylay</span>
-<span class="c1">//</span>
-<span class="c1">// Then:</span>
-<span class="c1">//</span>
-<span class="c1">// spdycat -v --no-tls -2 http://localhost:8080/users/0</span>
-<span class="c1">//</span>
+<p>For a command line client, install spdycat from:
+<a href="https://github.com/tatsuhiro-t/spdylay">https://github.com/tatsuhiro-t/spdylay</a></p>
+
+<p>The spdycat demo:</p>
+
+<pre><code>    spdycat -v --no-tls -2 http://localhost:8080/users/0
+</code></pre>
+
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -858,23 +853,22 @@ See the "status" example to install the following status route:</p>
 <h4>
 <a name="gae" class="anchor" href="#gae"><span class="octicon octicon-link"></span></a>GAE</h4>
 
-<p>Demo go-json-rest on Google App Engine</p>
+<p>Demonstrate a simple Google App Engine app</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate a simple Google App Engine app</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+    curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+    curl -i http://127.0.0.1:8080/countries/FR
+    curl -i http://127.0.0.1:8080/countries/US
+    curl -i http://127.0.0.1:8080/countries
+    curl -i -X DELETE http://127.0.0.1:8080/countries/FR
+    curl -i http://127.0.0.1:8080/countries
+    curl -i -X DELETE http://127.0.0.1:8080/countries/US
+    curl -i http://127.0.0.1:8080/countries
+</code></pre>
 
-<span class="cm">        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries/FR</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries/US</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/countries/FR</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-<span class="cm">        curl -i -X DELETE http://127.0.0.1:8080/countries/US</span>
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">gaecountries</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -950,17 +944,16 @@ See the "status" example to install the following status route:</p>
 <h4>
 <a name="basic-auth-custom" class="anchor" href="#basic-auth-custom"><span class="octicon octicon-link"></span></a>Basic Auth Custom</h4>
 
-<p>Demo a custom implementation of Authentication Basic</p>
+<p>Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.</span>
+<p>This is a very simple version supporting only one user.</p>
 
-<span class="cm">This is a very simple version supporting only one user.</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/countries
+</code></pre>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -1069,15 +1062,14 @@ See the "status" example to install the following status route:</p>
 <h4>
 <a name="cors-custom" class="anchor" href="#cors-custom"><span class="octicon octicon-link"></span></a>CORS Custom</h4>
 
-<p>Demo a custom implementation of CORS</p>
+<p>Demonstrate how to implement a custom CORS middleware, used to on all endpoints.</p>
 
-<div class="highlight highlight-go"><pre><span class="cm">/* Demonstrate how to implement a custom CORS middleware, used to on all endpoints.</span>
+<p>The curl demo:</p>
 
-<span class="cm">The Curl Demo:</span>
+<pre><code>    curl -i http://127.0.0.1:8080/countries
+</code></pre>
 
-<span class="cm">        curl -i http://127.0.0.1:8080/countries</span>
-
-<span class="cm">*/</span>
+<div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
