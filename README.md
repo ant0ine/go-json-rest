@@ -89,7 +89,9 @@ type Message struct {
 func main() {
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.Route{"GET", "/message",
+		rest.Route{
+                        "GET",
+                        "/message",
                         func(w rest.ResponseWriter, req *rest.Request) {
                                 w.WriteJson(&Message{
                                         Body: "Hello World!",
@@ -315,7 +317,7 @@ func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 
 Demonstrate basic CRUD operation using a store based on MySQL and GORM
 
-GORM (github.com/jinzhu/gorm) is simple ORM library.
+GORM (https://github.com/jinzhu/gorm) is simple ORM library.
 In this example the same struct is used both as the GORM model and as the JSON model.
 
 The curl demo:
@@ -645,8 +647,6 @@ func main() {
 
 #### Status Auth
 
-Demo how to setup the /.status endpoint protected with basic authentication
-
 Demonstrate how to setup a /.status endpoint protected with basic authentication.
 
 This is a good use case of middleware applied to only one API endpoint.
@@ -728,8 +728,6 @@ The curl demo:
 
         curl -i http://127.0.0.1:8080/stream
 
-
-
         HTTP/1.1 200 OK
         Content-Type: application/json
         Date: Sun, 16 Feb 2014 00:39:19 GMT
@@ -790,7 +788,7 @@ func StreamThings(w rest.ResponseWriter, r *rest.Request) {
 
 #### SPDY
 
-Demonstrate how to use SPDY with github.com/shykes/spdy-go
+Demonstrate how to use SPDY with https://github.com/shykes/spdy-go
 
 For a command line client, install spdycat from:
 https://github.com/tatsuhiro-t/spdylay
