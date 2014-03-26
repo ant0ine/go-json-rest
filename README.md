@@ -76,7 +76,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -126,7 +126,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -222,7 +222,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -334,7 +334,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -472,7 +472,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -539,7 +539,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -630,7 +630,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -673,7 +673,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -754,7 +754,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -869,7 +869,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package gaecountries
 
 import (
@@ -958,7 +958,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (
@@ -1078,7 +1078,7 @@ The Curl Demo:
 
 
 ~~~ go
-/* */
+
 package main
 
 import (

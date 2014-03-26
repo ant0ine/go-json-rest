@@ -35,15 +35,16 @@ func readTemplate(filename string) string {
 func extractComment(body string) (string, string) {
 
 	reFirstComment := regexp.MustCompile("/\\*(.|[\r\n])*?\\*/")
+
 	comment := reFirstComment.FindString(body)
 	if comment == "" {
 		log.Print("no comment")
 	} else {
+		body = strings.Replace(body, comment, "", 1)
 		comment = strings.Replace(comment, "/* ", "", 1)
 		comment = strings.Replace(comment, "*/", "", 1)
 	}
 
-	body = strings.Replace(body, comment, "", 1)
 	return comment, body
 }
 
