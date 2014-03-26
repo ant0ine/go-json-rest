@@ -67,14 +67,16 @@ where this library code is copied in your repository at a specific revision.
 
 Tradition!
 
-~~~ go
-/* The minimal example: Hello World!
+The minimal example: Hello World!
 
 The Curl Demo:
 
         curl -i http://127.0.0.1:8080/message
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -102,12 +104,12 @@ func main() {
 
 ~~~
 
+
 #### Countries
 
 Demo very simple GET, POST, DELETE operations
 
-~~~ go
-/* Demonstrate simple POST GET and DELETE operations
+Demonstrate simple POST GET and DELETE operations
 
 The Curl Demo:
 
@@ -121,7 +123,10 @@ The Curl Demo:
         curl -i -X DELETE http://127.0.0.1:8080/countries/US
         curl -i http://127.0.0.1:8080/countries
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -196,12 +201,12 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### Users
 
 Demo the mapping to object methods
 
-~~~ go
-/* Demonstrate how to use rest.RouteObjectMethod
+Demonstrate how to use rest.RouteObjectMethod
 
 rest.RouteObjectMethod helps create a Route that points to
 an object method instead of just a function.
@@ -214,7 +219,10 @@ The Curl Demo:
         curl -i -X DELETE http://127.0.0.1:8080/users/0
         curl -i http://127.0.0.1:8080/users
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -308,12 +316,12 @@ func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### GORM
 
 Demo basic CRUD operations using MySQL and GORM
 
-~~~ go
-/* Demonstrate basic CRUD operation using a store based on MySQL and GORM
+Demonstrate basic CRUD operation using a store based on MySQL and GORM
 
 The Curl Demo:
 
@@ -323,7 +331,10 @@ The Curl Demo:
         curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
         curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -447,18 +458,21 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### CORS
 
 Demo how to setup CorsMiddleware as a pre-routing middleware
 
-~~~ go
-/* Demonstrate how to setup CorsMiddleware around all the API endpoints.
+Demonstrate how to setup CorsMiddleware around all the API endpoints.
 
 The Curl Demo:
 
         curl -i http://127.0.0.1:8080/countries
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -510,19 +524,22 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### Basic Auth
 
 Demo how to setup AuthBasicMiddleware as a pre-routing middleware
 
-~~~ go
-/* Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
+Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
 
 The Curl Demo:
 
         curl -i http://127.0.0.1:8080/countries
         curl -i -u admin:admin http://127.0.0.1:8080/countries
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -573,6 +590,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### Status
 
 Demo how to setup the /.status endpoint
@@ -601,8 +619,7 @@ GET /.status returns something like:
 }
 ~~~
 
-~~~ go
-/* Demonstrate how to setup a /.status endpoint
+Demonstrate how to setup a /.status endpoint
 
 The Curl Demo:
 
@@ -610,7 +627,10 @@ The Curl Demo:
         curl -i http://127.0.0.1:8080/.status
         ...
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -634,12 +654,12 @@ func main() {
 
 ~~~
 
+
 #### Status Auth
 
 Demo how to setup the /.status endpoint protected with basic authentication
 
-~~~ go
-/* Demonstrate how to setup a /.status endpoint protected with basic authentication.
+Demonstrate how to setup a /.status endpoint protected with basic authentication.
 
 This is a good use case of middleware applied to only one API endpoint.
 
@@ -650,7 +670,10 @@ The Curl Demo:
         curl -i -u admin:admin http://127.0.0.1:8080/.status
         ...
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -706,12 +729,12 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### Streaming
 
 Demo Line Delimited JSON stream
 
-~~~ go
-/* Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.
+Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.
 
 The stream format is a Line Delimited JSON.
 
@@ -728,7 +751,10 @@ The Curl Demo:
         {"Name":"thing #2"}
         {"Name":"thing #3"}
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -773,9 +799,12 @@ func StreamThings(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### SPDY
 
 Demo SPDY using raw.githubusercontent.com/shykes/spdy-go
+
+
 
 ~~~ go
 // Demonstrate how to use SPDY with github.com/shykes/spdy-go
@@ -818,12 +847,12 @@ func main() {
 
 ~~~
 
+
 #### GAE
 
 Demo go-json-rest on Google App Engine
 
-~~~ go
-/* Demonstrate a simple Google App Engine app
+Demonstrate a simple Google App Engine app
 
 The Curl Demo:
 
@@ -837,7 +866,10 @@ The Curl Demo:
         curl -i -X DELETE http://127.0.0.1:8080/countries/US
         curl -i http://127.0.0.1:8080/countries
 
-*/
+
+
+~~~ go
+/* */
 package gaecountries
 
 import (
@@ -910,12 +942,12 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### Basic Auth Custom
 
 Demo a custom implementation of Authentication Basic
 
-~~~ go
-/* Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
+Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
 
 This is a very simple version supporting only one user.
 
@@ -923,7 +955,10 @@ The Curl Demo:
 
         curl -i http://127.0.0.1:8080/countries
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -1029,18 +1064,21 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ~~~
 
+
 #### CORS Custom
 
 Demo a custom implementation of CORS
 
-~~~ go
-/* Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
+Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
 
 The Curl Demo:
 
         curl -i http://127.0.0.1:8080/countries
 
-*/
+
+
+~~~ go
+/* */
 package main
 
 import (
@@ -1151,6 +1189,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 }
 
 ~~~
+
 
 
 ## External Documentation

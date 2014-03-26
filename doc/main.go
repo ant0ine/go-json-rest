@@ -11,6 +11,7 @@ import (
 )
 
 func getPage(urlStr string) string {
+	log.Printf("Fetching %s ...", urlStr)
 	res, err := http.Get(urlStr)
 	if err != nil {
 		log.Fatal(err)
@@ -31,22 +32,47 @@ func readTemplate(filename string) string {
 	return string(fileBytes)
 }
 
+func extractComment(body string) (string, string) {
+
+	reFirstComment := regexp.MustCompile("/\\*(.|[\r\n])*?\\*/")
+	comment := reFirstComment.FindString(body)
+	if comment == "" {
+		log.Print("no comment")
+	} else {
+		comment = strings.Replace(comment, "/* ", "", 1)
+		comment = strings.Replace(comment, "*/", "", 1)
+	}
+
+	body = strings.Replace(body, comment, "", 1)
+	return comment, body
+}
+
 func main() {
 
 	var tmplFilename = flag.String("in", "README.md.tmpl", "filename of the template")
 	tmplBody := readTemplate(*tmplFilename)
 
-	startTag := "<webInclude>"
-	endTag := "</webInclude>"
+	startTag := "<exampleInclude>"
+	endTag := "</exampleInclude>"
 	re := regexp.MustCompile(startTag + "[^<]*" + endTag)
+
 	for _, statement := range re.FindAllString(tmplBody, -1) {
 
+		// the example URL
 		urlStr := strings.TrimPrefix(statement, startTag)
 		urlStr = strings.TrimSuffix(urlStr, endTag)
 
+		// example body
 		pageBody := getPage(urlStr)
+		exampleComment, exampleCode := extractComment(pageBody)
 
-		tmplBody = strings.Replace(tmplBody, statement, pageBody, -1)
+		exampleStr := ""
+		exampleStr += exampleComment + "\n\n"
+		exampleStr += "~~~ go\n"
+		exampleStr += exampleCode + "\n"
+		exampleStr += "~~~\n"
+
+		tmplBody = strings.Replace(tmplBody, statement, exampleStr, -1)
 	}
 	fmt.Printf("%s", tmplBody)
 }
