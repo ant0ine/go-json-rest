@@ -46,6 +46,7 @@ type CorsMiddleware struct {
 	AccessControlMaxAge int
 }
 
+// MiddlewareFunc makes CorsMiddleware implement the Middleware interface.
 func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 	return func(writer ResponseWriter, request *Request) {
 
@@ -98,10 +99,10 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 				}
 			}
 
-			for allowedMethod, _ := range mw.allowedMethods {
+			for allowedMethod := range mw.allowedMethods {
 				writer.Header().Add("Access-Control-Allow-Methods", allowedMethod)
 			}
-			for allowedHeader, _ := range mw.allowedHeaders {
+			for allowedHeader := range mw.allowedHeaders {
 				writer.Header().Add("Access-Control-Allow-Headers", allowedHeader)
 			}
 			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
@@ -111,17 +112,18 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 			writer.Header().Set("Access-Control-Max-Age", string(mw.AccessControlMaxAge))
 			writer.WriteHeader(http.StatusOK)
 			return
-		} else {
-			for _, exposed := range mw.AccessControlExposeHeaders {
-				writer.Header().Add("Access-Control-Expose-Headers", exposed)
-			}
-			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
-			if mw.AccessControlAllowCredentials == true {
-				writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			}
-			// continure, execute the wrapped middleware
-			handler(writer, request)
-			return
 		}
+
+		// Non-preflight requests
+		for _, exposed := range mw.AccessControlExposeHeaders {
+			writer.Header().Add("Access-Control-Expose-Headers", exposed)
+		}
+		writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
+		if mw.AccessControlAllowCredentials == true {
+			writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+		// continure, execute the wrapped middleware
+		handler(writer, request)
+		return
 	}
 }
