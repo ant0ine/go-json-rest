@@ -163,7 +163,8 @@ import (
 
 #### rest.ResponseWriter is now an interface
 
-This change allows the `ResponseWriter` to be wrapped, like the one of the `net/http` package. Middlewares like Gzip used this to encode the payload (see gzip.go).
+This change allows the `ResponseWriter` to be wrapped, like the one of the `net/http` package.
+This is much more powerful, and allows the creation of Middlewares that wrap the writer. The gzip option, for instance, uses this to encode the payload (see gzip.go).
 
 This:
 ~~~ go
@@ -194,7 +195,8 @@ See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/bl
 
 #### Flush(), CloseNotify() and Write() are not directly exposed anymore
 
-A type assertion of the corresponding interface is necessary.
+They used to be public methods of the ResponseWriter. The implementation is still there but a type assertion of the corresponding interface is now necessary.
+Regarding these features, a rest.ResponseWriter now behaves exactly as the http.ResponseWriter implementation provided by net/http.
 
 This:
 ~~~ go
@@ -210,6 +212,8 @@ writer.(http.Flusher).Flush()
 
 The route has to be manually defined.
 See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go).
+This is more flexible (the route is customizable), and allows combination with Middlewarres.
+See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go).
 
 
 #### Request utility methods have changed
