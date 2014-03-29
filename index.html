@@ -126,7 +126,7 @@ where this library code is copied in your repository at a specific revision.
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span>
                         <span class="s">"GET"</span><span class="p">,</span>
                         <span class="s">"/message"</span><span class="p">,</span>
                         <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -173,10 +173,10 @@ where this library code is copied in your repository at a specific revision.
                 <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -384,11 +384,11 @@ In this example the same struct is used both as the GORM model and as the JSON m
         <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetAllReminders"</span><span class="p">),</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PostReminder"</span><span class="p">),</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetReminder"</span><span class="p">),</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"PUT"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PutReminder"</span><span class="p">),</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"DeleteReminder"</span><span class="p">),</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetAllReminders"</span><span class="p">),</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PostReminder"</span><span class="p">),</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetReminder"</span><span class="p">),</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"PUT"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PutReminder"</span><span class="p">),</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"DeleteReminder"</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -521,7 +521,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -583,7 +583,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -657,7 +657,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
                 <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
             <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
                 <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
             <span class="p">},</span>
@@ -705,8 +705,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
             <span class="nx">auth</span><span class="p">.</span><span class="nx">MiddlewareFunc</span><span class="p">(</span>
                 <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
                     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
@@ -777,7 +777,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
         <span class="nx">DisableJsonIndent</span><span class="p">:</span>        <span class="kc">true</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/stream"</span><span class="p">,</span> <span class="nx">StreamThings</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/stream"</span><span class="p">,</span> <span class="nx">StreamThings</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -843,7 +843,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="nx">GetUser</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="nx">GetUser</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">spdy</span><span class="p">.</span><span class="nx">ListenAndServeTCP</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
@@ -880,10 +880,10 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -1032,7 +1032,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -1154,7 +1154,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
@@ -1233,7 +1233,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
 <h4>
 <a name="restresponsewriter-is-now-an-interface" class="anchor" href="#restresponsewriter-is-now-an-interface"><span class="octicon octicon-link"></span></a>rest.ResponseWriter is now an interface</h4>
 
-<p>This change allows the <code>ResponseWriter</code> to be wrapped, like the one of the <code>net/http</code> package. Middlewares like Gzip used this to encode the payload (see gzip.go).</p>
+<p>This change allows the <code>ResponseWriter</code> to be wrapped, like the one of the <code>net/http</code> package.
+This is much more powerful, and allows the creation of Middlewares that wrap the writer. The gzip option, for instance, uses this to encode the payload (see gzip.go).</p>
 
 <p>This:</p>
 
@@ -1247,6 +1248,29 @@ This example shows how to enable the stats, and how to setup the /.status route.
 <div class="highlight highlight-go"><pre><span class="kd">func</span> <span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
         <span class="o">...</span>
 <span class="p">}</span>
+</pre></div>
+
+<h4>
+<a name="setroutes-now-takes-pointers-to-route" class="anchor" href="#setroutes-now-takes-pointers-to-route"><span class="octicon octicon-link"></span></a>SetRoutes now takes pointers to Route</h4>
+
+<p>Instead of copying Route structures everywhere, pointers are now used. This is more elegant, more efficient, and will allow more sophisticated Route manipulations in the future (like reverse route resolution).</p>
+
+<p>This:</p>
+
+<div class="highlight highlight-go"><pre><span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span>
+              <span class="c1">// ...</span>
+        <span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+
+<p>has to be changed to this:</p>
+
+<div class="highlight highlight-go"><pre><span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span>
+              <span class="c1">// ...</span>
+        <span class="p">},</span>
+<span class="p">)</span>
 </pre></div>
 
 <h4>
@@ -1265,7 +1289,8 @@ See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/
 <h4>
 <a name="flush-closenotify-and-write-are-not-directly-exposed-anymore" class="anchor" href="#flush-closenotify-and-write-are-not-directly-exposed-anymore"><span class="octicon octicon-link"></span></a>Flush(), CloseNotify() and Write() are not directly exposed anymore</h4>
 
-<p>A type assertion of the corresponding interface is necessary.</p>
+<p>They used to be public methods of the ResponseWriter. The implementation is still there but a type assertion of the corresponding interface is now necessary.
+Regarding these features, a rest.ResponseWriter now behaves exactly as the http.ResponseWriter implementation provided by net/http.</p>
 
 <p>This:</p>
 
@@ -1281,18 +1306,20 @@ See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/
 <a name="the-status-endpoint-is-not-created-automatically-anymore" class="anchor" href="#the-status-endpoint-is-not-created-automatically-anymore"><span class="octicon octicon-link"></span></a>The /.status endpoint is not created automatically anymore</h4>
 
 <p>The route has to be manually defined.
-See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go">Status example</a>.</p>
+See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go">Status example</a>.
+This is more flexible (the route is customizable), and allows combination with Middlewarres.
+See for instance how to <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go">protect this status endpoint with the AuthBasic middleware</a>.</p>
 
 <h4>
 <a name="request-utility-methods-have-changed" class="anchor" href="#request-utility-methods-have-changed"><span class="octicon octicon-link"></span></a>Request utility methods have changed</h4>
 
 <p>Overall, they provide the same features, but with two methods instead of three, better names, and without the confusing <code>UriForWithParams</code>.</p>
 
-<p><code>func (r *Request) UriBase() url.URL</code> is now <code>func (r *Request) BaseUrl() *url.URL</code>, Note the pointer as the returned value.</p>
-
-<p><code>func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL</code> is now <code>func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL</code> and <code>func (r *Request) UriFor(path string) url.URL</code> has be removed.</p>
-
-<h2>
+<ul>
+<li><p><code>func (r *Request) UriBase() url.URL</code> is now <code>func (r *Request) BaseUrl() *url.URL</code>, Note the pointer as the returned value.</p></li>
+<li><p><code>func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL</code> is now <code>func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL</code>.</p></li>
+<li><p><code>func (r *Request) UriFor(path string) url.URL</code> has be removed.</p></li>
+</ul><h2>
 <a name="thanks" class="anchor" href="#thanks"><span class="octicon octicon-link"></span></a>Thanks</h2>
 
 <ul>
