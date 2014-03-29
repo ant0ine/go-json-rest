@@ -11,12 +11,12 @@ func TestStatus(t *testing.T) {
 		EnableStatusService: true,
 	}
 	handler.SetRoutes(
-		Route{"GET", "/r",
+		&Route{"GET", "/r",
 			func(w ResponseWriter, r *Request) {
 				w.WriteJson(map[string]string{"Id": "123"})
 			},
 		},
-		Route{"GET", "/.status",
+		&Route{"GET", "/.status",
 			func(w ResponseWriter, r *Request) {
 				w.WriteJson(handler.GetStatus())
 			},

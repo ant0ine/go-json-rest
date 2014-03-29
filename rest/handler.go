@@ -82,7 +82,7 @@ type Route struct {
 // RouteObjectMethod creates a Route that points to an object method. It can be convenient to point to
 // an object method instead of a function, this helper makes it easy by passing the object instance and
 // the method name as parameters.
-func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) Route {
+func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) *Route {
 
 	value := reflect.ValueOf(objectInstance)
 	funcValue := value.MethodByName(objectMethod)
@@ -100,7 +100,7 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 		})
 	}
 
-	return Route{
+	return &Route{
 		HttpMethod: httpMethod,
 		PathExp:    pathExp,
 		Func:       routeFunc,
@@ -109,7 +109,7 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 
 // SetRoutes defines the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
-func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
+func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
 	// start the router
 	rh.internalRouter = &router{

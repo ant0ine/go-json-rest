@@ -13,13 +13,13 @@ func TestHandler(t *testing.T) {
 		DisableJsonIndent: true,
 	}
 	handler.SetRoutes(
-		Route{"GET", "/r/:id",
+		&Route{"GET", "/r/:id",
 			func(w ResponseWriter, r *Request) {
 				id := r.PathParam("id")
 				w.WriteJson(map[string]string{"Id": id})
 			},
 		},
-		Route{"POST", "/r/:id",
+		&Route{"POST", "/r/:id",
 			func(w ResponseWriter, r *Request) {
 				// JSON echo
 				data := map[string]string{}
@@ -30,18 +30,18 @@ func TestHandler(t *testing.T) {
 				w.WriteJson(data)
 			},
 		},
-		Route{"GET", "/auto-fails",
+		&Route{"GET", "/auto-fails",
 			func(w ResponseWriter, r *Request) {
 				a := []int{}
 				_ = a[0]
 			},
 		},
-		Route{"GET", "/user-error",
+		&Route{"GET", "/user-error",
 			func(w ResponseWriter, r *Request) {
 				Error(w, "My error", 500)
 			},
 		},
-		Route{"GET", "/user-notfound",
+		&Route{"GET", "/user-notfound",
 			func(w ResponseWriter, r *Request) {
 				NotFound(w, r)
 			},

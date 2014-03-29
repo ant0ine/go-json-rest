@@ -180,6 +180,28 @@ func (w rest.ResponseWriter, req *rest.Request) {
 ~~~
 
 
+#### SetRoutes now takes pointers to Route
+
+Instead of copying Route structures everywhere, pointers are now used. This is more elegant, more efficient, and will allow more sophisticated Route manipulations in the future (like reverse route resolution).
+
+This:
+~~~ go
+handler.SetRoutes(
+		rest.Route{
+		      // ...
+		},
+)
+~~~
+has to be changed to this:
+~~~ go
+handler.SetRoutes(
+		&rest.Route{
+		      // ...
+		},
+)
+~~~
+
+
 ####  The notion of Middleware is now formally defined
 
 A middleware is an object satisfying this interface:

@@ -89,7 +89,7 @@ type Message struct {
 func main() {
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.Route{
+		&rest.Route{
                         "GET",
                         "/message",
                         func(w rest.ResponseWriter, req *rest.Request) {
@@ -138,10 +138,10 @@ func main() {
                 EnableRelaxedContentType: true,
         }
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-		rest.Route{"POST", "/countries", PostCountry},
-		rest.Route{"GET", "/countries/:code", GetCountry},
-		rest.Route{"DELETE", "/countries/:code", DeleteCountry},
+		&rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"POST", "/countries", PostCountry},
+		&rest.Route{"GET", "/countries/:code", GetCountry},
+		&rest.Route{"DELETE", "/countries/:code", DeleteCountry},
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -353,11 +353,11 @@ func main() {
 		EnableRelaxedContentType: true,
 	}
 	handler.SetRoutes(
-		rest.RouteObjectMethod("GET", "/reminders", &api, "GetAllReminders"),
-		rest.RouteObjectMethod("POST", "/reminders", &api, "PostReminder"),
-		rest.RouteObjectMethod("GET", "/reminders/:id", &api, "GetReminder"),
-		rest.RouteObjectMethod("PUT", "/reminders/:id", &api, "PutReminder"),
-		rest.RouteObjectMethod("DELETE", "/reminders/:id", &api, "DeleteReminder"),
+		&rest.RouteObjectMethod("GET", "/reminders", &api, "GetAllReminders"),
+		&rest.RouteObjectMethod("POST", "/reminders", &api, "PostReminder"),
+		&rest.RouteObjectMethod("GET", "/reminders/:id", &api, "GetReminder"),
+		&rest.RouteObjectMethod("PUT", "/reminders/:id", &api, "PutReminder"),
+		&rest.RouteObjectMethod("DELETE", "/reminders/:id", &api, "DeleteReminder"),
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -492,7 +492,7 @@ func main() {
 		},
 	}
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -556,7 +556,7 @@ func main() {
 		},
 	}
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -633,7 +633,7 @@ func main() {
                 EnableStatusService: true,
         }
 	handler.SetRoutes(
-		rest.Route{"GET", "/.status",
+		&rest.Route{"GET", "/.status",
 			func(w rest.ResponseWriter, r *rest.Request) {
 				w.WriteJson(handler.GetStatus())
 			},
@@ -683,8 +683,8 @@ func main() {
 		},
 	}
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-		rest.Route{"GET", "/.status",
+		&rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"GET", "/.status",
 			auth.MiddlewareFunc(
 				func(w rest.ResponseWriter, r *rest.Request) {
 					w.WriteJson(handler.GetStatus())
@@ -757,7 +757,7 @@ func main() {
 		DisableJsonIndent:        true,
 	}
 	handler.SetRoutes(
-		rest.Route{"GET", "/stream", StreamThings},
+		&rest.Route{"GET", "/stream", StreamThings},
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -825,7 +825,7 @@ func GetUser(w rest.ResponseWriter, req *rest.Request) {
 func main() {
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.Route{"GET", "/users/:id", GetUser},
+		&rest.Route{"GET", "/users/:id", GetUser},
 	)
 	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
 }
@@ -864,10 +864,10 @@ func init() {
 
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
-		rest.Route{"POST", "/countries", PostCountry},
-		rest.Route{"GET", "/countries/:code", GetCountry},
-		rest.Route{"DELETE", "/countries/:code", DeleteCountry},
+		&rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"POST", "/countries", PostCountry},
+		&rest.Route{"GET", "/countries/:code", GetCountry},
+		&rest.Route{"DELETE", "/countries/:code", DeleteCountry},
 	)
 	http.Handle("/", &handler)
 }
@@ -1018,7 +1018,7 @@ func main() {
 		},
 	}
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -1142,7 +1142,7 @@ func main() {
 		},
 	}
 	handler.SetRoutes(
-		rest.Route{"GET", "/countries", GetAllCountries},
+		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	http.ListenAndServe(":8080", &handler)
 }
@@ -1232,6 +1232,28 @@ has to be changed to this:
 func (w rest.ResponseWriter, req *rest.Request) {
         ...
 }
+~~~
+
+
+#### SetRoutes now takes pointers to Route
+
+Instead of copying Route structures everywhere, pointers are now used. This is more elegant, more efficient, and will allow more sophisticated Route manipulations in the future (like reverse route resolution).
+
+This:
+~~~ go
+handler.SetRoutes(
+		rest.Route{
+		      // ...
+		},
+)
+~~~
+has to be changed to this:
+~~~ go
+handler.SetRoutes(
+		&rest.Route{
+		      // ...
+		},
+)
 ~~~
 
 

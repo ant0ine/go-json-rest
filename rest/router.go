@@ -11,7 +11,7 @@ import (
 // support for #param placeholder ?
 
 type router struct {
-	routes                 []Route
+	routes                 []*Route
 	disableTrieCompression bool
 	index                  map[*Route]int
 	trie                   *trie.Trie
@@ -32,10 +32,7 @@ func (rt *router) start() error {
 	rt.trie = trie.New()
 	rt.index = map[*Route]int{}
 
-	for i := range rt.routes {
-
-		// pointer to the Route
-		route := &rt.routes[i]
+	for i, route := range rt.routes {
 
 		// PathExp validation
 		if route.PathExp == "" {
