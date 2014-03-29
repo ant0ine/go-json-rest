@@ -58,21 +58,21 @@ type ResourceHandler struct {
 	// They are run pre REST routing, request.PathParams is not set yet.
 	PreRoutingMiddlewares []Middleware
 
-	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
+	// Custom logger, optional, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
 }
 
 // Route defines a route. It's used with SetRoutes.
 type Route struct {
 
-	// Any http method. It will be used as uppercase to avoid common mistakes.
+	// Any HTTP method. It will be used as uppercase to avoid common mistakes.
 	HttpMethod string
 
 	// A string like "/resource/:id.json".
 	// Placeholders supported are:
 	// :param that matches any char to the first '/' or '.'
 	// *splat that matches everything to the end of the string
-	// (placeholder names should be unique per PathExp)
+	// (placeholder names must be unique per PathExp)
 	PathExp string
 
 	// Code that will be executed when this route is taken.
