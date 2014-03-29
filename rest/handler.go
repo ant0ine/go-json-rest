@@ -26,6 +26,7 @@ type ResourceHandler struct {
 	internalRouter   *router
 	statusMiddleware *statusMiddleware
 	handlerFunc      http.HandlerFunc
+	handlerPath	     string
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -60,9 +61,6 @@ type ResourceHandler struct {
 
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
-
-	// Extra version string used before every path. Defaults to "/"
-	versionPath string
 }
 
 // Route defines a route. It's used with SetRoutes.
@@ -229,12 +227,12 @@ func (rh *ResourceHandler) app() HandlerFunc {
 			return
 		}
 
-		// remove version path from URL
+		// remove handler path from URL
 		var path = request.URL.Path
-		if strings.HasPrefix(path, rh.versionPath) {
-			path = "/"+strings.TrimPrefix(path, rh.versionPath)
+		if strings.HasPrefix(path, rh.handlerPath) {
+			path = "/"+strings.TrimPrefix(path, rh.handlerPath)
 		} else {
-			Error(writer, "Version Path is not set correctly", http.StatusInternalServerError)
+			Error(writer, "Handler Path is not set up correctly", http.StatusInternalServerError)
 		}
 		request.URL.Path = path
 
@@ -273,8 +271,8 @@ func (rh *ResourceHandler) GetStatus() *Status {
 	return rh.statusMiddleware.getStatus()
 }
 
-// Set up http handler using Version Path
+// Set up http handler
 func (rh *ResourceHandler) Handle(path string) {
-	rh.versionPath = path
-	http.Handle(rh.versionPath, rh)
+	rh.handlerPath = path
+	http.Handle(rh.handlerPath, rh)
 }
