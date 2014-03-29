@@ -60,6 +60,9 @@ type ResourceHandler struct {
 
 	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
+
+	// Extra version string used before every path. Defaults to "/"
+	versionPath string
 }
 
 // Route defines a route. It's used with SetRoutes.
@@ -110,7 +113,6 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 // SetRoutes defines the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
-
 	// start the router
 	rh.internalRouter = &router{
 		routes: routes,
@@ -227,7 +229,16 @@ func (rh *ResourceHandler) app() HandlerFunc {
 			return
 		}
 
-		// find the route
+		// remove version path from URL
+		var path = request.URL.Path
+		if strings.HasPrefix(path, rh.versionPath) {
+			path = "/"+strings.TrimPrefix(path, rh.versionPath)
+		} else {
+			Error(writer, "Version Path is not set correctly", http.StatusInternalServerError)
+		}
+		request.URL.Path = path
+
+		// find the routes
 		route, params, pathMatched := rh.internalRouter.findRouteFromURL(request.Method, request.URL)
 		if route == nil {
 
@@ -260,4 +271,10 @@ func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // GetStatus returns a Status object. EnableStatusService must be true.
 func (rh *ResourceHandler) GetStatus() *Status {
 	return rh.statusMiddleware.getStatus()
+}
+
+// Set up http handler using Version Path
+func (rh *ResourceHandler) Handle(path string) {
+	rh.versionPath = path
+	http.Handle(rh.versionPath, rh)
 }
