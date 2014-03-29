@@ -111,6 +111,7 @@ func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interfa
 // SetRoutes defines the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...Route) error {
+	
 	// start the router
 	rh.internalRouter = &router{
 		routes: routes,
@@ -232,11 +233,11 @@ func (rh *ResourceHandler) app() HandlerFunc {
 		if strings.HasPrefix(path, rh.handlerPath) {
 			path = "/"+strings.TrimPrefix(path, rh.handlerPath)
 		} else {
-			Error(writer, "Handler Path is not set up correctly", http.StatusInternalServerError)
+			Error(writer, "Handler path is not set up correctly", http.StatusInternalServerError)
 		}
 		request.URL.Path = path
 
-		// find the routes
+		// find the route
 		route, params, pathMatched := rh.internalRouter.findRouteFromURL(request.Method, request.URL)
 		if route == nil {
 
