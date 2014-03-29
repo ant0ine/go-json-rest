@@ -216,9 +216,12 @@ See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/v
 
 Overall, they provide the same features, but with two methods instead of three, better names, and without the confusing `UriForWithParams`.
 
-`func (r *Request) UriBase() url.URL` is now `func (r *Request) BaseUrl() *url.URL`, Note the pointer as the returned value.
+- `func (r *Request) UriBase() url.URL` is now `func (r *Request) BaseUrl() *url.URL`, Note the pointer as the returned value.
 
-`func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL` is now `func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL` and `func (r *Request) UriFor(path string) url.URL` has be removed.
+- `func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL` is now `func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL`.
+
+- `func (r *Request) UriFor(path string) url.URL` has be removed.
+
 
 ## Thanks
 
