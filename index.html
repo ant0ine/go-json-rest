@@ -53,18 +53,37 @@
 <a href="#examples">Examples</a>
 
 <ul>
+<li>
+<a href="#basics">Basics</a>
+
+<ul>
 <li><a href="#hello-world">Hello World!</a></li>
 <li><a href="#countries">Countries</a></li>
 <li><a href="#users">Users</a></li>
+</ul>
+</li>
+<li>
+<a href="#applications">Applications</a>
+
+<ul>
 <li><a href="#gorm">GORM</a></li>
 <li><a href="#cors">CORS</a></li>
 <li><a href="#basic-auth">Basic Auth</a></li>
 <li><a href="#status">Status</a></li>
 <li><a href="#status-auth">Status Auth</a></li>
+</ul>
+</li>
+<li>
+<a href="#advanced">Advanced</a>
+
+<ul>
 <li><a href="#streaming">Streaming</a></li>
 <li><a href="#spdy">SPDY</a></li>
+<li><a href="#gae">Google App Engine</a></li>
 <li><a href="#basic-auth-custom">Basic Auth Custom</a></li>
 <li><a href="#cors-custom">CORS Custom</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#external-documentation">External Documentation</a></li>
@@ -99,7 +118,12 @@ where this library code is copied in your repository at a specific revision.
 <h2>
 <a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
 
-<p>(See the dedicated examples repository: <a href="https://github.com/ant0ine/go-json-rest-examples">https://github.com/ant0ine/go-json-rest-examples</a>)</p>
+<p>All the following examples can be found in dedicated examples repository: <a href="https://github.com/ant0ine/go-json-rest-examples">https://github.com/ant0ine/go-json-rest-examples</a></p>
+
+<h3>
+<a name="basics" class="anchor" href="#basics"><span class="octicon octicon-link"></span></a>Basics</h3>
+
+<p>First examples to try, as an introduction to go-json-rest.</p>
 
 <h4>
 <a name="hello-world" class="anchor" href="#hello-world"><span class="octicon octicon-link"></span></a>Hello World!</h4>
@@ -110,6 +134,8 @@ where this library code is copied in your repository at a specific revision.
 
 <pre><code>    curl -i http://127.0.0.1:8080/message
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -158,6 +184,8 @@ where this library code is copied in your repository at a specific revision.
     curl -i -X DELETE http://127.0.0.1:8080/countries/US
     curl -i http://127.0.0.1:8080/countries
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -250,6 +278,8 @@ an object method instead of just a function.</p>
     curl -i -X DELETE http://127.0.0.1:8080/users/0
     curl -i http://127.0.0.1:8080/users
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -345,6 +375,11 @@ an object method instead of just a function.</p>
 
 </pre></div>
 
+<h3>
+<a name="applications" class="anchor" href="#applications"><span class="octicon octicon-link"></span></a>Applications</h3>
+
+<p>Common use cases, found in many applications.</p>
+
 <h4>
 <a name="gorm" class="anchor" href="#gorm"><span class="octicon octicon-link"></span></a>GORM</h4>
 
@@ -361,6 +396,8 @@ In this example the same struct is used both as the GORM model and as the JSON m
     curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
     curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -496,6 +533,8 @@ In this example the same struct is used both as the GORM model and as the JSON m
 <pre><code>    curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
+<p>Go code:</p>
+
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
@@ -558,6 +597,8 @@ In this example the same struct is used both as the GORM model and as the JSON m
 <pre><code>    curl -i http://127.0.0.1:8080/countries
     curl -i -u admin:admin http://127.0.0.1:8080/countries
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -644,6 +685,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
     }
 </code></pre>
 
+<p>Go code:</p>
+
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
@@ -682,6 +725,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
     curl -i -u admin:admin http://127.0.0.1:8080/.status
     ...
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -739,6 +784,11 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 </pre></div>
 
+<h3>
+<a name="advanced" class="anchor" href="#advanced"><span class="octicon octicon-link"></span></a>Advanced</h3>
+
+<p>Less common use cases.</p>
+
 <h4>
 <a name="streaming" class="anchor" href="#streaming"><span class="octicon octicon-link"></span></a>Streaming</h4>
 
@@ -759,6 +809,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
     {"Name":"thing #2"}
     {"Name":"thing #3"}
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -818,6 +870,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
 <pre><code>    spdycat -v --no-tls -2 http://localhost:8080/users/0
 </code></pre>
 
+<p>Go code:</p>
+
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
 
@@ -867,6 +921,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
     curl -i -X DELETE http://127.0.0.1:8080/countries/US
     curl -i http://127.0.0.1:8080/countries
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">gaecountries</span>
@@ -952,6 +1008,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 <pre><code>    curl -i http://127.0.0.1:8080/countries
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
@@ -1068,6 +1126,8 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 <pre><code>    curl -i http://127.0.0.1:8080/countries
 </code></pre>
+
+<p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
 <span class="kn">package</span> <span class="nx">main</span>
