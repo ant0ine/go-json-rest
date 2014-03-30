@@ -17,7 +17,7 @@
 * Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
 In fact the internal code of go-json-rest is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.
 
-* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided ResponseWriter implements in addition the following interfaces: http.Flusher, http.CloseNotifier. A lot more Goish, and very similar to net/http.
+* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of rest.ResponseWriter, http.Flusher, http.CloseNotifier, and http.ResponseWriter. A lot more Goish, and very similar to net/http.
 
 * The AuthBasic and CORS Middlewares have been added. More to come in the future.
 
@@ -59,10 +59,10 @@ In fact the internal code of go-json-rest is itself implemented with Middlewares
 ## Features
 
 - Many examples.
-- Fast URL routing. It implements the classic route description syntax using a fast and scalable trie data structure.
-- Use Middlewares in order to extend the functionalities.
+- Fast and scalable URL routing. It implements the classic route description syntax using a scalable trie data structure.
+- Use Middlewares in order to implement and extend the functionalities. (Logging, Gzip, CORS, Auth, ...)
 - Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
-- Test package to help writing tests for the API.
+- Test package to help writing tests for your API.
 - Monitoring statistics inspired by Memcached.
 
 
