@@ -17,18 +17,21 @@
 - [Install](#install)
 - [Vendoring](#vendoring)
 - [Examples](#examples)
-  - [Hello World!](#hello-world)
-  - [Countries](#countries)
-  - [Users](#users)
-  - [GORM](#gorm)
-  - [CORS](#cors)
-  - [Basic Auth](#basic-auth)
-  - [Status](#status)
-  - [Status Auth](#status-auth)
-  - [Streaming](#streaming)
-  - [SPDY](#spdy)
-  - [Basic Auth Custom](#basic-auth-custom)
-  - [CORS Custom](#cors-custom)
+  - [Basics](#basics)
+	  - [Hello World!](#hello-world)
+	  - [Countries](#countries)
+	  - [Users](#users)
+  - [Applications](#applications)
+	  - [GORM](#gorm)
+	  - [CORS](#cors)
+	  - [Basic Auth](#basic-auth)
+	  - [Status](#status)
+	  - [Status Auth](#status-auth)
+  - [Advanced](#advanced)
+	  - [Streaming](#streaming)
+	  - [SPDY](#spdy)
+	  - [Basic Auth Custom](#basic-auth-custom)
+	  - [CORS Custom](#cors-custom)
 - [External Documentation](#external-documentation)
 - [Options](#options)
 - [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
@@ -61,7 +64,11 @@ where this library code is copied in your repository at a specific revision.
 
 ## Examples
 
-(See the dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples)
+All the following examples can be found in dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples
+
+### Basics
+
+First examples to try, as an introduction to go-json-rest.
 
 #### Hello World!
 
@@ -72,7 +79,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/message
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -122,7 +129,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/countries
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -216,7 +223,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/users
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -313,6 +320,10 @@ func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 ~~~
 
 
+### Applications
+
+Common use cases, found in many applications.
+
 #### GORM
 
 Demonstrate basic CRUD operation using a store based on MySQL and GORM
@@ -329,7 +340,7 @@ The curl demo:
         curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -465,7 +476,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/countries
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -530,7 +541,7 @@ The curl demo:
         curl -i -u admin:admin http://127.0.0.1:8080/countries
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -618,7 +629,7 @@ The curl demo:
         }
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -659,7 +670,7 @@ The Curl Demo:
         ...
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -718,6 +729,10 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 ~~~
 
 
+### Advanced
+
+Less common use cases.
+
 #### Streaming
 
 Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP.
@@ -738,7 +753,7 @@ The curl demo:
         {"Name":"thing #3"}
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -798,7 +813,7 @@ The spdycat demo:
         spdycat -v --no-tls -2 http://localhost:8080/users/0
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -850,7 +865,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/countries
 
 
-
+Go code:
 ~~~ go
 
 package gaecountries
@@ -937,7 +952,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/countries
 
 
-
+Go code:
 ~~~ go
 
 package main
@@ -1055,7 +1070,7 @@ The curl demo:
         curl -i http://127.0.0.1:8080/countries
 
 
-
+Go code:
 ~~~ go
 
 package main

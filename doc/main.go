@@ -68,7 +68,7 @@ func main() {
 		exampleComment, exampleCode := extractComment(pageBody)
 
 		exampleStr := ""
-		exampleStr += exampleComment + "\n\n"
+		exampleStr += exampleComment + "\nGo code:\n"
 		exampleStr += "~~~ go\n"
 		exampleStr += exampleCode + "\n"
 		exampleStr += "~~~\n"
