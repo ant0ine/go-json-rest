@@ -1,0 +1,295 @@
+
+# Go-Json-Rest
+
+*A quick and easy way to setup a RESTful JSON API*
+
+[![Build Status](https://travis-ci.org/ant0ine/go-json-rest.png?branch=master)](https://travis-ci.org/ant0ine/go-json-rest) [![GoDoc](https://godoc.org/github.com/ant0ine/go-json-rest?status.png)](https://godoc.org/github.com/ant0ine/go-json-rest)
+
+
+**Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
+
+
+## What's new in version 2
+
+* Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
+In fact the internal code of **go-json-rest** is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.
+
+* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of *rest.ResponseWriter*, *http.Flusher*, *http.CloseNotifier*, and *http.ResponseWriter*. A lot more Go-ish, and very similar to `net/http`.
+
+* The AuthBasic and CORS Middlewares have been added. More to come in the future.
+
+* Faster, more tasks are performed at init time, and less for each request.
+
+* New documentation, with more examples.
+
+* A lot of other small improvements, See the [Migration guide to v2](#migration-guide-from-v1-to-v2)
+
+
+## Table of content
+
+- [Features](#features)
+- [Install](#install)
+- [Vendoring](#vendoring)
+- [Examples](#examples)
+  - [Basics](#basics)
+	  - [Hello World!](#hello-world)
+	  - [Countries](#countries)
+	  - [Users](#users)
+  - [Applications](#applications)
+	  - [GORM](#gorm)
+	  - [CORS](#cors)
+	  - [Basic Auth](#basic-auth)
+	  - [Status](#status)
+	  - [Status Auth](#status-auth)
+  - [Advanced](#advanced)
+	  - [Streaming](#streaming)
+	  - [SPDY](#spdy)
+	  - [Google App Engine](#gae)
+	  - [Basic Auth Custom](#basic-auth-custom)
+	  - [CORS Custom](#cors-custom)
+- [External Documentation](#external-documentation)
+- [Options](#options)
+- [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
+- [Thanks](#thanks)
+
+
+## Features
+
+- Many examples.
+- Fast and scalable URL routing. It implements the classic route description syntax using a scalable trie data structure.
+- Use Middlewares in order to implement and extend the functionalities. (Logging, Gzip, CORS, Auth, ...)
+- Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
+- Test package to help writing tests for your API.
+- Monitoring statistics inspired by Memcached.
+
+
+## Install
+
+This package is "go-gettable", just do:
+
+    go get github.com/ant0ine/go-json-rest/rest
+
+
+## Vendoring
+
+The recommended way of using this library in your project is to use the **"vendoring"** method,
+where this library code is copied in your repository at a specific revision.
+[This page](http://nathany.com/go-packages/) is a good summary of package management in Go.
+
+
+## Examples
+
+All the following examples can be found in dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples
+
+### Basics
+
+First examples to try, as an introduction to go-json-rest.
+
+#### Hello World!
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/helloworld/main.go</exampleInclude>
+
+#### Countries
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/countries/main.go</exampleInclude>
+
+#### Users
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/users/main.go</exampleInclude>
+
+### Applications
+
+Common use cases, found in many applications.
+
+#### GORM
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/gorm/main.go</exampleInclude>
+
+#### CORS
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/cors/main.go</exampleInclude>
+
+#### Basic Auth
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/auth-basic/main.go</exampleInclude>
+
+#### Status
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/status/main.go</exampleInclude>
+
+#### Status Auth
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/status-auth/main.go</exampleInclude>
+
+### Advanced
+
+Less common use cases.
+
+#### Streaming
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/streaming/main.go</exampleInclude>
+
+#### SPDY
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/spdy/main.go</exampleInclude>
+
+#### GAE
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/gae/gaecountries/main.go</exampleInclude>
+
+#### Basic Auth Custom
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/auth-basic-custom/main.go</exampleInclude>
+
+#### CORS Custom
+
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/cors-custom/main.go</exampleInclude>
+
+
+## External Documentation
+
+- [Online Documentation (godoc.org)](http://godoc.org/github.com/ant0ine/go-json-rest)
+
+Old v1 blog posts:
+
+- [(Blog Post) Introducing Go-Json-Rest] (http://blog.ant0ine.com/typepad/2013/04/introducing-go-json-rest.html)
+- [(Blog Post) Better URL Routing ?] (http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html)
+
+
+## Options
+
+Things to enable in production:
+- Gzip compression (default: disabled)
+- Custom Logger (default: Go default)
+
+Things to enable in development:
+- Json indentation (default: enabled)
+- Relaxed ContentType (default: disabled)
+- Error stack trace in the response body (default: disabled)
+
+
+## Migration guide from v1 to v2
+
+**Go-Json-Rest** follows [Semver](http://semver.org/) and a few breaking changes have been introduced with the v2.
+
+
+#### The import path has changed to `github.com/ant0ine/go-json-rest/rest`
+
+This is more conform to Go style, and makes [goimports](https://godoc.org/code.google.com/p/go.tools/cmd/goimports) work.
+
+This:
+~~~ go
+import (
+        "github.com/ant0ine/go-json-rest"
+)
+~~~
+has to be changed to this:
+~~~ go
+import (
+        "github.com/ant0ine/go-json-rest/rest"
+)
+~~~
+
+
+#### rest.ResponseWriter is now an interface
+
+This change allows the `ResponseWriter` to be wrapped, like the one of the `net/http` package.
+This is much more powerful, and allows the creation of Middlewares that wrap the writer. The gzip option, for instance, uses this to encode the payload (see gzip.go).
+
+This:
+~~~ go
+func (w *rest.ResponseWriter, req *rest.Request) {
+        ...
+}
+~~~
+has to be changed to this:
+~~~ go
+func (w rest.ResponseWriter, req *rest.Request) {
+        ...
+}
+~~~
+
+
+#### SetRoutes now takes pointers to Route
+
+Instead of copying Route structures everywhere, pointers are now used. This is more elegant, more efficient, and will allow more sophisticated Route manipulations in the future (like reverse route resolution).
+
+This:
+~~~ go
+handler.SetRoutes(
+		rest.Route{
+		      // ...
+		},
+)
+~~~
+has to be changed to this:
+~~~ go
+handler.SetRoutes(
+		&rest.Route{
+		      // ...
+		},
+)
+~~~
+
+
+####  The notion of Middleware is now formally defined
+
+A middleware is an object satisfying this interface:
+~~~ go
+type Middleware interface {
+	MiddlewareFunc(handler HandlerFunc) HandlerFunc
+}
+~~~
+
+Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
+See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go).
+
+
+#### Flush(), CloseNotify() and Write() are not directly exposed anymore
+
+They used to be public methods of the ResponseWriter. The implementation is still there but a type assertion of the corresponding interface is now necessary.
+Regarding these features, a rest.ResponseWriter now behaves exactly as the http.ResponseWriter implementation provided by net/http.
+
+This:
+~~~ go
+writer.Flush()
+~~~
+has to be changed to this:
+~~~ go
+writer.(http.Flusher).Flush()
+~~~
+
+
+#### The /.status endpoint is not created automatically anymore
+
+The route has to be manually defined.
+See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go).
+This is more flexible (the route is customizable), and allows combination with Middlewarres.
+See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go).
+
+
+#### Request utility methods have changed
+
+Overall, they provide the same features, but with two methods instead of three, better names, and without the confusing `UriForWithParams`.
+
+- `func (r *Request) UriBase() url.URL` is now `func (r *Request) BaseUrl() *url.URL`, Note the pointer as the returned value.
+
+- `func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL` is now `func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL`.
+
+- `func (r *Request) UriFor(path string) url.URL` has be removed.
+
+
+## Thanks
+
+- [Franck Cuny](https://github.com/franckcuny)
+- [Yann Kerhervé](https://github.com/yannk)
+- [Ask Bjørn Hansen](https://github.com/abh)
+
+
+Copyright (c) 2013-2014 Antoine Imbert
+
+[MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
+
+[![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/v2-alpha/readme)](https://github.com/igrigorik/ga-beacon)
+
+

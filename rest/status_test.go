@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/ant0ine/go-json-rest/test"
+	"github.com/ant0ine/go-json-rest/rest/test"
 	"testing"
 )
 
@@ -11,9 +11,14 @@ func TestStatus(t *testing.T) {
 		EnableStatusService: true,
 	}
 	handler.SetRoutes(
-		Route{"GET", "/r",
-			func(w *ResponseWriter, r *Request) {
+		&Route{"GET", "/r",
+			func(w ResponseWriter, r *Request) {
 				w.WriteJson(map[string]string{"Id": "123"})
+			},
+		},
+		&Route{"GET", "/.status",
+			func(w ResponseWriter, r *Request) {
+				w.WriteJson(handler.GetStatus())
 			},
 		},
 	)

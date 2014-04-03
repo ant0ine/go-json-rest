@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func routes() []Route {
+func routes() []*Route {
 	// simulate the routes of a real but reasonable app.
 	// 6 + 10 * (5 + 2) + 1 = 77 routes
 	routePaths := []string{
@@ -27,9 +27,9 @@ func routes() []Route {
 	}
 	routePaths = append(routePaths, "/*")
 
-	routes := []Route{}
+	routes := []*Route{}
 	for _, path := range routePaths {
-		routes = append(routes, Route{
+		routes = append(routes, &Route{
 			HttpMethod: "GET",
 			PathExp:    path,
 		})

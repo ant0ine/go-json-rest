@@ -8,19 +8,23 @@ import (
 	"strings"
 )
 
-// Inherit from http.Request, and provide additional methods.
+// Request inherits from http.Request, and provides additional methods.
 type Request struct {
 	*http.Request
-	// map of parameters that have been matched in the URL Path.
+
+	// Map of parameters that have been matched in the URL Path.
 	PathParams map[string]string
+
+	// Environement used by middlewares to communicate.
+	Env map[string]interface{}
 }
 
-// Provide a convenient access to the PathParams map
+// PathParam provides a convenient access to the PathParams map.
 func (r *Request) PathParam(name string) string {
 	return r.PathParams[name]
 }
 
-// Read the request body and decode the JSON using json.Unmarshal
+// DecodeJsonPayload reads the request body and decodes the JSON using json.Unmarshal.
 func (r *Request) DecodeJsonPayload(v interface{}) error {
 	content, err := ioutil.ReadAll(r.Body)
 	r.Body.Close()
@@ -34,9 +38,9 @@ func (r *Request) DecodeJsonPayload(v interface{}) error {
 	return nil
 }
 
-// Returns a URL structure for the base (scheme + host) of the application,
-// without the trailing slash in the host
-func (r *Request) UriBase() url.URL {
+// BaseUrl returns a new URL object with the Host and Scheme taken from the request.
+// (without the trailing slash in the host)
+func (r *Request) BaseUrl() *url.URL {
 	scheme := r.URL.Scheme
 	if scheme == "" {
 		scheme = "http"
@@ -47,44 +51,44 @@ func (r *Request) UriBase() url.URL {
 		host = host[:len(host)-1]
 	}
 
-	url := url.URL{
+	return &url.URL{
 		Scheme: scheme,
 		Host:   host,
 	}
-	return url
 }
 
-// Returns an URL structure from the base and an additional path.
-func (r *Request) UriFor(path string) url.URL {
-	baseUrl := r.UriBase()
+// UrlFor returns the URL object from UriBase with the Path set to path, and the query
+// string built with queryParams.
+func (r *Request) UrlFor(path string, queryParams map[string][]string) *url.URL {
+	baseUrl := r.BaseUrl()
 	baseUrl.Path = path
-	return baseUrl
-}
-
-// Returns an URL structure from the base, the path and the parameters.
-func (r *Request) UriForWithParams(path string, parameters map[string][]string) url.URL {
-	query := url.Values{}
-	for k, v := range parameters {
-		for _, vv := range v {
-			query.Add(k, vv)
+	if queryParams != nil {
+		query := url.Values{}
+		for k, v := range queryParams {
+			for _, vv := range v {
+				query.Add(k, vv)
+			}
 		}
+		baseUrl.RawQuery = query.Encode()
 	}
-	baseUrl := r.UriFor(path)
-	baseUrl.RawQuery = query.Encode()
 	return baseUrl
 }
 
-// CORS request info derived from a rest.Request.
+// CorsInfo contains the CORS request info derived from a rest.Request.
 type CorsInfo struct {
-	IsCors                      bool
-	IsPreflight                 bool
-	Origin                      string
-	OriginUrl                   *url.URL
-	AccessControlRequestMethod  string
+	IsCors      bool
+	IsPreflight bool
+	Origin      string
+	OriginUrl   *url.URL
+
+	// The header value is converted to uppercase to avoid common mistakes.
+	AccessControlRequestMethod string
+
+	// The header values are normalized with http.CanonicalHeaderKey.
 	AccessControlRequestHeaders []string
 }
 
-// Derive CorsInfo from Request
+// GetCorsInfo derives CorsInfo from Request.
 func (r *Request) GetCorsInfo() *CorsInfo {
 
 	origin := r.Header.Get("Origin")
@@ -110,7 +114,7 @@ func (r *Request) GetCorsInfo() *CorsInfo {
 		IsPreflight:                 isPreflight,
 		Origin:                      origin,
 		OriginUrl:                   originUrl,
-		AccessControlRequestMethod:  reqMethod,
+		AccessControlRequestMethod:  strings.ToUpper(reqMethod),
 		AccessControlRequestHeaders: reqHeaders,
 	}
 }
