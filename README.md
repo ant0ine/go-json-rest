@@ -6,9 +6,6 @@
 [![Build Status](https://travis-ci.org/ant0ine/go-json-rest.png?branch=master)](https://travis-ci.org/ant0ine/go-json-rest) [![GoDoc](https://godoc.org/github.com/ant0ine/go-json-rest?status.png)](https://godoc.org/github.com/ant0ine/go-json-rest)
 
 
-**Warning: This is v2-alpha, a work in progress for the version 2 of Go-Json-Rest**
-
-
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
 
 
