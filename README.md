@@ -1293,7 +1293,7 @@ type Middleware interface {
 ~~~
 
 Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
-See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go).
+See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go).
 
 
 #### Flush(), CloseNotify() and Write() are not directly exposed anymore
@@ -1314,9 +1314,9 @@ writer.(http.Flusher).Flush()
 #### The /.status endpoint is not created automatically anymore
 
 The route has to be manually defined.
-See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go).
+See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/master/status/main.go).
 This is more flexible (the route is customizable), and allows combination with Middlewarres.
-See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go).
+See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/master/status-auth/main.go).
 
 
 #### Request utility methods have changed
@@ -1341,6 +1341,6 @@ Copyright (c) 2013-2014 Antoine Imbert
 
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
-[![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/v2-alpha/readme)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/master/readme)](https://github.com/igrigorik/ga-beacon)
 
 

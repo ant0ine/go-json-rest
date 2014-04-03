@@ -87,15 +87,15 @@ First examples to try, as an introduction to go-json-rest.
 
 #### Hello World!
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/helloworld/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/helloworld/main.go</exampleInclude>
 
 #### Countries
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/countries/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/countries/main.go</exampleInclude>
 
 #### Users
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/users/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/users/main.go</exampleInclude>
 
 ### Applications
 
@@ -103,23 +103,23 @@ Common use cases, found in many applications.
 
 #### GORM
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/gorm/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/gorm/main.go</exampleInclude>
 
 #### CORS
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/cors/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/cors/main.go</exampleInclude>
 
 #### Basic Auth
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/auth-basic/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/auth-basic/main.go</exampleInclude>
 
 #### Status
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/status/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/status/main.go</exampleInclude>
 
 #### Status Auth
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/status-auth/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/status-auth/main.go</exampleInclude>
 
 ### Advanced
 
@@ -127,23 +127,23 @@ Less common use cases.
 
 #### Streaming
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/streaming/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/streaming/main.go</exampleInclude>
 
 #### SPDY
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/spdy/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/spdy/main.go</exampleInclude>
 
 #### GAE
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/gae/gaecountries/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/gae/gaecountries/main.go</exampleInclude>
 
 #### Basic Auth Custom
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/auth-basic-custom/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/auth-basic-custom/main.go</exampleInclude>
 
 #### CORS Custom
 
-<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/v2-alpha/cors-custom/main.go</exampleInclude>
+<exampleInclude>https://raw.githubusercontent.com/ant0ine/go-json-rest-examples/master/cors-custom/main.go</exampleInclude>
 
 
 ## External Documentation
@@ -242,7 +242,7 @@ type Middleware interface {
 ~~~
 
 Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
-See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go).
+See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go).
 
 
 #### Flush(), CloseNotify() and Write() are not directly exposed anymore
@@ -263,9 +263,9 @@ writer.(http.Flusher).Flush()
 #### The /.status endpoint is not created automatically anymore
 
 The route has to be manually defined.
-See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go).
+See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/master/status/main.go).
 This is more flexible (the route is customizable), and allows combination with Middlewarres.
-See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go).
+See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/master/status-auth/main.go).
 
 
 #### Request utility methods have changed
@@ -290,6 +290,6 @@ Copyright (c) 2013-2014 Antoine Imbert
 
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
-[![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/v2-alpha/readme)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/master/readme)](https://github.com/igrigorik/ga-beacon)
 
 
