@@ -38,8 +38,6 @@
 
 <p><a href="https://travis-ci.org/ant0ine/go-json-rest"><img src="https://travis-ci.org/ant0ine/go-json-rest.png?branch=master" alt="Build Status"></a> <a href="https://godoc.org/github.com/ant0ine/go-json-rest"><img src="https://godoc.org/github.com/ant0ine/go-json-rest?status.png" alt="GoDoc"></a></p>
 
-<p><strong>Warning: This is v2-alpha, a work in progress for the version 2 of Go-Json-Rest</strong></p>
-
 <p><strong>Go-Json-Rest</strong> is a thin layer on top of <code>net/http</code> that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...</p>
 
 <h2>
@@ -1351,7 +1349,7 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 </pre></div>
 
 <p>Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
-See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/auth-basic/main.go">Basic Auth example</a>.</p>
+See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go">Basic Auth example</a>.</p>
 
 <h4>
 <a name="flush-closenotify-and-write-are-not-directly-exposed-anymore" class="anchor" href="#flush-closenotify-and-write-are-not-directly-exposed-anymore"><span class="octicon octicon-link"></span></a>Flush(), CloseNotify() and Write() are not directly exposed anymore</h4>
@@ -1373,9 +1371,9 @@ Regarding these features, a rest.ResponseWriter now behaves exactly as the http.
 <a name="the-status-endpoint-is-not-created-automatically-anymore" class="anchor" href="#the-status-endpoint-is-not-created-automatically-anymore"><span class="octicon octicon-link"></span></a>The /.status endpoint is not created automatically anymore</h4>
 
 <p>The route has to be manually defined.
-See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status/main.go">Status example</a>.
+See the <a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/status/main.go">Status example</a>.
 This is more flexible (the route is customizable), and allows combination with Middlewarres.
-See for instance how to <a href="https://github.com/ant0ine/go-json-rest-examples/blob/v2-alpha/status-auth/main.go">protect this status endpoint with the AuthBasic middleware</a>.</p>
+See for instance how to <a href="https://github.com/ant0ine/go-json-rest-examples/blob/master/status-auth/main.go">protect this status endpoint with the AuthBasic middleware</a>.</p>
 
 <h4>
 <a name="request-utility-methods-have-changed" class="anchor" href="#request-utility-methods-have-changed"><span class="octicon octicon-link"></span></a>Request utility methods have changed</h4>
@@ -1391,8 +1389,8 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 
 <ul>
 <li><a href="https://github.com/franckcuny">Franck Cuny</a></li>
-<li><a href="https://github.com/yannk">Yann KerhervÃ©</a></li>
-<li><a href="https://github.com/abh">Ask BjÃ¸rn Hansen</a></li>
+<li><a href="https://github.com/yannk">Yann Kerhervé</a></li>
+<li><a href="https://github.com/abh">Ask Bjørn Hansen</a></li>
 </ul><p>Copyright (c) 2013-2014 Antoine Imbert</p>
 
 <p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
