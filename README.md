@@ -4,8 +4,6 @@ Go-Json-Rest
 
 *A quick and easy way to setup a RESTful JSON API*
 
-**Version 2 of Go-Json-Rest is currently in development, you can try it by checking out the [“v2-alpha” branch](https://github.com/ant0ine/go-json-rest/tree/v2-alpha). Thanks in advance for your feedback.**
-
 [![Build Status](https://travis-ci.org/ant0ine/go-json-rest.png?branch=master)](https://travis-ci.org/ant0ine/go-json-rest)
 
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, and helpers to deal with JSON requests and responses. It is not a high-level REST framework that transparently maps HTTP requests to procedure calls, on the opposite, you constantly have access to the underlying
