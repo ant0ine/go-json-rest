@@ -94,7 +94,7 @@ func (r *Request) GetCorsInfo() *CorsInfo {
 	origin := r.Header.Get("Origin")
 	originUrl, err := url.ParseRequestURI(origin)
 
-	isCors := err == nil && origin != "" && r.Host != originUrl.Host
+	isCors := (err == nil && origin != "" && r.Host != originUrl.Host) || origin == "null"
 
 	reqMethod := r.Header.Get("Access-Control-Request-Method")
 
