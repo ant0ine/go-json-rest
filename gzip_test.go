@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/ant0ine/go-json-rest/test"
+	"github.com/zenoss/go-json-rest/test"
 	"testing"
 )
 

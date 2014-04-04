@@ -11,7 +11,7 @@
 //      package main
 //
 //      import (
-//              "github.com/ant0ine/go-json-rest"
+//              "github.com/zenoss/go-json-rest"
 //              "net/http"
 //      )
 //
