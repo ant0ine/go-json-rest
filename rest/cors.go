@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -109,7 +110,7 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 			if mw.AccessControlAllowCredentials == true {
 				writer.Header().Set("Access-Control-Allow-Credentials", "true")
 			}
-			writer.Header().Set("Access-Control-Max-Age", string(mw.AccessControlMaxAge))
+			writer.Header().Set("Access-Control-Max-Age", strconv.Itoa(mw.AccessControlMaxAge))
 			writer.WriteHeader(http.StatusOK)
 			return
 		}
