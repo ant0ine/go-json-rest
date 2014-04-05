@@ -92,9 +92,19 @@ type CorsInfo struct {
 func (r *Request) GetCorsInfo() *CorsInfo {
 
 	origin := r.Header.Get("Origin")
-	originUrl, err := url.ParseRequestURI(origin)
 
-	isCors := err == nil && origin != "" && r.Host != originUrl.Host
+	var originUrl *url.URL
+	var isCors bool
+
+	if origin == "" {
+		isCors = false
+	} else if origin == "null" {
+		isCors = true
+	} else {
+		var err error
+		originUrl, err = url.ParseRequestURI(origin)
+		isCors = err == nil && r.Host != originUrl.Host
+	}
 
 	reqMethod := r.Header.Get("Access-Control-Request-Method")
 

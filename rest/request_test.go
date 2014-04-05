@@ -86,6 +86,25 @@ func TestCorsInfoSimpleCors(t *testing.T) {
 	}
 }
 
+func TestCorsInfoNullOrigin(t *testing.T) {
+	req := defaultRequest("GET", "http://localhost", nil, t)
+	req.Request.Header.Set("Origin", "null")
+
+	corsInfo := req.GetCorsInfo()
+	if corsInfo == nil {
+		t.Error("Expected non nil CorsInfo")
+	}
+	if corsInfo.IsCors == false {
+		t.Error("This is a CORS request")
+	}
+	if corsInfo.IsPreflight == true {
+		t.Error("This is not a Preflight request")
+	}
+	if corsInfo.OriginUrl != nil {
+		t.Error("OriginUrl cannot be set")
+	}
+}
+
 func TestCorsInfoPreflightCors(t *testing.T) {
 	req := defaultRequest("OPTIONS", "http://localhost", nil, t)
 	req.Request.Header.Set("Origin", "http://another.host")
@@ -112,5 +131,11 @@ func TestCorsInfoPreflightCors(t *testing.T) {
 	}
 	if corsInfo.IsPreflight == false {
 		t.Error("This is a Preflight request")
+	}
+	if corsInfo.Origin != "http://another.host" {
+		t.Error("Origin must be identical to the header value")
+	}
+	if corsInfo.OriginUrl == nil {
+		t.Error("OriginUrl must be set")
 	}
 }
