@@ -75,7 +75,9 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 			// check the request methods
 			if mw.allowedMethods == nil {
 				mw.allowedMethods = map[string]bool{}
-				for _, allowedMethod := range mw.AllowedMethods {
+				for i, allowedMethod := range mw.AllowedMethods {
+					allowedMethod = strings.ToUpper(allowedMethod)
+					mw.AllowedMethods[i] = allowedMethod
 					mw.allowedMethods[strings.ToUpper(allowedMethod)] = true
 				}
 
@@ -88,8 +90,10 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 			// check the request headers
 			if mw.allowedHeaders == nil {
 				mw.allowedHeaders = map[string]bool{}
-				for _, allowedHeader := range mw.AllowedHeaders {
-					mw.allowedHeaders[http.CanonicalHeaderKey(allowedHeader)] = true
+				for i, allowedHeader := range mw.AllowedHeaders {
+					allowedHeader = http.CanonicalHeaderKey(allowedHeader)
+					mw.AllowedHeaders[i] = allowedHeader
+					mw.allowedHeaders[allowedHeader] = true
 				}
 
 			}
@@ -100,12 +104,8 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 				}
 			}
 
-			for allowedMethod := range mw.allowedMethods {
-				writer.Header().Add("Access-Control-Allow-Methods", allowedMethod)
-			}
-			for allowedHeader := range mw.allowedHeaders {
-				writer.Header().Add("Access-Control-Allow-Headers", allowedHeader)
-			}
+			writer.Header().Add("Access-Control-Allow-Methods", strings.Join(mw.AllowedMethods, ","))
+			writer.Header().Add("Access-Control-Allow-Headers", strings.Join(mw.AllowedHeaders, ","))
 			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
 			if mw.AccessControlAllowCredentials == true {
 				writer.Header().Set("Access-Control-Allow-Credentials", "true")
