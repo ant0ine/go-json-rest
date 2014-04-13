@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+const xPoweredByDefault = "go-json-rest"
+
 // A ResponseWriter interface dedicated to JSON HTTP response.
 // Note that the object instantiated by the ResourceHandler that implements this interface,
 // also happens to implement http.ResponseWriter, http.Flusher and http.CloseNotifier.
@@ -56,7 +58,7 @@ type responseWriter struct {
 
 func (w *responseWriter) WriteHeader(code int) {
 	w.Header().Set("content-type", "application/json")
-	w.Header().Add("X-Powered-By", "go-json-rest")
+	w.Header().Add("X-Powered-By", xPoweredByDefault)
 	w.ResponseWriter.WriteHeader(code)
 	w.wroteHeader = true
 }
