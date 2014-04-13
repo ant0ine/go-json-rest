@@ -14,8 +14,10 @@ import (
 
 // CorsMiddleware provides a configurable CORS implementation.
 type CorsMiddleware struct {
-	allowedMethods map[string]bool
-	allowedHeaders map[string]bool
+	allowedMethods    map[string]bool
+	allowedMethodsCsv string
+	allowedHeaders    map[string]bool
+	allowedHeadersCsv string
 
 	// Reject non CORS requests if true. See CorsInfo.IsCors.
 	RejectNonCorsRequests bool
@@ -53,14 +55,22 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 	// precompute as much as possible at init time
 
 	mw.allowedMethods = map[string]bool{}
+	normedMethods := []string{}
 	for _, allowedMethod := range mw.AllowedMethods {
-		mw.allowedMethods[strings.ToUpper(allowedMethod)] = true
+		normed := strings.ToUpper(allowedMethod)
+		mw.allowedMethods[normed] = true
+		normedMethods = append(normedMethods, normed)
 	}
+	mw.allowedMethodsCsv = strings.Join(normedMethods, ",")
 
 	mw.allowedHeaders = map[string]bool{}
+	normedHeaders := []string{}
 	for _, allowedHeader := range mw.AllowedHeaders {
-		mw.allowedHeaders[http.CanonicalHeaderKey(allowedHeader)] = true
+		normed := http.CanonicalHeaderKey(allowedHeader)
+		mw.allowedHeaders[normed] = true
+		normedHeaders = append(normedHeaders, normed)
 	}
+	mw.allowedHeadersCsv = strings.Join(normedHeaders, ",")
 
 	return func(writer ResponseWriter, request *Request) {
 
@@ -99,12 +109,8 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 				}
 			}
 
-			for allowedMethod := range mw.allowedMethods {
-				writer.Header().Add("Access-Control-Allow-Methods", allowedMethod)
-			}
-			for allowedHeader := range mw.allowedHeaders {
-				writer.Header().Add("Access-Control-Allow-Headers", allowedHeader)
-			}
+			writer.Header().Set("Access-Control-Allow-Methods", mw.allowedMethodsCsv)
+			writer.Header().Set("Access-Control-Allow-Headers", mw.allowedHeadersCsv)
 			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
 			if mw.AccessControlAllowCredentials == true {
 				writer.Header().Set("Access-Control-Allow-Credentials", "true")
