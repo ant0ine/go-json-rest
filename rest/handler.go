@@ -59,6 +59,12 @@ type ResourceHandler struct {
 
 	// Custom logger, optional, defaults to log.New(os.Stderr, "", log.LstdFlags)
 	Logger *log.Logger
+
+	// Custom X-Powered-By value, defaults to "go-json-rest".
+	XPoweredBy string
+
+	// If true, the X-Powered-By header will NOT be set.
+	DisableXPoweredBy bool
 }
 
 // SetRoutes defines the Routes. The order the Routes matters,
@@ -72,6 +78,14 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 	err := rh.internalRouter.start()
 	if err != nil {
 		return err
+	}
+
+	if rh.DisableXPoweredBy {
+		rh.XPoweredBy = ""
+	} else {
+		if len(rh.XPoweredBy) == 0 {
+			rh.XPoweredBy = xPoweredByDefault
+		}
 	}
 
 	rh.instantiateMiddlewares()
@@ -152,7 +166,7 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 			origWriter,
 			false,
 			isIndented,
-			xPoweredByDefault,
+			rh.XPoweredBy,
 		}
 
 		// call the wrapped handler

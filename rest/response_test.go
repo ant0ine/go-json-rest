@@ -27,28 +27,19 @@ func TestResponseNotIndent(t *testing.T) {
 }
 
 func TestResponseIndent(t *testing.T) {
-
-	writer := responseWriter{
-		nil,
-		false,
-		true,
-		xPoweredByDefault,
-	}
-
-	got, err := writer.EncodeJson(map[string]bool{"test": true})
-	if err != nil {
-		t.Error(err.Error())
-	}
-	gotStr := string(got)
-	expected := "{\n  \"test\": true\n}"
-	if gotStr != expected {
-		t.Error(expected + " was the expected, but instead got " + gotStr)
-	}
+	testXPoweredBy(t, &ResourceHandler{}, xPoweredByDefault)
 }
 
-func TestXPoweredByDefault(t *testing.T) {
-	handler := ResourceHandler{}
-	handler.SetRoutes(
+func TestXPoweredByCustom(t *testing.T) {
+	testXPoweredBy(t, &ResourceHandler{XPoweredBy: "foo"}, "foo")
+}
+
+func TestXPoweredByDisabled(t *testing.T) {
+	testXPoweredBy(t, &ResourceHandler{DisableXPoweredBy: true}, "")
+}
+
+func testXPoweredBy(t *testing.T, rh *ResourceHandler, expected string) {
+	rh.SetRoutes(
 		&Route{"GET", "/r/:id",
 			func(w ResponseWriter, r *Request) {
 				id := r.PathParam("id")
@@ -56,8 +47,8 @@ func TestXPoweredByDefault(t *testing.T) {
 			},
 		},
 	)
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r/123", nil))
+	recorded := test.RunRequest(t, rh, test.MakeSimpleRequest("GET", "http://1.2.3.4/r/123", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
-	recorded.HeaderIs("X-Powered-By", xPoweredByDefault)
+	recorded.HeaderIs("X-Powered-By", expected)
 }

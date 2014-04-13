@@ -59,7 +59,9 @@ type responseWriter struct {
 
 func (w *responseWriter) WriteHeader(code int) {
 	w.Header().Set("content-type", "application/json")
-	w.Header().Add("X-Powered-By", w.xPoweredBy)
+	if len(w.xPoweredBy) > 0 {
+		w.Header().Add("X-Powered-By", w.xPoweredBy)
+	}
 	w.ResponseWriter.WriteHeader(code)
 	w.wroteHeader = true
 }
