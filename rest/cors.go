@@ -49,6 +49,19 @@ type CorsMiddleware struct {
 
 // MiddlewareFunc makes CorsMiddleware implement the Middleware interface.
 func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
+
+	// precompute as much as possible at init time
+
+	mw.allowedMethods = map[string]bool{}
+	for _, allowedMethod := range mw.AllowedMethods {
+		mw.allowedMethods[strings.ToUpper(allowedMethod)] = true
+	}
+
+	mw.allowedHeaders = map[string]bool{}
+	for _, allowedHeader := range mw.AllowedHeaders {
+		mw.allowedHeaders[http.CanonicalHeaderKey(allowedHeader)] = true
+	}
+
 	return func(writer ResponseWriter, request *Request) {
 
 		corsInfo := request.GetCorsInfo()
@@ -73,26 +86,12 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 		if corsInfo.IsPreflight {
 
 			// check the request methods
-			if mw.allowedMethods == nil {
-				mw.allowedMethods = map[string]bool{}
-				for _, allowedMethod := range mw.AllowedMethods {
-					mw.allowedMethods[strings.ToUpper(allowedMethod)] = true
-				}
-
-			}
 			if mw.allowedMethods[corsInfo.AccessControlRequestMethod] == false {
 				Error(writer, "Invalid Preflight Request", http.StatusForbidden)
 				return
 			}
 
 			// check the request headers
-			if mw.allowedHeaders == nil {
-				mw.allowedHeaders = map[string]bool{}
-				for _, allowedHeader := range mw.AllowedHeaders {
-					mw.allowedHeaders[http.CanonicalHeaderKey(allowedHeader)] = true
-				}
-
-			}
 			for _, requestedHeader := range corsInfo.AccessControlRequestHeaders {
 				if mw.allowedHeaders[requestedHeader] == false {
 					Error(writer, "Invalid Preflight Request", http.StatusForbidden)
