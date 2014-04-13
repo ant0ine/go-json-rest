@@ -12,6 +12,7 @@ func TestResponseNotIndent(t *testing.T) {
 		nil,
 		false,
 		false,
+		xPoweredByDefault,
 	}
 
 	got, err := writer.EncodeJson(map[string]bool{"test": true})
@@ -31,6 +32,7 @@ func TestResponseIndent(t *testing.T) {
 		nil,
 		false,
 		true,
+		xPoweredByDefault,
 	}
 
 	got, err := writer.EncodeJson(map[string]bool{"test": true})

@@ -152,6 +152,7 @@ func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 			origWriter,
 			false,
 			isIndented,
+			xPoweredByDefault,
 		}
 
 		// call the wrapped handler
