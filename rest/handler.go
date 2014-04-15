@@ -1,12 +1,10 @@
 package rest
 
 import (
-	"fmt"
 	"log"
 	"mime"
 	"net/http"
 	"os"
-	"runtime/debug"
 	"strings"
 )
 
@@ -123,6 +121,11 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 	middlewares = append(middlewares,
 		&timerMiddleware{},
 		&recorderMiddleware{},
+		&errorMiddleware{
+			rh.Logger,
+			rh.EnableLogAsJson,
+			rh.EnableResponseStackTrace,
+		},
 	)
 
 	middlewares = append(middlewares,
@@ -140,24 +143,6 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 // Middleware that handles the transition between http and rest objects.
 func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
-
-		// catch user code's panic, and convert to http response
-		// (this does not use the JSON error response on purpose)
-		defer func() {
-			if reco := recover(); reco != nil {
-				trace := debug.Stack()
-
-				// log the trace
-				rh.Logger.Printf("%s\n%s", reco, trace)
-
-				// write error response
-				message := "Internal Server Error"
-				if rh.EnableResponseStackTrace {
-					message = fmt.Sprintf("%s\n\n%s", reco, trace)
-				}
-				http.Error(origWriter, message, http.StatusInternalServerError)
-			}
-		}()
 
 		// instantiate the rest objects
 		request := Request{
