@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,19 +25,34 @@ func (mw *errorMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 				trace := debug.Stack()
 
 				// log the trace
-				// TODO this should be logging JSON if EnableLogAsJson
-				mw.Logger.Printf("%s\n%s", reco, trace)
+				message := fmt.Sprintf("%s\n%s", reco, trace)
+				mw.logError(message)
 
 				// write error response
-				message := "Internal Server Error"
 				if mw.EnableResponseStackTrace {
-					message = fmt.Sprintf("%s\n\n%s", reco, trace)
+					Error(w, message, http.StatusInternalServerError)
+				} else {
+					Error(w, "Internal Server Error", http.StatusInternalServerError)
 				}
-				Error(w, message, http.StatusInternalServerError)
 			}
 		}()
 
 		// call the handler
 		h(w, r)
+	}
+}
+
+func (mw *errorMiddleware) logError(message string) {
+	if mw.EnableLogAsJson {
+		record := map[string]string{
+			"error": message,
+		}
+		b, err := json.Marshal(&record)
+		if err != nil {
+			panic(err)
+		}
+		mw.Logger.Printf("%s", b)
+	} else {
+		mw.Logger.Print(message)
 	}
 }
