@@ -5,6 +5,7 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"os"
 	"runtime/debug"
 	"strings"
 )
@@ -70,6 +71,11 @@ type ResourceHandler struct {
 // SetRoutes defines the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
+
+	// set a default Logger
+	if rh.Logger == nil {
+		rh.Logger = log.New(os.Stderr, "", log.LstdFlags)
+	}
 
 	// start the router
 	rh.internalRouter = &router{
