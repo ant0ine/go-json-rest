@@ -56,7 +56,7 @@ type ResourceHandler struct {
 	// They are run pre REST routing, request.PathParams is not set yet.
 	PreRoutingMiddlewares []Middleware
 
-	// Custom logger, optional, defaults to log.New(os.Stderr, "", log.LstdFlags)
+	// Custom logger, optional, defaults to log.New(os.Stderr, "", 0)
 	Logger *log.Logger
 
 	// Custom X-Powered-By value, defaults to "go-json-rest".
@@ -72,7 +72,7 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
 	// set a default Logger
 	if rh.Logger == nil {
-		rh.Logger = log.New(os.Stderr, "", log.LstdFlags)
+		rh.Logger = log.New(os.Stderr, "", 0)
 	}
 
 	// start the router

@@ -20,12 +20,15 @@ func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		// call the handler
 		h(w, r)
 
+		timestamp := time.Now()
+
 		remoteUser := ""
 		if r.Env["REMOTE_USER"] != nil {
 			remoteUser = r.Env["REMOTE_USER"].(string)
 		}
 
 		mw.logResponseRecord(&responseLogRecord{
+			&timestamp,
 			r.Env["STATUS_CODE"].(int),
 			r.Env["ELAPSED_TIME"].(*time.Duration),
 			r.Method,
@@ -37,6 +40,7 @@ func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 }
 
 type responseLogRecord struct {
+	Timestamp    *time.Time
 	StatusCode   int
 	ResponseTime *time.Duration
 	HttpMethod   string
@@ -44,6 +48,8 @@ type responseLogRecord struct {
 	RemoteUser   string
 	UserAgent    string
 }
+
+const dateLayout = "2006/01/02 15:04:05"
 
 func (mw *logMiddleware) logResponseRecord(record *responseLogRecord) {
 	if mw.EnableLogAsJson {
@@ -55,13 +61,15 @@ func (mw *logMiddleware) logResponseRecord(record *responseLogRecord) {
 		mw.Logger.Printf("%s", b)
 	} else {
 		// This format is designed to be easy to read, not easy to parse.
+
 		statusCodeColor := "0;32"
 		if record.StatusCode >= 400 && record.StatusCode < 500 {
 			statusCodeColor = "1;33"
 		} else if record.StatusCode >= 500 {
 			statusCodeColor = "0;31"
 		}
-		mw.Logger.Printf("\033[%sm%d\033[0m \033[36;1m%.2fms\033[0m %s %s \033[1;30m%s \"%s\"\033[0m",
+		mw.Logger.Printf("%s \033[%sm%d\033[0m \033[36;1m%.2fms\033[0m %s %s \033[1;30m%s \"%s\"\033[0m",
+			record.Timestamp.Format(dateLayout),
 			statusCodeColor,
 			record.StatusCode,
 			float64(record.ResponseTime.Nanoseconds()/1e4)/100.0,
