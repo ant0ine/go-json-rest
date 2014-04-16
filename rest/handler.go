@@ -40,8 +40,8 @@ type ResourceHandler struct {
 	// printed in the 500 response body.
 	EnableResponseStackTrace bool
 
-	// If true, the record that is logged for each response will be printed as JSON
-	// in the log. Convenient for log parsing.
+	// If true, the records logged to the access log and the error log will be
+	// printed as JSON. Convenient for log parsing.
 	EnableLogAsJson bool
 
 	// If true, the handler does NOT check the request Content-Type. Otherwise, it
@@ -56,8 +56,13 @@ type ResourceHandler struct {
 	// They are run pre REST routing, request.PathParams is not set yet.
 	PreRoutingMiddlewares []Middleware
 
-	// Custom logger, optional, defaults to log.New(os.Stderr, "", 0)
+	// Custom logger for the access log,
+	// optional, defaults to log.New(os.Stderr, "", 0)
 	Logger *log.Logger
+
+	// Custom logger used for logging the panic errors,
+	// optional, defaults to log.New(os.Stderr, "", 0)
+	ErrorLogger *log.Logger
 
 	// Custom X-Powered-By value, defaults to "go-json-rest".
 	XPoweredBy string
@@ -70,9 +75,12 @@ type ResourceHandler struct {
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
-	// set a default Logger
+	// set the default Loggers
 	if rh.Logger == nil {
 		rh.Logger = log.New(os.Stderr, "", 0)
+	}
+	if rh.ErrorLogger == nil {
+		rh.ErrorLogger = log.New(os.Stderr, "", 0)
 	}
 
 	// start the router
@@ -122,7 +130,7 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		&timerMiddleware{},
 		&recorderMiddleware{},
 		&errorMiddleware{
-			rh.Logger,
+			rh.ErrorLogger,
 			rh.EnableLogAsJson,
 			rh.EnableResponseStackTrace,
 		},

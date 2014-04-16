@@ -2,6 +2,8 @@ package rest
 
 import (
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"io/ioutil"
+	"log"
 	"testing"
 )
 
@@ -9,6 +11,8 @@ func TestHandler(t *testing.T) {
 
 	handler := ResourceHandler{
 		DisableJsonIndent: true,
+		// make the test output less verbose by discarding the error log
+		ErrorLogger: log.New(ioutil.Discard, "", 0),
 	}
 	handler.SetRoutes(
 		&Route{"GET", "/r/:id",
