@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/russross/blackfriday"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -48,10 +49,9 @@ func extractComment(body string) (string, string) {
 	return comment, body
 }
 
-func main() {
+func generateMarkdown(tmplFilename string) string {
 
-	var tmplFilename = flag.String("in", "README.md.tmpl", "filename of the template")
-	tmplBody := readTemplate(*tmplFilename)
+	tmplBody := readTemplate(tmplFilename)
 
 	startTag := "<exampleInclude>"
 	endTag := "</exampleInclude>"
@@ -69,11 +69,28 @@ func main() {
 
 		exampleStr := ""
 		exampleStr += exampleComment + "\nGo code:\n"
-		exampleStr += "~~~ go\n"
+		exampleStr += "``` go\n"
 		exampleStr += exampleCode + "\n"
-		exampleStr += "~~~\n"
+		exampleStr += "```\n"
 
 		tmplBody = strings.Replace(tmplBody, statement, exampleStr, -1)
 	}
-	fmt.Printf("%s", tmplBody)
+
+	return tmplBody
+}
+
+var tmplFilename = flag.String("in", "README.md.tmpl", "filename of the template")
+var mode = flag.String("out", "markdown", "markdown or html")
+
+func main() {
+	flag.Parse()
+	markdown := generateMarkdown(*tmplFilename)
+	if *mode == "markdown" {
+		fmt.Printf("%s", markdown)
+		return
+	} else {
+		output := blackfriday.MarkdownCommon([]byte(markdown))
+		fmt.Printf("%s", output)
+		return
+	}
 }

@@ -96,7 +96,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -121,7 +121,7 @@ func main() {
 	http.ListenAndServe(":8080", &handler)
 }
 
-~~~
+```
 
 
 #### Countries
@@ -142,7 +142,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -216,7 +216,7 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 	delete(store, code)
 }
 
-~~~
+```
 
 
 #### Users
@@ -236,7 +236,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -329,7 +329,7 @@ func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	delete(self.Store, id)
 }
 
-~~~
+```
 
 
 ### Applications
@@ -351,7 +351,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -380,7 +380,7 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-~~~
+```
 
 
 #### GORM
@@ -400,7 +400,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -523,7 +523,7 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-~~~
+```
 
 
 #### CORS
@@ -536,7 +536,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -587,7 +587,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 	)
 }
 
-~~~
+```
 
 
 #### Basic Auth
@@ -601,7 +601,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -651,7 +651,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 	)
 }
 
-~~~
+```
 
 
 #### Status
@@ -689,7 +689,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -712,7 +712,7 @@ func main() {
 	http.ListenAndServe(":8080", &handler)
 }
 
-~~~
+```
 
 
 #### Status Auth
@@ -730,7 +730,7 @@ The Curl Demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -785,7 +785,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 	)
 }
 
-~~~
+```
 
 
 ### Advanced
@@ -813,7 +813,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -857,7 +857,7 @@ func StreamThings(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-~~~
+```
 
 
 #### SPDY
@@ -873,7 +873,7 @@ The spdycat demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -904,7 +904,7 @@ func main() {
 	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
 }
 
-~~~
+```
 
 
 #### GAE
@@ -925,7 +925,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package gaecountries
 
@@ -997,7 +997,7 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 	delete(store, code)
 }
 
-~~~
+```
 
 
 #### Basic Auth Custom
@@ -1012,7 +1012,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -1117,7 +1117,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 	)
 }
 
-~~~
+```
 
 
 #### CORS Custom
@@ -1130,7 +1130,7 @@ The curl demo:
 
 
 Go code:
-~~~ go
+``` go
 
 package main
 
@@ -1241,7 +1241,7 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 	)
 }
 
-~~~
+```
 
 
 
@@ -1277,17 +1277,17 @@ Things to enable in development:
 This is more conform to Go style, and makes [goimports](https://godoc.org/code.google.com/p/go.tools/cmd/goimports) work.
 
 This:
-~~~ go
+``` go
 import (
         "github.com/ant0ine/go-json-rest"
 )
-~~~
+```
 has to be changed to this:
-~~~ go
+``` go
 import (
         "github.com/ant0ine/go-json-rest/rest"
 )
-~~~
+```
 
 
 #### rest.ResponseWriter is now an interface
@@ -1296,17 +1296,17 @@ This change allows the `ResponseWriter` to be wrapped, like the one of the `net/
 This is much more powerful, and allows the creation of Middlewares that wrap the writer. The gzip option, for instance, uses this to encode the payload (see gzip.go).
 
 This:
-~~~ go
+``` go
 func (w *rest.ResponseWriter, req *rest.Request) {
         ...
 }
-~~~
+```
 has to be changed to this:
-~~~ go
+``` go
 func (w rest.ResponseWriter, req *rest.Request) {
         ...
 }
-~~~
+```
 
 
 #### SetRoutes now takes pointers to Route
@@ -1314,31 +1314,31 @@ func (w rest.ResponseWriter, req *rest.Request) {
 Instead of copying Route structures everywhere, pointers are now used. This is more elegant, more efficient, and will allow more sophisticated Route manipulations in the future (like reverse route resolution).
 
 This:
-~~~ go
+``` go
 handler.SetRoutes(
 		rest.Route{
 		      // ...
 		},
 )
-~~~
+```
 has to be changed to this:
-~~~ go
+``` go
 handler.SetRoutes(
 		&rest.Route{
 		      // ...
 		},
 )
-~~~
+```
 
 
 ####  The notion of Middleware is now formally defined
 
 A middleware is an object satisfying this interface:
-~~~ go
+``` go
 type Middleware interface {
 	MiddlewareFunc(handler HandlerFunc) HandlerFunc
 }
-~~~
+```
 
 Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
 See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go).
@@ -1350,13 +1350,13 @@ They used to be public methods of the ResponseWriter. The implementation is stil
 Regarding these features, a rest.ResponseWriter now behaves exactly as the http.ResponseWriter implementation provided by net/http.
 
 This:
-~~~ go
+``` go
 writer.Flush()
-~~~
+```
 has to be changed to this:
-~~~ go
+``` go
 writer.(http.Flusher).Flush()
-~~~
+```
 
 
 #### The /.status endpoint is not created automatically anymore
