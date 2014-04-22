@@ -75,6 +75,7 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 <a href="#applications">Applications</a>
 
 <ul>
+<li><a href="#api-and-static-files">API and static files</a></li>
 <li><a href="#gorm">GORM</a></li>
 <li><a href="#cors">CORS</a></li>
 <li><a href="#basic-auth">Basic Auth</a></li>
@@ -384,6 +385,53 @@ an object method instead of just a function.</p>
 <a name="applications" class="anchor" href="#applications"><span class="octicon octicon-link"></span></a>Applications</h3>
 
 <p>Common use cases, found in many applications.</p>
+
+<h4>
+<a name="api-and-static-files" class="anchor" href="#api-and-static-files"><span class="octicon octicon-link"></span></a>API and static files</h4>
+
+<p>Combine Go-Json-Rest with other handlers.</p>
+
+<p>rest.ResourceHandler is a valid http.Handler, and can be combined with other handlers.
+In this example the ResourceHandler is used under the /api/ prefix, while a FileServer
+is instantiated under the /static/ prefix.</p>
+
+<p>The curl demo:</p>
+
+<pre><code>    curl -i http://127.0.0.1:8080/api/message
+    curl -i http://127.0.0.1:8080/static/main.go
+</code></pre>
+
+<p>Go code:</p>
+
+<div class="highlight highlight-go"><pre>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Message</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Body</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
+                <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
+            <span class="p">})</span>
+        <span class="p">}},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/api/"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StripPrefix</span><span class="p">(</span><span class="s">"/api"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/static/"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StripPrefix</span><span class="p">(</span><span class="s">"/static"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">Dir</span><span class="p">(</span><span class="s">"."</span><span class="p">))))</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
 
 <h4>
 <a name="gorm" class="anchor" href="#gorm"><span class="octicon octicon-link"></span></a>GORM</h4>
