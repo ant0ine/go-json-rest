@@ -61,7 +61,10 @@ type responseWriter struct {
 }
 
 func (w *responseWriter) WriteHeader(code int) {
-	w.Header().Set("content-type", "application/json")
+	// do not overwrite Content-Type if previously set.
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json")
+	}
 	if len(w.xPoweredBy) > 0 {
 		w.Header().Add("X-Powered-By", w.xPoweredBy)
 	}
