@@ -1349,4 +1349,3 @@ Copyright (c) 2013-2014 Antoine Imbert
 
 [![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/master/readme)](https://github.com/igrigorik/ga-beacon)
 
-
