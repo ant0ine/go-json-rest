@@ -244,6 +244,7 @@ import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"net/http"
+        "sync"
 )
 
 func main() {
@@ -271,22 +272,27 @@ type User struct {
 }
 
 type Users struct {
+	sync.RWMutex
 	Store map[string]*User
 }
 
 func (self *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
+	self.RLock()
 	users := make([]*User, len(self.Store))
 	i := 0
 	for _, user := range self.Store {
 		users[i] = user
 		i++
 	}
+	self.RUnlock()
 	w.WriteJson(&users)
 }
 
 func (self *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
+	self.RLock()
 	user := self.Store[id]
+	self.RUnlock()
 	if user == nil {
 		rest.NotFound(w, r)
 		return
@@ -301,14 +307,17 @@ func (self *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	self.Lock()
 	id := fmt.Sprintf("%d", len(self.Store)) // stupid
 	user.Id = id
 	self.Store[id] = &user
+	self.Unlock()
 	w.WriteJson(&user)
 }
 
 func (self *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
+	self.Lock()
 	if self.Store[id] == nil {
 		rest.NotFound(w, r)
 		return
@@ -321,12 +330,15 @@ func (self *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
 	}
 	user.Id = id
 	self.Store[id] = &user
+	self.Unlock()
 	w.WriteJson(&user)
 }
 
 func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
+	self.Lock()
 	delete(self.Store, id)
+	self.Unlock()
 }
 
 ```
@@ -554,8 +566,9 @@ func main() {
 				OriginValidator: func(origin string, request *rest.Request) bool {
 					return origin == "http://my.other.host"
 				},
-				AllowedMethods:                []string{"GET", "POST", "PUT"},
-				AllowedHeaders:                []string{"Accept", "Content-Type", "X-Custom-Header"},
+				AllowedMethods: []string{"GET", "POST", "PUT"},
+				AllowedHeaders: []string{
+					"Accept", "Content-Type", "X-Custom-Header", "Origin"},
 				AccessControlAllowCredentials: true,
 				AccessControlMaxAge:           3600,
 			},
@@ -913,88 +926,33 @@ Demonstrate a simple Google App Engine app
 
 The curl demo:
 
-        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
-        curl -i http://127.0.0.1:8080/countries/FR
-        curl -i http://127.0.0.1:8080/countries/US
-        curl -i http://127.0.0.1:8080/countries
-        curl -i -X DELETE http://127.0.0.1:8080/countries/FR
-        curl -i http://127.0.0.1:8080/countries
-        curl -i -X DELETE http://127.0.0.1:8080/countries/US
-        curl -i http://127.0.0.1:8080/countries
+        curl -i http://127.0.0.1:8080/message
 
 
 Go code:
 ``` go
 
-package gaecountries
+package gaehelloworld
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"net/http"
 )
 
-func init() {
+type Message struct {
+	Body string
+}
 
+func init() {
 	handler := rest.ResourceHandler{}
 	handler.SetRoutes(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-		&rest.Route{"POST", "/countries", PostCountry},
-		&rest.Route{"GET", "/countries/:code", GetCountry},
-		&rest.Route{"DELETE", "/countries/:code", DeleteCountry},
+		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+			w.WriteJson(&Message{
+				Body: "Hello World!",
+			})
+		}},
 	)
 	http.Handle("/", &handler)
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-var store = map[string]*Country{}
-
-func GetCountry(w rest.ResponseWriter, r *rest.Request) {
-	code := r.PathParam("code")
-	country := store[code]
-	if country == nil {
-		rest.NotFound(w, r)
-		return
-	}
-	w.WriteJson(&country)
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	countries := make([]*Country, len(store))
-	i := 0
-	for _, country := range store {
-		countries[i] = country
-		i++
-	}
-	w.WriteJson(&countries)
-}
-
-func PostCountry(w rest.ResponseWriter, r *rest.Request) {
-	country := Country{}
-	err := r.DecodeJsonPayload(&country)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if country.Code == "" {
-		rest.Error(w, "country code required", 400)
-		return
-	}
-	if country.Name == "" {
-		rest.Error(w, "country name required", 400)
-		return
-	}
-	store[country.Code] = &country
-	w.WriteJson(&country)
-}
-
-func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
-	code := r.PathParam("code")
-	delete(store, code)
 }
 
 ```
