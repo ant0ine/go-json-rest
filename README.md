@@ -244,7 +244,7 @@ import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"net/http"
-        "sync"
+	"sync"
 )
 
 func main() {
@@ -254,8 +254,8 @@ func main() {
 	}
 
 	handler := rest.ResourceHandler{
-                EnableRelaxedContentType: true,
-        }
+		EnableRelaxedContentType: true,
+	}
 	handler.SetRoutes(
 		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
 		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
