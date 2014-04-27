@@ -17,6 +17,7 @@ type ResponseWriter interface {
 
 	// Use EncodeJson to generate the payload, write the headers with http.StatusOK if they
 	// are not already written, then write the payload.
+	// The Content-Type header is set to "application/json", unless already specified.
 	WriteJson(v interface{}) error
 
 	// Encode the data structure to JSON, mainly used to wrap ResponseWriter in middlewares.
@@ -58,7 +59,9 @@ type responseWriter struct {
 }
 
 func (w *responseWriter) WriteHeader(code int) {
-	w.Header().Set("content-type", "application/json")
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json")
+	}
 	if len(w.xPoweredBy) > 0 {
 		w.Header().Add("X-Powered-By", w.xPoweredBy)
 	}
