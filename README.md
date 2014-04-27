@@ -287,23 +287,23 @@ type Users struct {
 	Store map[string]*User
 }
 
-func (self *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
-	self.RLock()
-	users := make([]*User, len(self.Store))
+func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
+	u.RLock()
+	users := make([]*User, len(u.Store))
 	i := 0
-	for _, user := range self.Store {
+	for _, user := range u.Store {
 		users[i] = user
 		i++
 	}
-	self.RUnlock()
+	u.RUnlock()
 	w.WriteJson(&users)
 }
 
-func (self *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
-	self.RLock()
-	user := self.Store[id]
-	self.RUnlock()
+	u.RLock()
+	user := u.Store[id]
+	u.RUnlock()
 	if user == nil {
 		rest.NotFound(w, r)
 		return
@@ -311,25 +311,25 @@ func (self *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&user)
 }
 
-func (self *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
 	user := User{}
 	err := r.DecodeJsonPayload(&user)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	self.Lock()
-	id := fmt.Sprintf("%d", len(self.Store)) // stupid
+	u.Lock()
+	id := fmt.Sprintf("%d", len(u.Store)) // stupid
 	user.Id = id
-	self.Store[id] = &user
-	self.Unlock()
+	u.Store[id] = &user
+	u.Unlock()
 	w.WriteJson(&user)
 }
 
-func (self *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
-	self.Lock()
-	if self.Store[id] == nil {
+	u.Lock()
+	if u.Store[id] == nil {
 		rest.NotFound(w, r)
 		return
 	}
@@ -340,16 +340,16 @@ func (self *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 	user.Id = id
-	self.Store[id] = &user
-	self.Unlock()
+	u.Store[id] = &user
+	u.Unlock()
 	w.WriteJson(&user)
 }
 
-func (self *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
+func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
-	self.Lock()
-	delete(self.Store, id)
-	self.Unlock()
+	u.Lock()
+	delete(u.Store, id)
+	u.Unlock()
 }
 
 ```
