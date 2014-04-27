@@ -24,6 +24,9 @@ type ResponseWriter interface {
 
 	// Similar to the http.ResponseWriter interface, with additional JSON related headers set.
 	WriteHeader(int)
+
+	// Identical to the Http.ResponseWriter interface
+	Write([]byte) (int, error)
 }
 
 // Error produces an error response in JSON with the following structure, '{"Error":"My error message"}'
@@ -58,7 +61,10 @@ type responseWriter struct {
 }
 
 func (w *responseWriter) WriteHeader(code int) {
-	w.Header().Set("content-type", "application/json")
+	// do not overwrite Content-Type if previously set.
+	if w.Header().Get("Content-Type") == "" {
+		w.Header().Set("Content-Type", "application/json")
+	}
 	if len(w.xPoweredBy) > 0 {
 		w.Header().Add("X-Powered-By", w.xPoweredBy)
 	}
