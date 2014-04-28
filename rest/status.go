@@ -10,7 +10,7 @@ import (
 // statusMiddleware keeps track of various stats about the processed requests.
 // It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"]
 type statusMiddleware struct {
-	lock              sync.Mutex
+	lock              sync.RWMutex
 	start             time.Time
 	pid               int
 	responseCounts    map[string]int
@@ -82,6 +82,9 @@ type Status struct {
 }
 
 func (mw *statusMiddleware) getStatus() *Status {
+
+	mw.lock.RLock()
+
 	now := time.Now()
 
 	uptime := now.Sub(mw.start)
@@ -99,7 +102,7 @@ func (mw *statusMiddleware) getStatus() *Status {
 		averageResponseTime = time.Duration(avgNs)
 	}
 
-	return &Status{
+	status := &Status{
 		Pid:                    mw.pid,
 		UpTime:                 uptime.String(),
 		UpTimeSec:              uptime.Seconds(),
@@ -112,4 +115,8 @@ func (mw *statusMiddleware) getStatus() *Status {
 		AverageResponseTime:    averageResponseTime.String(),
 		AverageResponseTimeSec: averageResponseTime.Seconds(),
 	}
+
+	mw.lock.RUnlock()
+
+	return status
 }
