@@ -16,36 +16,33 @@ import (
 	"testing"
 )
 
-func MakeRequestWithHeader(method, urlStr string, headers map[string]string, payload interface{}) *http.Request {
-    s := ""
+func MakeRequestWithHeader(method, urlStr string, header http.Header, payload interface{}) *http.Request {
+	s := ""
 
-    if payload != nil {
-        b, err := json.Marshal(payload)
-        if err != nil {
-            panic(err)
-        }
-        s = fmt.Sprintf("%s", b)
-    }
+	if payload != nil {
+		b, err := json.Marshal(payload)
+		if err != nil {
+			panic(err)
+		}
+		s = fmt.Sprintf("%s", b)
+	}
 
-    r, err := http.NewRequest(method, urlStr, strings.NewReader(s))
-    if err != nil {
-        panic(err)
-    }
-    r.Header.Set("Accept-Encoding", "gzip")
+	r, err := http.NewRequest(method, urlStr, strings.NewReader(s))
+	if err != nil {
+		panic(err)
+	}
+	r.Header = header
+	r.Header.Set("Accept-Encoding", "gzip")
 
-    for k, v := range headers {
-        r.Header.Set(k, v)
-    }
+	if payload != nil {
+		r.Header.Set("Content-Type", "application/json")
+	}
 
-    if payload != nil {
-        r.Header.Set("Content-Type", "application/json")
-    }
-
-    return r
+	return r
 }
 
 func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.Request {
-    return MakeRequestWithHeader(method, urlStr, make(map[string]string), payload)
+	return MakeRequestWithHeader(method, urlStr, http.Header{}, payload)
 }
 
 func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
