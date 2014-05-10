@@ -88,6 +88,7 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 
 <ul>
 <li><a href="#streaming">Streaming</a></li>
+<li><a href="#non-json-payload">Non JSON payload</a></li>
 <li><a href="#spdy">SPDY</a></li>
 <li><a href="#gae">Google App Engine</a></li>
 <li><a href="#basic-auth-custom">Basic Auth Custom</a></li>
@@ -199,13 +200,14 @@ where this library code is copied in your repository at a specific revision.
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
     <span class="s">"net/http"</span>
+    <span class="s">"sync"</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
 
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-                <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="p">}</span>
+        <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
@@ -222,9 +224,13 @@ where this library code is copied in your repository at a specific revision.
 
 <span class="kd">var</span> <span class="nx">store</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">Country</span><span class="p">{}</span>
 
+<span class="kd">var</span> <span class="nx">lock</span> <span class="p">=</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span><span class="p">{}</span>
+
 <span class="kd">func</span> <span class="nx">GetCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
     <span class="nx">country</span> <span class="o">:=</span> <span class="nx">store</span><span class="p">[</span><span class="nx">code</span><span class="p">]</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
     <span class="k">if</span> <span class="nx">country</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
         <span class="k">return</span>
@@ -233,12 +239,14 @@ where this library code is copied in your repository at a specific revision.
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
     <span class="nx">countries</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">Country</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">store</span><span class="p">))</span>
     <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">country</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">store</span> <span class="p">{</span>
         <span class="nx">countries</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">country</span>
         <span class="nx">i</span><span class="o">++</span>
     <span class="p">}</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">countries</span><span class="p">)</span>
 <span class="p">}</span>
 
@@ -257,13 +265,17 @@ where this library code is copied in your repository at a specific revision.
         <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"country name required"</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
     <span class="nx">store</span><span class="p">[</span><span class="nx">country</span><span class="p">.</span><span class="nx">Code</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">country</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nx">DeleteCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
     <span class="nb">delete</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">code</span><span class="p">)</span>
+    <span class="nx">lock</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -294,6 +306,7 @@ an object method instead of just a function.</p>
     <span class="s">"fmt"</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
     <span class="s">"net/http"</span>
+    <span class="s">"sync"</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
@@ -303,8 +316,8 @@ an object method instead of just a function.</p>
     <span class="p">}</span>
 
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-                <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="p">}</span>
+        <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="p">}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"GetAllUsers"</span><span class="p">),</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/users"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"PostUser"</span><span class="p">),</span>
@@ -321,22 +334,27 @@ an object method instead of just a function.</p>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Users</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
     <span class="nx">Store</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">User</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">GetAllUsers</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">users</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">User</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">))</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">GetAllUsers</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
+    <span class="nx">users</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">User</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">))</span>
     <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">user</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">self</span><span class="p">.</span><span class="nx">Store</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">user</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span> <span class="p">{</span>
         <span class="nx">users</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">user</span>
         <span class="nx">i</span><span class="o">++</span>
     <span class="p">}</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">users</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">GetUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">GetUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">id</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">)</span>
-    <span class="nx">user</span> <span class="o">:=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
+    <span class="nx">user</span> <span class="o">:=</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
     <span class="k">if</span> <span class="nx">user</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
         <span class="k">return</span>
@@ -344,22 +362,25 @@ an object method instead of just a function.</p>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">PostUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">PostUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{}</span>
     <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">DecodeJsonPayload</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
-    <span class="nx">id</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">))</span> <span class="c1">// stupid</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
+    <span class="nx">id</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">"%d"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">))</span> <span class="c1">// stupid</span>
     <span class="nx">user</span><span class="p">.</span><span class="nx">Id</span> <span class="p">=</span> <span class="nx">id</span>
-    <span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">user</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">user</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">PutUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">PutUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">id</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
@@ -370,13 +391,16 @@ an object method instead of just a function.</p>
         <span class="k">return</span>
     <span class="p">}</span>
     <span class="nx">user</span><span class="p">.</span><span class="nx">Id</span> <span class="p">=</span> <span class="nx">id</span>
-    <span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">user</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">user</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">self</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">DeleteUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">DeleteUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">id</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">)</span>
-    <span class="nb">delete</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">Store</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
+    <span class="nb">delete</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+    <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -605,8 +629,9 @@ In this example the same struct is used both as the GORM model and as the JSON m
                 <span class="nx">OriginValidator</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">origin</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
                     <span class="k">return</span> <span class="nx">origin</span> <span class="o">==</span> <span class="s">"http://my.other.host"</span>
                 <span class="p">},</span>
-                <span class="nx">AllowedMethods</span><span class="p">:</span>                <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"POST"</span><span class="p">,</span> <span class="s">"PUT"</span><span class="p">},</span>
-                <span class="nx">AllowedHeaders</span><span class="p">:</span>                <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"Accept"</span><span class="p">,</span> <span class="s">"Content-Type"</span><span class="p">,</span> <span class="s">"X-Custom-Header"</span><span class="p">},</span>
+                <span class="nx">AllowedMethods</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"POST"</span><span class="p">,</span> <span class="s">"PUT"</span><span class="p">},</span>
+                <span class="nx">AllowedHeaders</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span>
+                    <span class="s">"Accept"</span><span class="p">,</span> <span class="s">"Content-Type"</span><span class="p">,</span> <span class="s">"X-Custom-Header"</span><span class="p">,</span> <span class="s">"Origin"</span><span class="p">},</span>
                 <span class="nx">AccessControlAllowCredentials</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
                 <span class="nx">AccessControlMaxAge</span><span class="p">:</span>           <span class="mi">3600</span><span class="p">,</span>
             <span class="p">},</span>
@@ -911,6 +936,52 @@ This example shows how to enable the stats, and how to setup the /.status route.
 </pre></div>
 
 <h4>
+<a name="non-json-payload" class="anchor" href="#non-json-payload"><span class="octicon octicon-link"></span></a>Non JSON payload</h4>
+
+<p>Exceptional use of non JSON payloads.</p>
+
+<p>The ResponseWriter implementation provided by go-json-rest is designed
+to build JSON responses. In order to serve different kind of content,
+it is recommended to either:
+a) use another server and configure CORS
+   (see the cors/ example)
+b) combine the rest.ResourceHandler with another http.Handler
+   (see api-and-static/ example)</p>
+
+<p>That been said, exceptionally, it can be convenient to return a
+different content type on a JSON endpoint. In this case, setting the
+Content-Type and using the type assertion to access the Write method
+is enough. As shown in this example.</p>
+
+<p>The curl demo:</p>
+
+<pre><code>    curl -i http://127.0.0.1:8080/message.txt
+</code></pre>
+
+<p>Go code:</p>
+
+<div class="highlight highlight-go"><pre>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message.txt"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">w</span><span class="p">.</span><span class="nx">Header</span><span class="p">().</span><span class="nx">Set</span><span class="p">(</span><span class="s">"Content-Type"</span><span class="p">,</span> <span class="s">"text/plain"</span><span class="p">)</span>
+            <span class="nx">w</span><span class="p">.(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">).</span><span class="nx">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">"Hello World!"</span><span class="p">))</span>
+        <span class="p">}},</span>
+    <span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
 <a name="spdy" class="anchor" href="#spdy"><span class="octicon octicon-link"></span></a>SPDY</h4>
 
 <p>Demonstrate how to use SPDY with <a href="https://github.com/shykes/spdy-go">https://github.com/shykes/spdy-go</a></p>
@@ -964,88 +1035,33 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-    curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
-    curl -i http://127.0.0.1:8080/countries/FR
-    curl -i http://127.0.0.1:8080/countries/US
-    curl -i http://127.0.0.1:8080/countries
-    curl -i -X DELETE http://127.0.0.1:8080/countries/FR
-    curl -i http://127.0.0.1:8080/countries
-    curl -i -X DELETE http://127.0.0.1:8080/countries/US
-    curl -i http://127.0.0.1:8080/countries
+<pre><code>    curl -i http://127.0.0.1:8080/message
 </code></pre>
 
 <p>Go code:</p>
 
 <div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">gaecountries</span>
+<span class="kn">package</span> <span class="nx">gaehelloworld</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
-<span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
+<span class="kd">type</span> <span class="nx">Message</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Body</span> <span class="kt">string</span>
+<span class="p">}</span>
 
+<span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
     <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
+                <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
+            <span class="p">})</span>
+        <span class="p">}},</span>
     <span class="p">)</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
-    <span class="nx">Code</span> <span class="kt">string</span>
-    <span class="nx">Name</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="kd">var</span> <span class="nx">store</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">Country</span><span class="p">{}</span>
-
-<span class="kd">func</span> <span class="nx">GetCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
-    <span class="nx">country</span> <span class="o">:=</span> <span class="nx">store</span><span class="p">[</span><span class="nx">code</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nx">country</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">countries</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">Country</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">store</span><span class="p">))</span>
-    <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">country</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">store</span> <span class="p">{</span>
-        <span class="nx">countries</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">country</span>
-        <span class="nx">i</span><span class="o">++</span>
-    <span class="p">}</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">countries</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">PostCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">country</span> <span class="o">:=</span> <span class="nx">Country</span><span class="p">{}</span>
-    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">DecodeJsonPayload</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="nx">country</span><span class="p">.</span><span class="nx">Code</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"country code required"</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="nx">country</span><span class="p">.</span><span class="nx">Name</span> <span class="o">==</span> <span class="s">""</span> <span class="p">{</span>
-        <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"country name required"</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-    <span class="nx">store</span><span class="p">[</span><span class="nx">country</span><span class="p">.</span><span class="nx">Code</span><span class="p">]</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">country</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
-<span class="p">}</span>
-
-<span class="kd">func</span> <span class="nx">DeleteCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
-    <span class="nb">delete</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">code</span><span class="p">)</span>
 <span class="p">}</span>
 
 </pre></div>
