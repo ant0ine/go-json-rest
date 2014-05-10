@@ -98,11 +98,11 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -112,14 +112,17 @@ type Message struct {
 
 func main() {
 	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(&Message{
 				Body: "Hello World!",
 			})
 		}},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 ```
@@ -233,10 +236,9 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 
 #### Users
 
-Demonstrate how to use rest.RouteObjectMethod
+Demonstrate how to use `rest.RouteObjectMethod`
 
-rest.RouteObjectMethod helps create a Route that points to
-an object method instead of just a function.
+`rest.RouteObjectMethod` helps create a Route that points to an object method instead of just a function.
 
 The curl demo:
 
@@ -249,7 +251,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
