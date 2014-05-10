@@ -1,9 +1,3 @@
-// Utility functions to help writing tests for a Go-Json-Rest app
-//
-// Go comes with net/http/httptest to help writing test for an http
-// server. When this http server implements a JSON REST API, some basic
-// checks end up to be always the same. This test package tries to save
-// some typing by providing helpers for this particular use case.
 package test
 
 import (
@@ -16,8 +10,10 @@ import (
 	"testing"
 )
 
-func MakeRequestWithHeader(method, urlStr string, header http.Header, payload interface{}) *http.Request {
-	s := ""
+// MakeSimpleRequest returns a http.Request. The returned request object can be
+// further prepared by adding headers and query string parmaters, for instance.
+func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.Request {
+	var s string
 
 	if payload != nil {
 		b, err := json.Marshal(payload)
@@ -31,9 +27,7 @@ func MakeRequestWithHeader(method, urlStr string, header http.Header, payload in
 	if err != nil {
 		panic(err)
 	}
-	r.Header = header
 	r.Header.Set("Accept-Encoding", "gzip")
-
 	if payload != nil {
 		r.Header.Set("Content-Type", "application/json")
 	}
@@ -41,17 +35,14 @@ func MakeRequestWithHeader(method, urlStr string, header http.Header, payload in
 	return r
 }
 
-func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.Request {
-	return MakeRequestWithHeader(method, urlStr, http.Header{}, payload)
-}
-
+// CodeIs compares the rescorded status code
 func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
 	if r.Code != expectedCode {
 		t.Errorf("Code %d expected, got: %d", expectedCode, r.Code)
 	}
 }
 
-// Test the first value for the given headerKey
+// HeaderIs tests the first value for the given headerKey
 func HeaderIs(t *testing.T, r *httptest.ResponseRecorder, headerKey, expectedValue string) {
 	value := r.HeaderMap.Get(headerKey)
 	if value != expectedValue {
@@ -96,6 +87,7 @@ type Recorded struct {
 	Recorder *httptest.ResponseRecorder
 }
 
+// RunRequest runs a HTTP request through the given handler
 func RunRequest(t *testing.T, handler http.Handler, request *http.Request) *Recorded {
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
