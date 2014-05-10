@@ -16,7 +16,8 @@ import (
 	"testing"
 )
 
-func MakeRequestWithHeader(method, urlStr string, header http.Header, payload interface{}) *http.Request {
+func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.Request {
+
 	s := ""
 
 	if payload != nil {
@@ -31,18 +32,12 @@ func MakeRequestWithHeader(method, urlStr string, header http.Header, payload in
 	if err != nil {
 		panic(err)
 	}
-	r.Header = header
 	r.Header.Set("Accept-Encoding", "gzip")
-
 	if payload != nil {
 		r.Header.Set("Content-Type", "application/json")
 	}
 
 	return r
-}
-
-func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.Request {
-	return MakeRequestWithHeader(method, urlStr, http.Header{}, payload)
 }
 
 func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
