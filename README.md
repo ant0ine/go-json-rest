@@ -147,7 +147,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
@@ -181,22 +180,28 @@ var lock = sync.RWMutex{}
 
 func GetCountry(w rest.ResponseWriter, r *rest.Request) {
 	code := r.PathParam("code")
+
 	lock.RLock()
-	country := store[code]
+	var country *Country
+	if store[code] != nil {
+		country = &Country{}
+		*country = *store[code]
+	}
 	lock.RUnlock()
+
 	if country == nil {
 		rest.NotFound(w, r)
 		return
 	}
-	w.WriteJson(&country)
+	w.WriteJson(country)
 }
 
 func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 	lock.RLock()
-	countries := make([]*Country, len(store))
+	countries := make([]Country, len(store))
 	i := 0
 	for _, country := range store {
-		countries[i] = country
+		countries[i] = *country
 		i++
 	}
 	lock.RUnlock()
@@ -229,6 +234,7 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 	lock.Lock()
 	delete(store, code)
 	lock.Unlock()
+	w.WriteHeader(http.StatusOK)
 }
 
 ```
@@ -291,10 +297,10 @@ type Users struct {
 
 func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
 	u.RLock()
-	users := make([]*User, len(u.Store))
+	users := make([]User, len(u.Store))
 	i := 0
 	for _, user := range u.Store {
-		users[i] = user
+		users[i] = *user
 		i++
 	}
 	u.RUnlock()
@@ -304,13 +310,17 @@ func (u *Users) GetAllUsers(w rest.ResponseWriter, r *rest.Request) {
 func (u *Users) GetUser(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	u.RLock()
-	user := u.Store[id]
+	var user *User
+	if u.Store[id] != nil {
+		user = &User{}
+		*user = *u.Store[id]
+	}
 	u.RUnlock()
 	if user == nil {
 		rest.NotFound(w, r)
 		return
 	}
-	w.WriteJson(&user)
+	w.WriteJson(user)
 }
 
 func (u *Users) PostUser(w rest.ResponseWriter, r *rest.Request) {
@@ -352,6 +362,7 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	u.Lock()
 	delete(u.Store, id)
 	u.Unlock()
+	w.WriteHeader(http.StatusOK)
 }
 
 ```
@@ -546,6 +557,7 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 ```
