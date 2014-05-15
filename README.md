@@ -127,7 +127,6 @@ func main() {
 
 ```
 
-
 #### Countries
 
 Demonstrate simple POST GET and DELETE operations
@@ -238,7 +237,6 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 }
 
 ```
-
 
 #### Users
 
@@ -416,12 +414,11 @@ func main() {
 
 ```
 
-
 #### GORM
 
 Demonstrate basic CRUD operation using a store based on MySQL and GORM
 
-GORM (https://github.com/jinzhu/gorm) is simple ORM library.
+[GORM](https://github.com/jinzhu/gorm) is simple ORM library for Go.
 In this example the same struct is used both as the GORM model and as the JSON model.
 
 The curl demo:
@@ -435,7 +432,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
@@ -560,7 +556,6 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 
 ```
 
-
 #### CORS
 
 Demonstrate how to setup CorsMiddleware around all the API endpoints.
@@ -572,7 +567,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
@@ -624,7 +618,6 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 }
 
 ```
-
 
 #### Basic Auth
 
@@ -689,13 +682,12 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ```
 
-
 #### Status
 
-Demonstrate how to setup a /.status endpoint
+Demonstrate how to setup a `/.status` endpoint
 
 Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
-This example shows how to enable the stats, and how to setup the /.status route.
+This example shows how to enable the stats, and how to setup the `/.status` route.
 
 
 The curl demo:
@@ -723,10 +715,8 @@ The curl demo:
           "AverageResponseTimeSec": 0.00026214
         }
 
-
 Go code:
 ``` go
-
 package main
 
 import (
@@ -750,7 +740,6 @@ func main() {
 
 ```
 
-
 #### Status Auth
 
 Demonstrate how to setup a /.status endpoint protected with basic authentication.
@@ -767,7 +756,6 @@ The Curl Demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
@@ -847,10 +835,8 @@ The curl demo:
         {"Name":"thing #2"}
         {"Name":"thing #3"}
 
-
 Go code:
 ``` go
-
 package main
 
 import (
@@ -895,7 +881,6 @@ func StreamThings(w rest.ResponseWriter, r *rest.Request) {
 
 ```
 
-
 #### Non JSON payload
 
 Exceptional use of non JSON payloads.
@@ -918,9 +903,9 @@ The curl demo:
         curl -i http://127.0.0.1:8080/message.txt
 
 
+
 Go code:
 ``` go
-
 package main
 
 import (
@@ -941,7 +926,6 @@ func main() {
 
 ```
 
-
 #### SPDY
 
 Demonstrate how to use SPDY with https://github.com/shykes/spdy-go
@@ -956,7 +940,6 @@ The spdycat demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
@@ -988,10 +971,23 @@ func main() {
 
 ```
 
-
 #### GAE
 
 Demonstrate a simple Google App Engine app
+
+Here are my steps to make it work with the GAE SDK.
+(Probably not the best ones)
+
+Assuming that go-json-rest is installed using "go get"
+and that the GAE SDK is also installed.
+
+Setup:
+ * copy this examples/gae/ dir outside of the go-json-rest/ tree
+ * cd gae/
+ * mkdir -p github.com/ant0ine
+ * cp -r $GOPATH/src/github.com/ant0ine/go-json-rest github.com/ant0ine/go-json-rest
+ * rm -rf github.com/ant0ine/go-json-rest/examples/
+ * path/to/google_appengine/dev_appserver.py .
 
 The curl demo:
 
@@ -1000,7 +996,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package gaehelloworld
 
 import (
@@ -1026,7 +1021,6 @@ func init() {
 
 ```
 
-
 #### Basic Auth Custom
 
 Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
@@ -1040,7 +1034,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
@@ -1146,7 +1139,6 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ```
 
-
 #### CORS Custom
 
 Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
@@ -1158,7 +1150,6 @@ The curl demo:
 
 Go code:
 ``` go
-
 package main
 
 import (
