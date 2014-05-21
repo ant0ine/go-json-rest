@@ -1401,6 +1401,7 @@ Overall, they provide the same features, but with two methods instead of three, 
 - [Franck Cuny](https://github.com/franckcuny)
 - [Yann Kerhervé](https://github.com/yannk)
 - [Ask Bjørn Hansen](https://github.com/abh)
+- [Paul Lam](https://github.com/Quantisan)
 
 
 Copyright (c) 2013-2014 Antoine Imbert
