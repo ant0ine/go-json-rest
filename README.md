@@ -92,7 +92,7 @@ First examples to try, as an introduction to go-json-rest.
 Tradition!
 
 The curl demo:
-```
+``` sh
 curl -i http://127.0.0.1:8080/message
 ```
 
@@ -133,17 +133,17 @@ func main() {
 Demonstrate simple POST GET and DELETE operations
 
 The curl demo:
-
-        curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-        curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
-        curl -i http://127.0.0.1:8080/countries/FR
-        curl -i http://127.0.0.1:8080/countries/US
-        curl -i http://127.0.0.1:8080/countries
-        curl -i -X DELETE http://127.0.0.1:8080/countries/FR
-        curl -i http://127.0.0.1:8080/countries
-        curl -i -X DELETE http://127.0.0.1:8080/countries/US
-        curl -i http://127.0.0.1:8080/countries
-
+```
+curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+curl -i http://127.0.0.1:8080/countries/FR
+curl -i http://127.0.0.1:8080/countries/US
+curl -i http://127.0.0.1:8080/countries
+curl -i -X DELETE http://127.0.0.1:8080/countries/FR
+curl -i http://127.0.0.1:8080/countries
+curl -i -X DELETE http://127.0.0.1:8080/countries/US
+curl -i http://127.0.0.1:8080/countries
+```
 
 Go code:
 ``` go
@@ -246,13 +246,13 @@ Demonstrate how to use `rest.RouteObjectMethod`
 `rest.RouteObjectMethod` helps create a Route that points to an object method instead of just a function.
 
 The curl demo:
-
-        curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
-        curl -i http://127.0.0.1:8080/users/0
-        curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
-        curl -i -X DELETE http://127.0.0.1:8080/users/0
-        curl -i http://127.0.0.1:8080/users
-
+```
+curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+curl -i http://127.0.0.1:8080/users/0
+curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+curl -i -X DELETE http://127.0.0.1:8080/users/0
+curl -i http://127.0.0.1:8080/users
+```
 
 Go code:
 ``` go
@@ -379,10 +379,10 @@ Combine Go-Json-Rest with other handlers.
 In this example the ResourceHandler is used under the `/api/` prefix, while a FileServer is instantiated under the `/static/` prefix.
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/api/message
-        curl -i http://127.0.0.1:8080/static/main.go
-
+```
+curl -i http://127.0.0.1:8080/api/message
+curl -i http://127.0.0.1:8080/static/main.go
+```
 
 Go code:
 ``` go
@@ -423,13 +423,13 @@ Demonstrate basic CRUD operation using a store based on MySQL and GORM
 In this example the same struct is used both as the GORM model and as the JSON model.
 
 The curl demo:
-
-        curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
-        curl -i http://127.0.0.1:8080/reminders/1
-        curl -i http://127.0.0.1:8080/reminders
-        curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
-        curl -i -X DELETE http://127.0.0.1:8080/reminders/1
-
+```
+curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+curl -i http://127.0.0.1:8080/reminders/1
+curl -i http://127.0.0.1:8080/reminders
+curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+curl -i -X DELETE http://127.0.0.1:8080/reminders/1
+```
 
 Go code:
 ``` go
@@ -562,8 +562,9 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 Demonstrate how to setup CorsMiddleware around all the API endpoints.
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/countries
+```
+curl -i http://127.0.0.1:8080/countries
+```
 
 
 Go code:
@@ -625,11 +626,10 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/countries
-        curl -i -u admin:admin http://127.0.0.1:8080/countries
-
-
+```
+curl -i http://127.0.0.1:8080/countries
+curl -i -u admin:admin http://127.0.0.1:8080/countries
+```
 
 Go code:
 ``` go
@@ -692,29 +692,31 @@ This example shows how to enable the stats, and how to setup the `/.status` rout
 
 
 The curl demo:
+```
+curl -i http://127.0.0.1:8080/.status
+curl -i http://127.0.0.1:8080/.status
+...
+```
 
-        curl -i http://127.0.0.1:8080/.status
-        curl -i http://127.0.0.1:8080/.status
-        ...
-
-
-
-        {
-          "Pid": 21732,
-          "UpTime": "1m15.926272s",
-          "UpTimeSec": 75.926272,
-          "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
-          "TimeUnix": 1362384027,
-          "StatusCodeCount": {
-                "200": 53,
-                "404": 11
-          },
-          "TotalCount": 64,
-          "TotalResponseTime": "16.777ms",
-          "TotalResponseTimeSec": 0.016777,
-          "AverageResponseTime": "262.14us",
-          "AverageResponseTimeSec": 0.00026214
-        }
+Output example:
+```
+{
+  "Pid": 21732,
+  "UpTime": "1m15.926272s",
+  "UpTimeSec": 75.926272,
+  "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+  "TimeUnix": 1362384027,
+  "StatusCodeCount": {
+        "200": 53,
+        "404": 11
+  },
+  "TotalCount": 64,
+  "TotalResponseTime": "16.777ms",
+  "TotalResponseTimeSec": 0.016777,
+  "AverageResponseTime": "262.14us",
+  "AverageResponseTimeSec": 0.00026214
+}
+```
 
 Go code:
 ``` go
@@ -748,12 +750,12 @@ Demonstrate how to setup a /.status endpoint protected with basic authentication
 This is a good use case of middleware applied to only one API endpoint.
 
 The Curl Demo:
-
-        curl -i http://127.0.0.1:8080/countries
-        curl -i http://127.0.0.1:8080/.status
-        curl -i -u admin:admin http://127.0.0.1:8080/.status
-        ...
-
+```
+curl -i http://127.0.0.1:8080/countries
+curl -i http://127.0.0.1:8080/.status
+curl -i -u admin:admin http://127.0.0.1:8080/.status
+...
+```
 
 Go code:
 ``` go
@@ -824,17 +826,21 @@ Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP
 The stream format is a Line Delimited JSON.
 
 The curl demo:
+```
+curl -i http://127.0.0.1:8080/stream
+```
 
-        curl -i http://127.0.0.1:8080/stream
+Output:
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Sun, 16 Feb 2014 00:39:19 GMT
+Transfer-Encoding: chunked
 
-        HTTP/1.1 200 OK
-        Content-Type: application/json
-        Date: Sun, 16 Feb 2014 00:39:19 GMT
-        Transfer-Encoding: chunked
-
-        {"Name":"thing #1"}
-        {"Name":"thing #2"}
-        {"Name":"thing #3"}
+{"Name":"thing #1"}
+{"Name":"thing #2"}
+{"Name":"thing #3"}
+```
 
 Go code:
 ``` go
@@ -900,10 +906,9 @@ Content-Type and using the type assertion to access the Write method
 is enough. As shown in this example.
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/message.txt
-
-
+```
+curl -i http://127.0.0.1:8080/message.txt
+```
 
 Go code:
 ``` go
@@ -935,9 +940,9 @@ For a command line client, install spdycat from:
 https://github.com/tatsuhiro-t/spdylay
 
 The spdycat demo:
-
-        spdycat -v --no-tls -2 http://localhost:8080/users/0
-
+```
+spdycat -v --no-tls -2 http://localhost:8080/users/0
+```
 
 Go code:
 ``` go
@@ -991,9 +996,9 @@ Setup:
  * path/to/google_appengine/dev_appserver.py .
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/message
-
+```
+curl -i http://127.0.0.1:8080/message
+```
 
 Go code:
 ``` go
@@ -1029,9 +1034,9 @@ Demonstrate how to implement a custom AuthBasic middleware, used to protect all 
 This is a very simple version supporting only one user.
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/countries
-
+```
+curl -i http://127.0.0.1:8080/countries
+```
 
 Go code:
 ``` go
@@ -1145,9 +1150,9 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/countries
-
+```
+curl -i http://127.0.0.1:8080/countries
+```
 
 Go code:
 ``` go
