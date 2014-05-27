@@ -92,8 +92,9 @@ First examples to try, as an introduction to go-json-rest.
 Tradition!
 
 The curl demo:
-
-        curl -i http://127.0.0.1:8080/message
+```
+curl -i http://127.0.0.1:8080/message
+```
 
 
 Go code:
