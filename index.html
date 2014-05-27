@@ -148,11 +148,11 @@ where this library code is copied in your repository at a specific revision.
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -162,14 +162,17 @@ where this library code is copied in your repository at a specific revision.
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
                 <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
             <span class="p">})</span>
         <span class="p">}},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -194,8 +197,7 @@ where this library code is copied in your repository at a specific revision.
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -228,22 +230,28 @@ where this library code is copied in your repository at a specific revision.
 
 <span class="kd">func</span> <span class="nx">GetCountry</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">code</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"code"</span><span class="p">)</span>
+
     <span class="nx">lock</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
-    <span class="nx">country</span> <span class="o">:=</span> <span class="nx">store</span><span class="p">[</span><span class="nx">code</span><span class="p">]</span>
+    <span class="kd">var</span> <span class="nx">country</span> <span class="o">*</span><span class="nx">Country</span>
+    <span class="k">if</span> <span class="nx">store</span><span class="p">[</span><span class="nx">code</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">country</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">Country</span><span class="p">{}</span>
+        <span class="o">*</span><span class="nx">country</span> <span class="p">=</span> <span class="o">*</span><span class="nx">store</span><span class="p">[</span><span class="nx">code</span><span class="p">]</span>
+    <span class="p">}</span>
     <span class="nx">lock</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="nx">country</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">country</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">country</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nx">GetAllCountries</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">lock</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
-    <span class="nx">countries</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">Country</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">store</span><span class="p">))</span>
+    <span class="nx">countries</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="nx">Country</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">store</span><span class="p">))</span>
     <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">country</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">store</span> <span class="p">{</span>
-        <span class="nx">countries</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">country</span>
+        <span class="nx">countries</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="o">*</span><span class="nx">country</span>
         <span class="nx">i</span><span class="o">++</span>
     <span class="p">}</span>
     <span class="nx">lock</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
@@ -276,6 +284,7 @@ where this library code is copied in your repository at a specific revision.
     <span class="nx">lock</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
     <span class="nb">delete</span><span class="p">(</span><span class="nx">store</span><span class="p">,</span> <span class="nx">code</span><span class="p">)</span>
     <span class="nx">lock</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -283,10 +292,9 @@ where this library code is copied in your repository at a specific revision.
 <h4>
 <a name="users" class="anchor" href="#users"><span class="octicon octicon-link"></span></a>Users</h4>
 
-<p>Demonstrate how to use rest.RouteObjectMethod</p>
+<p>Demonstrate how to use <code>rest.RouteObjectMethod</code></p>
 
-<p>rest.RouteObjectMethod helps create a Route that points to
-an object method instead of just a function.</p>
+<p><code>rest.RouteObjectMethod</code> helps create a Route that points to an object method instead of just a function.</p>
 
 <p>The curl demo:</p>
 
@@ -299,8 +307,7 @@ an object method instead of just a function.</p>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"fmt"</span>
@@ -340,10 +347,10 @@ an object method instead of just a function.</p>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">GetAllUsers</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">u</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
-    <span class="nx">users</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="nx">User</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">))</span>
+    <span class="nx">users</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="nx">User</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">))</span>
     <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">user</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span> <span class="p">{</span>
-        <span class="nx">users</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">user</span>
+        <span class="nx">users</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="o">*</span><span class="nx">user</span>
         <span class="nx">i</span><span class="o">++</span>
     <span class="p">}</span>
     <span class="nx">u</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
@@ -353,13 +360,17 @@ an object method instead of just a function.</p>
 <span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">GetUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">id</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"id"</span><span class="p">)</span>
     <span class="nx">u</span><span class="p">.</span><span class="nx">RLock</span><span class="p">()</span>
-    <span class="nx">user</span> <span class="o">:=</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span>
+    <span class="kd">var</span> <span class="nx">user</span> <span class="o">*</span><span class="nx">User</span>
+    <span class="k">if</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">user</span> <span class="p">=</span> <span class="o">&amp;</span><span class="nx">User</span><span class="p">{}</span>
+        <span class="o">*</span><span class="nx">user</span> <span class="p">=</span> <span class="o">*</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span>
+    <span class="p">}</span>
     <span class="nx">u</span><span class="p">.</span><span class="nx">RUnlock</span><span class="p">()</span>
     <span class="k">if</span> <span class="nx">user</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">user</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">u</span> <span class="o">*</span><span class="nx">Users</span><span class="p">)</span> <span class="nx">PostUser</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -401,6 +412,7 @@ an object method instead of just a function.</p>
     <span class="nx">u</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
     <span class="nb">delete</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
     <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -415,9 +427,8 @@ an object method instead of just a function.</p>
 
 <p>Combine Go-Json-Rest with other handlers.</p>
 
-<p>rest.ResourceHandler is a valid http.Handler, and can be combined with other handlers.
-In this example the ResourceHandler is used under the /api/ prefix, while a FileServer
-is instantiated under the /static/ prefix.</p>
+<p><code>rest.ResourceHandler</code> is a valid <code>http.Handler</code>, and can be combined with other handlers.
+In this example the ResourceHandler is used under the <code>/api/</code> prefix, while a FileServer is instantiated under the <code>/static/</code> prefix.</p>
 
 <p>The curl demo:</p>
 
@@ -427,8 +438,7 @@ is instantiated under the /static/ prefix.</p>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -462,7 +472,7 @@ is instantiated under the /static/ prefix.</p>
 
 <p>Demonstrate basic CRUD operation using a store based on MySQL and GORM</p>
 
-<p>GORM (<a href="https://github.com/jinzhu/gorm">https://github.com/jinzhu/gorm</a>) is simple ORM library.
+<p><a href="https://github.com/jinzhu/gorm">GORM</a> is simple ORM library for Go.
 In this example the same struct is used both as the GORM model and as the JSON model.</p>
 
 <p>The curl demo:</p>
@@ -476,8 +486,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -596,6 +605,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
         <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -612,8 +622,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -678,8 +687,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -732,10 +740,10 @@ In this example the same struct is used both as the GORM model and as the JSON m
 <h4>
 <a name="status" class="anchor" href="#status"><span class="octicon octicon-link"></span></a>Status</h4>
 
-<p>Demonstrate how to setup a /.status endpoint</p>
+<p>Demonstrate how to setup a <code>/.status</code> endpoint</p>
 
 <p>Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
-This example shows how to enable the stats, and how to setup the /.status route.</p>
+This example shows how to enable the stats, and how to setup the <code>/.status</code> route.</p>
 
 <p>The curl demo:</p>
 
@@ -765,8 +773,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -806,8 +813,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -890,8 +896,7 @@ This example shows how to enable the stats, and how to setup the /.status route.
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"fmt"</span>
@@ -960,8 +965,7 @@ is enough. As shown in this example.</p>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -996,8 +1000,7 @@ is enough. As shown in this example.</p>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -1033,15 +1036,29 @@ is enough. As shown in this example.</p>
 
 <p>Demonstrate a simple Google App Engine app</p>
 
-<p>The curl demo:</p>
+<p>Here are my steps to make it work with the GAE SDK.
+(Probably not the best ones)</p>
+
+<p>Assuming that go-json-rest is installed using "go get"
+and that the GAE SDK is also installed.</p>
+
+<p>Setup:</p>
+
+<ul>
+<li>copy this examples/gae/ dir outside of the go-json-rest/ tree</li>
+<li>cd gae/</li>
+<li>mkdir -p github.com/ant0ine</li>
+<li>cp -r $GOPATH/src/github.com/ant0ine/go-json-rest github.com/ant0ine/go-json-rest</li>
+<li>rm -rf github.com/ant0ine/go-json-rest/examples/</li>
+<li>path/to/google_appengine/dev_appserver.py .</li>
+</ul><p>The curl demo:</p>
 
 <pre><code>    curl -i http://127.0.0.1:8080/message
 </code></pre>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">gaehelloworld</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">gaehelloworld</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -1080,8 +1097,7 @@ is enough. As shown in this example.</p>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"encoding/base64"</span>
@@ -1198,8 +1214,7 @@ is enough. As shown in this example.</p>
 
 <p>Go code:</p>
 
-<div class="highlight highlight-go"><pre>
-<span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
@@ -1455,6 +1470,7 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 <li><a href="https://github.com/franckcuny">Franck Cuny</a></li>
 <li><a href="https://github.com/yannk">Yann Kerhervé</a></li>
 <li><a href="https://github.com/abh">Ask Bjørn Hansen</a></li>
+<li><a href="https://github.com/Quantisan">Paul Lam</a></li>
 </ul><p>Copyright (c) 2013-2014 Antoine Imbert</p>
 
 <p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
