@@ -109,12 +109,20 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 
 	// instantiate all the middlewares
 	middlewares := []Middleware{
-		// log as the first, depend on timer and recorder.
+		//error first for catching panics in middlewares
+		&errorMiddleware{
+			rh.ErrorLogger,
+			rh.EnableLogAsJson,
+			rh.EnableResponseStackTrace,
+		},
+		// log depends on recorder and timer
 		&logMiddleware{
 			rh.Logger,
 			rh.EnableLogAsJson,
 		},
 	}
+	// third party middlewares may want depend on recorder and timer
+	middlewares = append(middlewares, rh.PreRoutingMiddlewares...)
 
 	if rh.EnableGzip {
 		middlewares = append(middlewares, &gzipMiddleware{})
@@ -129,15 +137,6 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 	middlewares = append(middlewares,
 		&timerMiddleware{},
 		&recorderMiddleware{},
-		&errorMiddleware{
-			rh.ErrorLogger,
-			rh.EnableLogAsJson,
-			rh.EnableResponseStackTrace,
-		},
-	)
-
-	middlewares = append(middlewares,
-		rh.PreRoutingMiddlewares...,
 	)
 
 	handler := rh.app()
