@@ -5,8 +5,6 @@
 // checks end up to be always the same. This test package tries to save
 // some typing by providing helpers for this particular use case.
 //
-// Example:
-//
 //	package main
 //
 //	import (
