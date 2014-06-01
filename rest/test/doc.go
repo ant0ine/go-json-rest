@@ -22,7 +22,7 @@
 //			},
 //		)
 //		recorded := test.RunRequest(t, &handler,
-//			test.MakeSessionRequest("POST", "http://1.2.3.4/r", nil))
+//			test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
 //		recorded.CodeIs(200)
 //		recorded.ContentTypeIsJson()
 //	}
