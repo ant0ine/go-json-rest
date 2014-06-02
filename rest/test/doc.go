@@ -5,8 +5,6 @@
 // checks end up to be always the same. This test package tries to save
 // some typing by providing helpers for this particular use case.
 //
-// Example:
-//
 //	package main
 //
 //	import (
@@ -17,14 +15,14 @@
 //	func TestSimpleRequest(t *testing.T) {
 //		handler := ResourceHandler{}
 //		handler.SetRoutes(
-// 		&Route{"GET", "/r",
-// 			func(w ResponseWriter, r *Request) {
-// 				w.WriteJson(map[string]string{"Id": "123"})
+//			&Route{"GET", "/r",
+//				func(w ResponseWriter, r *Request) {
+//					w.WriteJson(map[string]string{"Id": "123"})
 //				},
 //			},
 //		)
 //		recorded := test.RunRequest(t, &handler,
-//			test.MakeSessionRequest("POST", "http://1.2.3.4/r", nil))
+//			test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
 //		recorded.CodeIs(200)
 //		recorded.ContentTypeIsJson()
 //	}
