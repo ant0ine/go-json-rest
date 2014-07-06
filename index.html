@@ -143,8 +143,8 @@ where this library code is copied in your repository at a specific revision.
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/message
-</code></pre>
+<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/message
+</pre></div>
 
 <p>Go code:</p>
 
@@ -184,15 +184,15 @@ where this library code is copied in your repository at a specific revision.
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-    curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
-    curl -i http://127.0.0.1:8080/countries/FR
-    curl -i http://127.0.0.1:8080/countries/US
-    curl -i http://127.0.0.1:8080/countries
-    curl -i -X DELETE http://127.0.0.1:8080/countries/FR
-    curl -i http://127.0.0.1:8080/countries
-    curl -i -X DELETE http://127.0.0.1:8080/countries/US
-    curl -i http://127.0.0.1:8080/countries
+<pre><code>curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+curl -i http://127.0.0.1:8080/countries/FR
+curl -i http://127.0.0.1:8080/countries/US
+curl -i http://127.0.0.1:8080/countries
+curl -i -X DELETE http://127.0.0.1:8080/countries/FR
+curl -i http://127.0.0.1:8080/countries
+curl -i -X DELETE http://127.0.0.1:8080/countries/US
+curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
 <p>Go code:</p>
@@ -201,6 +201,7 @@ where this library code is copied in your repository at a specific revision.
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
     <span class="s">"sync"</span>
 <span class="p">)</span>
@@ -210,13 +211,16 @@ where this library code is copied in your repository at a specific revision.
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
         <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">PostCountry</span><span class="p">},</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">GetCountry</span><span class="p">},</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/countries/:code"</span><span class="p">,</span> <span class="nx">DeleteCountry</span><span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -298,11 +302,11 @@ where this library code is copied in your repository at a specific revision.
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
-    curl -i http://127.0.0.1:8080/users/0
-    curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
-    curl -i -X DELETE http://127.0.0.1:8080/users/0
-    curl -i http://127.0.0.1:8080/users
+<pre><code>curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+curl -i http://127.0.0.1:8080/users/0
+curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+curl -i -X DELETE http://127.0.0.1:8080/users/0
+curl -i http://127.0.0.1:8080/users
 </code></pre>
 
 <p>Go code:</p>
@@ -312,6 +316,7 @@ where this library code is copied in your repository at a specific revision.
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"fmt"</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
     <span class="s">"sync"</span>
 <span class="p">)</span>
@@ -325,14 +330,17 @@ where this library code is copied in your repository at a specific revision.
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
         <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"GetAllUsers"</span><span class="p">),</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/users"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"PostUser"</span><span class="p">),</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"GetUser"</span><span class="p">),</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"PUT"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"PutUser"</span><span class="p">),</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">users</span><span class="p">,</span> <span class="s">"DeleteUser"</span><span class="p">),</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -432,8 +440,8 @@ In this example the ResourceHandler is used under the <code>/api/</code> prefix,
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/api/message
-    curl -i http://127.0.0.1:8080/static/main.go
+<pre><code>curl -i http://127.0.0.1:8080/api/message
+curl -i http://127.0.0.1:8080/static/main.go
 </code></pre>
 
 <p>Go code:</p>
@@ -442,6 +450,7 @@ In this example the ResourceHandler is used under the <code>/api/</code> prefix,
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -451,18 +460,21 @@ In this example the ResourceHandler is used under the <code>/api/</code> prefix,
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
                 <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
             <span class="p">})</span>
         <span class="p">}},</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/api/"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StripPrefix</span><span class="p">(</span><span class="s">"/api"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 
     <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/static/"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StripPrefix</span><span class="p">(</span><span class="s">"/static"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">Dir</span><span class="p">(</span><span class="s">"."</span><span class="p">))))</span>
 
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="kc">nil</span><span class="p">))</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -477,11 +489,11 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
-    curl -i http://127.0.0.1:8080/reminders/1
-    curl -i http://127.0.0.1:8080/reminders
-    curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
-    curl -i -X DELETE http://127.0.0.1:8080/reminders/1
+<pre><code>curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+curl -i http://127.0.0.1:8080/reminders/1
+curl -i http://127.0.0.1:8080/reminders
+curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 </code></pre>
 
 <p>Go code:</p>
@@ -506,14 +518,17 @@ In this example the same struct is used both as the GORM model and as the JSON m
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
         <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetAllReminders"</span><span class="p">),</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PostReminder"</span><span class="p">),</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetReminder"</span><span class="p">),</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"PUT"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PutReminder"</span><span class="p">),</span>
-        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"DeleteReminder"</span><span class="p">),</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetAllReminders"</span><span class="p">),</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"POST"</span><span class="p">,</span> <span class="s">"/reminders"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PostReminder"</span><span class="p">),</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"GetReminder"</span><span class="p">),</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"PUT"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"PutReminder"</span><span class="p">),</span>
+        <span class="nx">rest</span><span class="p">.</span><span class="nx">RouteObjectMethod</span><span class="p">(</span><span class="s">"DELETE"</span><span class="p">,</span> <span class="s">"/reminders/:id"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">api</span><span class="p">,</span> <span class="s">"DeleteReminder"</span><span class="p">),</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Reminder</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -617,7 +632,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/countries
+<pre><code>curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
 <p>Go code:</p>
@@ -626,6 +641,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -646,10 +662,13 @@ In this example the same struct is used both as the GORM model and as the JSON m
             <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -681,8 +700,8 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/countries
-    curl -i -u admin:admin http://127.0.0.1:8080/countries
+<pre><code>curl -i http://127.0.0.1:8080/countries
+curl -i -u admin:admin http://127.0.0.1:8080/countries
 </code></pre>
 
 <p>Go code:</p>
@@ -691,6 +710,7 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -709,10 +729,13 @@ In this example the same struct is used both as the GORM model and as the JSON m
             <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -747,28 +770,29 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/.status
-    curl -i http://127.0.0.1:8080/.status
-    ...
+<pre><code>curl -i http://127.0.0.1:8080/.status
+curl -i http://127.0.0.1:8080/.status
+...
+</code></pre>
 
+<p>Output example:</p>
 
-
-    {
-      "Pid": 21732,
-      "UpTime": "1m15.926272s",
-      "UpTimeSec": 75.926272,
-      "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
-      "TimeUnix": 1362384027,
-      "StatusCodeCount": {
-            "200": 53,
-            "404": 11
-      },
-      "TotalCount": 64,
-      "TotalResponseTime": "16.777ms",
-      "TotalResponseTimeSec": 0.016777,
-      "AverageResponseTime": "262.14us",
-      "AverageResponseTimeSec": 0.00026214
-    }
+<pre><code>{
+  "Pid": 21732,
+  "UpTime": "1m15.926272s",
+  "UpTimeSec": 75.926272,
+  "Time": "2013-03-04 08:00:27.152986 +0000 UTC",
+  "TimeUnix": 1362384027,
+  "StatusCodeCount": {
+        "200": 53,
+        "404": 11
+  },
+  "TotalCount": 64,
+  "TotalResponseTime": "16.777ms",
+  "TotalResponseTimeSec": 0.016777,
+  "AverageResponseTime": "262.14us",
+  "AverageResponseTimeSec": 0.00026214
+}
 </code></pre>
 
 <p>Go code:</p>
@@ -777,21 +801,25 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
-                <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="nx">EnableStatusService</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
             <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
                 <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="nx">handler</span><span class="p">.</span><span class="nx">GetStatus</span><span class="p">())</span>
             <span class="p">},</span>
-                <span class="p">},</span>
+        <span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -805,10 +833,10 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
 
 <p>The Curl Demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/countries
-    curl -i http://127.0.0.1:8080/.status
-    curl -i -u admin:admin http://127.0.0.1:8080/.status
-    ...
+<pre><code>curl -i http://127.0.0.1:8080/countries
+curl -i http://127.0.0.1:8080/.status
+curl -i -u admin:admin http://127.0.0.1:8080/.status
+...
 </code></pre>
 
 <p>Go code:</p>
@@ -817,6 +845,7 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -833,7 +862,7 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
             <span class="k">return</span> <span class="kc">false</span>
         <span class="p">},</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/.status"</span><span class="p">,</span>
             <span class="nx">auth</span><span class="p">.</span><span class="nx">MiddlewareFunc</span><span class="p">(</span>
@@ -843,7 +872,10 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
             <span class="p">),</span>
         <span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -882,16 +914,19 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/stream
+<pre><code>curl -i http://127.0.0.1:8080/stream
+</code></pre>
 
-    HTTP/1.1 200 OK
-    Content-Type: application/json
-    Date: Sun, 16 Feb 2014 00:39:19 GMT
-    Transfer-Encoding: chunked
+<p>Output:</p>
 
-    {"Name":"thing #1"}
-    {"Name":"thing #2"}
-    {"Name":"thing #3"}
+<pre><code>HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Sun, 16 Feb 2014 00:39:19 GMT
+Transfer-Encoding: chunked
+
+{"Name":"thing #1"}
+{"Name":"thing #2"}
+{"Name":"thing #3"}
 </code></pre>
 
 <p>Go code:</p>
@@ -901,6 +936,7 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"fmt"</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
     <span class="s">"time"</span>
 <span class="p">)</span>
@@ -911,10 +947,13 @@ This example shows how to enable the stats, and how to setup the <code>/.status<
         <span class="nx">EnableRelaxedContentType</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
         <span class="nx">DisableJsonIndent</span><span class="p">:</span>        <span class="kc">true</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/stream"</span><span class="p">,</span> <span class="nx">StreamThings</span><span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Thing</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -960,7 +999,7 @@ is enough. As shown in this example.</p>
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/message.txt
+<pre><code>curl -i http://127.0.0.1:8080/message.txt
 </code></pre>
 
 <p>Go code:</p>
@@ -969,18 +1008,22 @@ is enough. As shown in this example.</p>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message.txt"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nx">Header</span><span class="p">().</span><span class="nx">Set</span><span class="p">(</span><span class="s">"Content-Type"</span><span class="p">,</span> <span class="s">"text/plain"</span><span class="p">)</span>
             <span class="nx">w</span><span class="p">.(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">).</span><span class="nx">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">"Hello World!"</span><span class="p">))</span>
         <span class="p">}},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -995,7 +1038,7 @@ is enough. As shown in this example.</p>
 
 <p>The spdycat demo:</p>
 
-<pre><code>    spdycat -v --no-tls -2 http://localhost:8080/users/0
+<pre><code>spdycat -v --no-tls -2 http://localhost:8080/users/0
 </code></pre>
 
 <p>Go code:</p>
@@ -1023,9 +1066,12 @@ is enough. As shown in this example.</p>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/users/:id"</span><span class="p">,</span> <span class="nx">GetUser</span><span class="p">},</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
     <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">spdy</span><span class="p">.</span><span class="nx">ListenAndServeTCP</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
@@ -1053,7 +1099,7 @@ and that the GAE SDK is also installed.</p>
 <li>path/to/google_appengine/dev_appserver.py .</li>
 </ul><p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/message
+<pre><code>curl -i http://127.0.0.1:8080/message
 </code></pre>
 
 <p>Go code:</p>
@@ -1062,6 +1108,7 @@ and that the GAE SDK is also installed.</p>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -1071,13 +1118,16 @@ and that the GAE SDK is also installed.</p>
 
 <span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
                 <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
             <span class="p">})</span>
         <span class="p">}},</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
 <span class="p">}</span>
 
@@ -1092,7 +1142,7 @@ and that the GAE SDK is also installed.</p>
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/countries
+<pre><code>curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
 <p>Go code:</p>
@@ -1103,6 +1153,7 @@ and that the GAE SDK is also installed.</p>
     <span class="s">"encoding/base64"</span>
     <span class="s">"errors"</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
     <span class="s">"strings"</span>
 <span class="p">)</span>
@@ -1174,10 +1225,13 @@ and that the GAE SDK is also installed.</p>
             <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -1209,7 +1263,7 @@ and that the GAE SDK is also installed.</p>
 
 <p>The curl demo:</p>
 
-<pre><code>    curl -i http://127.0.0.1:8080/countries
+<pre><code>curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
 <p>Go code:</p>
@@ -1218,6 +1272,7 @@ and that the GAE SDK is also installed.</p>
 
 <span class="kn">import</span> <span class="p">(</span>
     <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
     <span class="s">"net/http"</span>
 <span class="p">)</span>
 
@@ -1297,10 +1352,13 @@ and that the GAE SDK is also installed.</p>
             <span class="o">&amp;</span><span class="nx">MyCorsMiddleware</span><span class="p">{},</span>
         <span class="p">},</span>
     <span class="p">}</span>
-    <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
         <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/countries"</span><span class="p">,</span> <span class="nx">GetAllCountries</span><span class="p">},</span>
     <span class="p">)</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">type</span> <span class="nx">Country</span> <span class="kd">struct</span> <span class="p">{</span>
