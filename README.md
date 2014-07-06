@@ -151,6 +151,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 	"sync"
 )
@@ -160,13 +161,16 @@ func main() {
 	handler := rest.ResourceHandler{
 		EnableRelaxedContentType: true,
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"POST", "/countries", PostCountry},
 		&rest.Route{"GET", "/countries/:code", GetCountry},
 		&rest.Route{"DELETE", "/countries/:code", DeleteCountry},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Country struct {
@@ -261,6 +265,7 @@ package main
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 	"sync"
 )
@@ -274,14 +279,17 @@ func main() {
 	handler := rest.ResourceHandler{
 		EnableRelaxedContentType: true,
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
 		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
 		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
 		rest.RouteObjectMethod("PUT", "/users/:id", &users, "PutUser"),
 		rest.RouteObjectMethod("DELETE", "/users/:id", &users, "DeleteUser"),
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type User struct {
@@ -390,6 +398,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -399,18 +408,21 @@ type Message struct {
 
 func main() {
 	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(&Message{
 				Body: "Hello World!",
 			})
 		}},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.Handle("/api/", http.StripPrefix("/api", &handler))
 
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("."))))
 
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 ```
@@ -453,14 +465,17 @@ func main() {
 	handler := rest.ResourceHandler{
 		EnableRelaxedContentType: true,
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		rest.RouteObjectMethod("GET", "/reminders", &api, "GetAllReminders"),
 		rest.RouteObjectMethod("POST", "/reminders", &api, "PostReminder"),
 		rest.RouteObjectMethod("GET", "/reminders/:id", &api, "GetReminder"),
 		rest.RouteObjectMethod("PUT", "/reminders/:id", &api, "PutReminder"),
 		rest.RouteObjectMethod("DELETE", "/reminders/:id", &api, "DeleteReminder"),
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Reminder struct {
@@ -573,6 +588,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -593,10 +609,13 @@ func main() {
 			},
 		},
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Country struct {
@@ -637,6 +656,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -655,10 +675,13 @@ func main() {
 			},
 		},
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Country struct {
@@ -724,21 +747,25 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
 func main() {
 	handler := rest.ResourceHandler{
-                EnableStatusService: true,
-        }
-	handler.SetRoutes(
+		EnableStatusService: true,
+	}
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/.status",
 			func(w rest.ResponseWriter, r *rest.Request) {
 				w.WriteJson(handler.GetStatus())
 			},
-                },
+		},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 ```
@@ -763,6 +790,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -779,7 +807,7 @@ func main() {
 			return false
 		},
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"GET", "/.status",
 			auth.MiddlewareFunc(
@@ -789,7 +817,10 @@ func main() {
 			),
 		},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Country struct {
@@ -849,6 +880,7 @@ package main
 import (
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 	"time"
 )
@@ -859,10 +891,13 @@ func main() {
 		EnableRelaxedContentType: true,
 		DisableJsonIndent:        true,
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/stream", StreamThings},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Thing struct {
@@ -916,18 +951,22 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
 func main() {
 	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message.txt", func(w rest.ResponseWriter, req *rest.Request) {
 			w.Header().Set("Content-Type", "text/plain")
 			w.(http.ResponseWriter).Write([]byte("Hello World!"))
 		}},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 ```
@@ -969,9 +1008,12 @@ func GetUser(w rest.ResponseWriter, req *rest.Request) {
 
 func main() {
 	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/users/:id", GetUser},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
 }
 
@@ -1006,6 +1048,7 @@ package gaehelloworld
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -1015,13 +1058,16 @@ type Message struct {
 
 func init() {
 	handler := rest.ResourceHandler{}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(&Message{
 				Body: "Hello World!",
 			})
 		}},
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 	http.Handle("/", &handler)
 }
 
@@ -1046,6 +1092,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -1117,10 +1164,13 @@ func main() {
 			},
 		},
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Country struct {
@@ -1160,6 +1210,7 @@ package main
 
 import (
 	"github.com/ant0ine/go-json-rest/rest"
+	"log"
 	"net/http"
 )
 
@@ -1239,10 +1290,13 @@ func main() {
 			&MyCorsMiddleware{},
 		},
 	}
-	handler.SetRoutes(
+	err := handler.SetRoutes(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
-	http.ListenAndServe(":8080", &handler)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 type Country struct {
