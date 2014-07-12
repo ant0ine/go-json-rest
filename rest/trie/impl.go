@@ -63,7 +63,7 @@ func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParam
 		for _, e := range usedParams {
 			if e == name {
 				return errors.New(
-					fmt.Sprintf("A route can't have two params with the same name: %s", name),
+					fmt.Sprintf("A route can't have two placeholders with the same name: %s", name),
 				)
 			}
 		}
@@ -88,6 +88,16 @@ func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParam
 		// *splat case
 		name := remaining
 		remaining = ""
+
+		// Check param name is unique
+		for _, e := range usedParams {
+			if e == name {
+				return errors.New(
+					fmt.Sprintf("A route can't have two placeholders with the same name: %s", name),
+				)
+			}
+		}
+
 		if n.SplatChild == nil {
 			n.SplatChild = &node{}
 			n.SplatName = name

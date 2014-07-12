@@ -217,8 +217,14 @@ func TestConsistentPlaceholderName(t *testing.T) {
 func TestDuplicateName(t *testing.T) {
 
 	trie := New()
+
 	err := trie.AddRoute("GET", "/r/:id/o/:id", "two")
 	if err == nil {
-		t.Error("Should have died, this route has two `:id`")
+		t.Error("Should have died, this route has two placeholder named `id`")
+	}
+
+	err = trie.AddRoute("GET", "/r/:id/o/*id", "two")
+	if err == nil {
+		t.Error("Should have died, this route has two placeholder named `id`")
 	}
 }
