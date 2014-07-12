@@ -119,21 +119,27 @@ func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParam
 }
 
 // utility for the node.findRoutes recursive method
+
+type paramMatch struct {
+	name  string
+	value string
+}
+
 type findContext struct {
-	paramStack []map[string]string
+	paramStack []paramMatch
 	matchFunc  func(httpMethod, path string, node *node)
 }
 
 func newFindContext() *findContext {
 	return &findContext{
-		paramStack: []map[string]string{},
+		paramStack: []paramMatch{},
 	}
 }
 
 func (fc *findContext) pushParams(name, value string) {
 	fc.paramStack = append(
 		fc.paramStack,
-		map[string]string{name: value},
+		paramMatch{name, value},
 	)
 }
 
@@ -144,16 +150,14 @@ func (fc *findContext) popParams() {
 func (fc *findContext) paramsAsMap() map[string]string {
 	r := map[string]string{}
 	for _, param := range fc.paramStack {
-		for key, value := range param {
-			if r[key] != "" {
-				// this is checked at addRoute time, and should never happen.
-				panic(fmt.Sprintf(
-					"placeholder %s already found, placeholder names should be unique per route",
-					key,
-				))
-			}
-			r[key] = value
+		if r[param.name] != "" {
+			// this is checked at addRoute time, and should never happen.
+			panic(fmt.Sprintf(
+				"placeholder %s already found, placeholder names should be unique per route",
+				param.name,
+			))
 		}
+		r[param.name] = param.value
 	}
 	return r
 }
