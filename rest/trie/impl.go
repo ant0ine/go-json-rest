@@ -22,14 +22,28 @@ func splitParam(remaining string) (string, string) {
 	return remaining[:i], remaining[i:]
 }
 
+func splitRelaxed(remaining string) (string, string) {
+	i := 0
+	for len(remaining) > i && remaining[i] != '/' {
+		i++
+	}
+	return remaining[:i], remaining[i:]
+}
+
 type node struct {
 	HttpMethodToRoute map[string]interface{}
-	Children          map[string]*node
-	ChildrenKeyLen    int
-	ParamChild        *node
-	ParamName         string
-	SplatChild        *node
-	SplatName         string
+
+	Children       map[string]*node
+	ChildrenKeyLen int
+
+	ParamChild *node
+	ParamName  string
+
+	RelaxedChild *node
+	RelaxedName  string
+
+	SplatChild *node
+	SplatName  string
 }
 
 func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParams []string) error {
@@ -84,6 +98,36 @@ func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParam
 			}
 		}
 		nextNode = n.ParamChild
+	} else if token[0] == '#' {
+		// #param case
+		var name string
+		name, remaining = splitRelaxed(remaining)
+
+		// Check param name is unique
+		for _, e := range usedParams {
+			if e == name {
+				return errors.New(
+					fmt.Sprintf("A route can't have two placeholders with the same name: %s", name),
+				)
+			}
+		}
+		usedParams = append(usedParams, name)
+
+		if n.RelaxedChild == nil {
+			n.RelaxedChild = &node{}
+			n.RelaxedName = name
+		} else {
+			if n.RelaxedName != name {
+				return errors.New(
+					fmt.Sprintf(
+						"Routes sharing a common placeholder MUST name it consistently: %s != %s",
+						n.RelaxedName,
+						name,
+					),
+				)
+			}
+		}
+		nextNode = n.RelaxedChild
 	} else if token[0] == '*' {
 		// *splat case
 		name := remaining
@@ -194,6 +238,14 @@ func (n *node) find(httpMethod, path string, context *findContext) {
 		context.popParams()
 	}
 
+	// #param branch
+	if n.RelaxedChild != nil {
+		value, remaining := splitRelaxed(path)
+		context.pushParams(n.RelaxedName, value)
+		n.RelaxedChild.find(httpMethod, remaining, context)
+		context.popParams()
+	}
+
 	// main branch
 	length := n.ChildrenKeyLen
 	if len(path) < length {
@@ -215,6 +267,10 @@ func (n *node) compress() {
 	if n.ParamChild != nil {
 		n.ParamChild.compress()
 	}
+	// #param branch
+	if n.RelaxedChild != nil {
+		n.RelaxedChild.compress()
+	}
 	// main branch
 	if len(n.Children) == 0 {
 		return
@@ -222,7 +278,7 @@ func (n *node) compress() {
 	// compressable ?
 	canCompress := true
 	for _, node := range n.Children {
-		if node.HttpMethodToRoute != nil || node.SplatChild != nil || node.ParamChild != nil {
+		if node.HttpMethodToRoute != nil || node.SplatChild != nil || node.ParamChild != nil || node.RelaxedChild != nil {
 			canCompress = false
 		}
 	}

@@ -50,8 +50,8 @@ func TestTrieCompression(t *testing.T) {
 	if trie.root.Children["/adc"] == nil {
 		t.Errorf("%+v", trie.root)
 	}
-
 }
+
 func TestParamInsert(t *testing.T) {
 	trie := New()
 
@@ -74,6 +74,18 @@ func TestParamInsert(t *testing.T) {
 		t.Error()
 	}
 	if trie.root.Children["/"].ParamChild.Children["/"].ParamChild.Children["."].ParamName != "format" {
+		t.Error()
+	}
+}
+
+func TestRelaxedInsert(t *testing.T) {
+	trie := New()
+
+	trie.AddRoute("GET", "/#id/", "")
+	if trie.root.Children["/"].RelaxedChild.Children["/"] == nil {
+		t.Error()
+	}
+	if trie.root.Children["/"].RelaxedName != "id" {
 		t.Error()
 	}
 }
@@ -115,6 +127,7 @@ func TestFindRoute(t *testing.T) {
 	trie.AddRoute("GET", "/r/:id", "resource")
 	trie.AddRoute("GET", "/r/:id/property", "property")
 	trie.AddRoute("GET", "/r/:id/property.*format", "property_format")
+	trie.AddRoute("GET", "/user/#username/property", "user_property")
 
 	trie.Compress()
 
@@ -166,6 +179,17 @@ func TestFindRoute(t *testing.T) {
 	if matches[0].Params["format"] != "json" {
 		t.Error()
 	}
+
+	matches = trie.FindRoutes("GET", "/user/antoine.imbert/property")
+	if len(matches) != 1 {
+		t.Errorf("expected one route, got %d", len(matches))
+	}
+	if !isInMatches("user_property", matches) {
+		t.Error("expected 'user_property'")
+	}
+	if matches[0].Params["username"] != "antoine.imbert" {
+		t.Error()
+	}
 }
 
 func TestFindRouteMultipleMatches(t *testing.T) {
@@ -177,6 +201,7 @@ func TestFindRouteMultipleMatches(t *testing.T) {
 	trie.AddRoute("GET", "/r/:id", "resource_generic")
 	trie.AddRoute("GET", "/s/*rest", "special_all")
 	trie.AddRoute("GET", "/s/:param", "special_generic")
+	trie.AddRoute("GET", "/s/#param", "special_relaxed")
 	trie.AddRoute("GET", "/", "root")
 
 	trie.Compress()
@@ -193,7 +218,7 @@ func TestFindRouteMultipleMatches(t *testing.T) {
 	}
 
 	matches = trie.FindRoutes("GET", "/s/1")
-	if len(matches) != 2 {
+	if len(matches) != 3 {
 		t.Errorf("expected two matches, got %d", len(matches))
 	}
 	if !isInMatches("special_all", matches) {
@@ -202,16 +227,28 @@ func TestFindRouteMultipleMatches(t *testing.T) {
 	if !isInMatches("special_generic", matches) {
 		t.Error()
 	}
+	if !isInMatches("special_relaxed", matches) {
+		t.Error()
+	}
 }
 
 func TestConsistentPlaceholderName(t *testing.T) {
 
 	trie := New()
+
 	trie.AddRoute("GET", "/r/:id", "oneph")
 	err := trie.AddRoute("GET", "/r/:rid/other", "twoph")
 	if err == nil {
 		t.Error("Should have died on adding second route")
 	}
+
+	trie.AddRoute("GET", "/r/#id", "oneph")
+	err = trie.AddRoute("GET", "/r/#rid/other", "twoph")
+	if err == nil {
+		t.Error("Should have died on adding second route")
+	}
+
+	// TODO *param
 }
 
 func TestDuplicateName(t *testing.T) {
@@ -224,6 +261,11 @@ func TestDuplicateName(t *testing.T) {
 	}
 
 	err = trie.AddRoute("GET", "/r/:id/o/*id", "two")
+	if err == nil {
+		t.Error("Should have died, this route has two placeholder named `id`")
+	}
+
+	err = trie.AddRoute("GET", "/r/:id/o/#id", "two")
 	if err == nil {
 		t.Error("Should have died, this route has two placeholder named `id`")
 	}
