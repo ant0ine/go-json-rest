@@ -35,6 +35,7 @@ In fact the internal code of **go-json-rest** is itself implemented with Middlew
 	  - [Hello World!](#hello-world)
 	  - [Countries](#countries)
 	  - [Users](#users)
+	  - [Lookup](#lookup)
   - [Applications](#applications)
 	  - [API and static files](#api-and-static-files)
 	  - [GORM](#gorm)
@@ -370,6 +371,52 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	delete(u.Store, id)
 	u.Unlock()
 	w.WriteHeader(http.StatusOK)
+}
+
+```
+
+#### Lookup
+
+Demonstrate how to use the relaxed placeholder (notation #paramName).
+This placeholder matches everything until the first `/`, including `.`
+
+The curl demo:
+```
+curl -i http://127.0.0.1:8080/lookup/google.com
+curl -i http://127.0.0.1:8080/lookup/notadomain
+```
+
+Go code:
+``` go
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"log"
+	"net"
+	"net/http"
+)
+
+type Message struct {
+	Body string
+}
+
+func main() {
+	handler := rest.ResourceHandler{}
+	err := handler.SetRoutes(
+		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
+			ip, err := net.LookupIP(req.PathParam("host"))
+			if err != nil {
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.WriteJson(&ip)
+		}},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Fatal(http.ListenAndServe(":8080", &handler))
 }
 
 ```
