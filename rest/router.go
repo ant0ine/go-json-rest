@@ -7,9 +7,6 @@ import (
 	"strings"
 )
 
-// TODO
-// support for #param placeholder ?
-
 type router struct {
 	routes                 []*Route
 	disableTrieCompression bool
@@ -24,6 +21,41 @@ func escapedPath(urlObj *url.URL) string {
 	return parts[0]
 }
 
+var preEscape = strings.NewReplacer("*", "__SPLAT_PLACEHOLDER__", "#", "__RELAXED_PLACEHOLDER__")
+
+var postEscape = strings.NewReplacer("__SPLAT_PLACEHOLDER__", "*", "__RELAXED_PLACEHOLDER__", "#")
+
+func escapedPathExp(pathExp string) (string, error) {
+
+	// PathExp validation
+	if pathExp == "" {
+		return "", errors.New("empty PathExp")
+	}
+	if pathExp[0] != '/' {
+		return "", errors.New("PathExp must start with /")
+	}
+	if strings.Contains(pathExp, "?") {
+		return "", errors.New("PathExp must not contain the query string")
+	}
+
+	// Get the right escaping
+	// XXX a bit hacky
+
+	pathExp = preEscape.Replace(pathExp)
+
+	urlObj, err := url.Parse(pathExp)
+	if err != nil {
+		return "", err
+	}
+
+	// get the same escaping as find requests
+	pathExp = urlObj.RequestURI()
+
+	pathExp = postEscape.Replace(pathExp)
+
+	return pathExp, nil
+}
+
 // This validates the Routes and prepares the Trie data structure.
 // It must be called once the Routes are defined and before trying to find Routes.
 // The order matters, if multiple Routes match, the first defined will be used.
@@ -34,24 +66,11 @@ func (rt *router) start() error {
 
 	for i, route := range rt.routes {
 
-		// PathExp validation
-		if route.PathExp == "" {
-			return errors.New("empty PathExp")
-		}
-		if route.PathExp[0] != '/' {
-			return errors.New("PathExp must start with /")
-		}
-		urlObj, err := url.Parse(route.PathExp)
+		// work with the PathExp urlencoded.
+		pathExp, err := escapedPathExp(route.PathExp)
 		if err != nil {
 			return err
 		}
-
-		// work with the PathExp urlencoded.
-		pathExp := escapedPath(urlObj)
-
-		// make an exception for '*' used by the *splat notation
-		// (at the trie insert only)
-		pathExp = strings.Replace(pathExp, "%2A", "*", -1)
 
 		// insert in the Trie
 		err = rt.trie.AddRoute(

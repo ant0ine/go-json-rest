@@ -36,4 +36,15 @@ func TestReverseRouteResolution(t *testing.T) {
 	if got != expected {
 		t.Errorf("expected %s, got %s", expected, got)
 	}
+
+	relaxedParam := &Route{"GET", "/#file", nil}
+	got = relaxedParam.MakePath(
+		map[string]string{
+			"file": "a.txt",
+		},
+	)
+	expected = "/a.txt"
+	if got != expected {
+		t.Errorf("expected %s, got %s", expected, got)
+	}
 }

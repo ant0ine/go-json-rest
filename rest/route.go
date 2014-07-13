@@ -14,8 +14,9 @@ type Route struct {
 
 	// A string like "/resource/:id.json".
 	// Placeholders supported are:
-	// :param that matches any char to the first '/' or '.'
-	// *splat that matches everything to the end of the string
+	// :paramName that matches any char to the first '/' or '.'
+	// #paramName that matches any char to the first '/'
+	// *paramName that matches everything to the end of the string
 	// (placeholder names must be unique per PathExp)
 	PathExp string
 
@@ -57,8 +58,9 @@ func (route *Route) MakePath(pathParams map[string]string) string {
 	path := route.PathExp
 	for paramName, paramValue := range pathParams {
 		paramPlaceholder := ":" + paramName
+		relaxedPlaceholder := "#" + paramName
 		splatPlaceholder := "*" + paramName
-		r := strings.NewReplacer(paramPlaceholder, paramValue, splatPlaceholder, paramValue)
+		r := strings.NewReplacer(paramPlaceholder, paramValue, splatPlaceholder, paramValue, relaxedPlaceholder, paramValue)
 		path = r.Replace(path)
 	}
 	return path

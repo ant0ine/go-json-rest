@@ -293,19 +293,60 @@ func TestRouteOrder(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/r/123"
 	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
-
+	if route == nil {
+		t.Fatal("Expected one route to be matched")
+	}
 	if route.PathExp != "/r/:id" {
 		t.Errorf("both match, expected the first defined, got %s", route.PathExp)
 	}
 	if params["id"] != "123" {
+		t.Error()
+	}
+	if pathMatched != true {
+		t.Error()
+	}
+}
+
+func TestRelaxedPlaceholder(t *testing.T) {
+
+	r := router{
+		routes: []*Route{
+			&Route{
+				HttpMethod: "GET",
+				PathExp:    "/r/:id",
+			},
+			&Route{
+				HttpMethod: "GET",
+				PathExp:    "/r/#filename",
+			},
+		},
+	}
+
+	err := r.start()
+	if err != nil {
+		t.Fatal()
+	}
+
+	input := "http://example.org/r/a.txt"
+	route, params, pathMatched, err := r.findRoute("GET", input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if route == nil {
+		t.Fatal("Expected one route to be matched")
+	}
+	if route.PathExp != "/r/#filename" {
+		t.Errorf("expected the second route, got %s", route.PathExp)
+	}
+	if params["filename"] != "a.txt" {
 		t.Error()
 	}
 	if pathMatched != true {
