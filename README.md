@@ -351,12 +351,14 @@ func (u *Users) PutUser(w rest.ResponseWriter, r *rest.Request) {
 	u.Lock()
 	if u.Store[id] == nil {
 		rest.NotFound(w, r)
+		u.Unlock()
 		return
 	}
 	user := User{}
 	err := r.DecodeJsonPayload(&user)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		u.Unlock()
 		return
 	}
 	user.Id = id
