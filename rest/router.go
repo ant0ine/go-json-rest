@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/ant0ine/go-json-rest/rest/trie"
 	"net/url"
+	"path"
 	"strings"
 )
 
@@ -12,6 +13,7 @@ type router struct {
 	disableTrieCompression bool
 	index                  map[*Route]int
 	trie                   *trie.Trie
+	version                string
 }
 
 func escapedPath(urlObj *url.URL) string {
@@ -64,10 +66,16 @@ func (rt *router) start() error {
 	rt.trie = trie.New()
 	rt.index = map[*Route]int{}
 
+	if len(rt.version) > 0 && rt.version[0] != '/' {
+		rt.version = "/" + rt.version
+	}
+
 	for i, route := range rt.routes {
 
+		pathExp := path.Join(rt.version, route.PathExp)
+
 		// work with the PathExp urlencoded.
-		pathExp, err := escapedPathExp(route.PathExp)
+		pathExp, err := escapedPathExp(pathExp)
 		if err != nil {
 			return err
 		}

@@ -194,6 +194,31 @@ func TestWithQueryString(t *testing.T) {
 	}
 }
 
+func TestWithVersion(t *testing.T) {
+	r := router{
+		version: "v2",
+		routes: []*Route{
+			&Route{HttpMethod: "GET", PathExp: "message"},
+		},
+	}
+	err := r.start()
+	if err != nil {
+		t.Fatal()
+	}
+
+	input := "http://example.org/v2/message"
+	route, _, pathMatched, err := r.findRoute("GET", input)
+	if err != nil {
+		t.Fatal()
+	}
+	if route == nil {
+		t.Fatal("Expected a match")
+	}
+	if pathMatched != true {
+		t.Error()
+	}
+}
+
 func TestNonUrlEncodedFind(t *testing.T) {
 
 	r := router{

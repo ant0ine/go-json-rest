@@ -69,6 +69,9 @@ type ResourceHandler struct {
 
 	// If true, the X-Powered-By header will NOT be set.
 	DisableXPoweredBy bool
+
+	// Version which gets prepended to all routes during setup
+	Version string
 }
 
 // SetRoutes defines the Routes. The order the Routes matters,
@@ -85,7 +88,8 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
 	// start the router
 	rh.internalRouter = &router{
-		routes: routes,
+		routes:  routes,
+		version: rh.Version,
 	}
 	err := rh.internalRouter.start()
 	if err != nil {
