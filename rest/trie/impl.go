@@ -302,6 +302,38 @@ func (n *node) compress() {
 	}
 }
 
+func printFPadding(padding int, format string, a ...interface{}) {
+	for i := 0; i < padding; i++ {
+		fmt.Print(" ")
+	}
+	fmt.Printf(format, a...)
+}
+
+// Private function for now
+func (n *node) printDebug(level int) {
+	level++
+	// *splat branch
+	if n.SplatChild != nil {
+		printFPadding(level, "*splat\n")
+		n.SplatChild.printDebug(level)
+	}
+	// :param branch
+	if n.ParamChild != nil {
+		printFPadding(level, ":param\n")
+		n.ParamChild.printDebug(level)
+	}
+	// #param branch
+	if n.RelaxedChild != nil {
+		printFPadding(level, "#relaxed\n")
+		n.RelaxedChild.printDebug(level)
+	}
+	// main branch
+	for key, node := range n.Children {
+		printFPadding(level, "\"%s\"\n", key)
+		node.printDebug(level)
+	}
+}
+
 type Trie struct {
 	root *node
 }
@@ -384,4 +416,11 @@ func (t *Trie) FindRoutesForPath(path string) []*Match {
 // Reduce the size of the tree, must be done after the last AddRoute.
 func (t *Trie) Compress() {
 	t.root.compress()
+}
+
+// XXX Private function for now
+func (t *Trie) printDebug() {
+	fmt.Print("<trie>\n")
+	t.root.printDebug(0)
+	fmt.Print("</trie>\n")
 }
