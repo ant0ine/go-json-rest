@@ -8,15 +8,6 @@ import (
 	"strings"
 )
 
-// HandlerFunc defines the handler function. It is the go-json-rest equivalent of http.HandlerFunc.
-type HandlerFunc func(ResponseWriter, *Request)
-
-// Middleware defines the interface that objects must implement in order to wrap a HandlerFunc and
-// be used in the middleware stack.
-type Middleware interface {
-	MiddlewareFunc(handler HandlerFunc) HandlerFunc
-}
-
 // ResourceHandler implements the http.Handler interface and acts a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation for instance.
@@ -140,12 +131,9 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		rh.PreRoutingMiddlewares...,
 	)
 
-	handler := rh.app()
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		handler = middlewares[i].MiddlewareFunc(handler)
-	}
-
-	rh.handlerFunc = rh.adapter(handler)
+	rh.handlerFunc = rh.adapter(
+		wrapMiddlewares(middlewares, rh.app()),
+	)
 }
 
 // Middleware that handles the transition between http and rest objects.
