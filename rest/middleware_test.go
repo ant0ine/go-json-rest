@@ -34,7 +34,7 @@ func TestWrapMiddlewares(t *testing.T) {
 		// do nothing
 	}
 
-	handlerFunc := wrapMiddlewares([]Middleware{a, b, c}, app)
+	handlerFunc := WrapMiddlewares([]Middleware{a, b, c}, app)
 
 	// fake request
 	r := &Request{

@@ -42,9 +42,9 @@ type ResourceHandler struct {
 
 	// Optional global middlewares that can be used to wrap the all REST endpoints.
 	// They are used in the defined order, the first wrapping the second, ...
+	// They are run pre REST routing, request.PathParams is not set yet.
 	// They can be used for instance to manage CORS or authentication.
 	// (see the CORS example in go-json-rest-example)
-	// They are run pre REST routing, request.PathParams is not set yet.
 	PreRoutingMiddlewares []Middleware
 
 	// Custom logger for the access log,
@@ -96,9 +96,9 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 	return nil
 }
 
+// Instantiate all the middlewares.
 func (rh *ResourceHandler) instantiateMiddlewares() {
 
-	// instantiate all the middlewares
 	middlewares := []Middleware{
 		// log as the first, depend on timer and recorder.
 		&logMiddleware{
@@ -132,11 +132,11 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 	)
 
 	rh.handlerFunc = rh.adapter(
-		wrapMiddlewares(middlewares, rh.app()),
+		WrapMiddlewares(middlewares, rh.app()),
 	)
 }
 
-// Middleware that handles the transition between http and rest objects.
+// Handle the transition between http and rest objects.
 func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
 	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
 

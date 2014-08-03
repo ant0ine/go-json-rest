@@ -9,9 +9,10 @@ type Middleware interface {
 	MiddlewareFunc(handler HandlerFunc) HandlerFunc
 }
 
-// wrapMiddlewares calls the MiddlewareFunc in the reverse order and returns an HandlerFunc ready
-// to be executed.
-func wrapMiddlewares(middlewares []Middleware, handler HandlerFunc) HandlerFunc {
+// WrapMiddlewares calls the MiddlewareFunc methods in the reverse order and returns an HandlerFunc
+// ready to be executed. This can be used to wrap a set of middlewares, post routing, on a per Route
+// basis.
+func WrapMiddlewares(middlewares []Middleware, handler HandlerFunc) HandlerFunc {
 	wrapped := handler
 	for i := len(middlewares) - 1; i >= 0; i-- {
 		wrapped = middlewares[i].MiddlewareFunc(wrapped)
