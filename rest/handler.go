@@ -42,9 +42,20 @@ type ResourceHandler struct {
 
 	// Optional global middlewares that can be used to wrap the all REST endpoints.
 	// They are used in the defined order, the first wrapping the second, ...
+	// They are run first, wrapping all go-json-rest middlewares,
+	// * request.PathParams is not set yet
+	// * "panic" won't be caught and converted to 500
+	// * request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"] are set.
+	// They can be used for extra logging, or reporting.
+	// (see statsd example in in https://github.com/ant0ine/go-json-rest-examples)
+	OuterMiddlewares []Middleware
+
+	// Optional global middlewares that can be used to wrap the all REST endpoints.
+	// They are used in the defined order, the first wrapping the second, ...
 	// They are run pre REST routing, request.PathParams is not set yet.
+	// They are run post auto error handling, "panic" will be converted to 500 errors.
 	// They can be used for instance to manage CORS or authentication.
-	// (see the CORS example in go-json-rest-example)
+	// (see the CORS and Auth examples in https://github.com/ant0ine/go-json-rest-examples)
 	PreRoutingMiddlewares []Middleware
 
 	// Custom logger for the access log,
@@ -99,13 +110,19 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 // Instantiate all the middlewares.
 func (rh *ResourceHandler) instantiateMiddlewares() {
 
-	middlewares := []Middleware{
-		// log as the first, depend on timer and recorder.
+	middlewares := []Middleware{}
+
+	middlewares = append(middlewares,
+		rh.OuterMiddlewares...,
+	)
+
+	// log as the first, depend on timer and recorder.
+	middlewares = append(middlewares,
 		&logMiddleware{
 			rh.Logger,
 			rh.EnableLogAsJson,
 		},
-	}
+	)
 
 	if rh.EnableGzip {
 		middlewares = append(middlewares, &gzipMiddleware{})
