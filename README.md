@@ -1180,7 +1180,6 @@ func (mw *StatsdMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 
 		statusCode := request.Env["STATUS_CODE"].(int)
 		statsd.Counter(1.0, keyBase+"status_code."+strconv.Itoa(statusCode), 1)
-		log.Print(keyBase + "status_code." + strconv.Itoa(statusCode))
 
 		elapsedTime := request.Env["ELAPSED_TIME"].(*time.Duration)
 		statsd.Timing(1.0, keyBase+"elapsed_time", *elapsedTime)
