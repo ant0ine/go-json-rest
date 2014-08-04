@@ -1,37 +1,34 @@
 <!DOCTYPE html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Go-json-rest : A quick and easy way to setup a RESTful JSON API" />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-    <title>Go-json-rest</title>
+    <title>Go-json-rest by ant0ine</title>
   </head>
 
   <body>
+    <header>
+      <div class="inner">
+        <h1>Go-json-rest</h1>
+        <h2>A quick and easy way to setup a RESTful JSON API</h2>
+        <a href="https://github.com/ant0ine/go-json-rest" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/ant0ine/go-json-rest">View on GitHub</a>
-
-          <h1 id="project_title">Go-json-rest</h1>
-          <h2 id="project_tagline">A quick and easy way to setup a RESTful JSON API</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/ant0ine/go-json-rest/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/ant0ine/go-json-rest/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
 <a name="go-json-rest" class="anchor" href="#go-json-rest"><span class="octicon octicon-link"></span></a>Go-Json-Rest</h1>
 
 <p><em>A quick and easy way to setup a RESTful JSON API</em></p>
@@ -69,6 +66,7 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 <li><a href="#hello-world">Hello World!</a></li>
 <li><a href="#countries">Countries</a></li>
 <li><a href="#users">Users</a></li>
+<li><a href="#lookup">Lookup</a></li>
 </ul>
 </li>
 <li>
@@ -89,6 +87,8 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 <ul>
 <li><a href="#streaming">Streaming</a></li>
 <li><a href="#non-json-payload">Non JSON payload</a></li>
+<li><a href="#api-versioning">API Versioning</a></li>
+<li><a href="#statsd">Statsd</a></li>
 <li><a href="#spdy">SPDY</a></li>
 <li><a href="#gae">Google App Engine</a></li>
 <li><a href="#basic-auth-custom">Basic Auth Custom</a></li>
@@ -401,12 +401,14 @@ curl -i http://127.0.0.1:8080/users
     <span class="nx">u</span><span class="p">.</span><span class="nx">Lock</span><span class="p">()</span>
     <span class="k">if</span> <span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">[</span><span class="nx">id</span><span class="p">]</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
         <span class="k">return</span>
     <span class="p">}</span>
     <span class="nx">user</span> <span class="o">:=</span> <span class="nx">User</span><span class="p">{}</span>
     <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">DecodeJsonPayload</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">user</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
         <span class="k">return</span>
     <span class="p">}</span>
     <span class="nx">user</span><span class="p">.</span><span class="nx">Id</span> <span class="p">=</span> <span class="nx">id</span>
@@ -421,6 +423,53 @@ curl -i http://127.0.0.1:8080/users
     <span class="nb">delete</span><span class="p">(</span><span class="nx">u</span><span class="p">.</span><span class="nx">Store</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
     <span class="nx">u</span><span class="p">.</span><span class="nx">Unlock</span><span class="p">()</span>
     <span class="nx">w</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
+<a name="lookup" class="anchor" href="#lookup"><span class="octicon octicon-link"></span></a>Lookup</h4>
+
+<p>Demonstrate how to use the relaxed placeholder (notation #paramName).
+This placeholder matches everything until the first <code>/</code>, including <code>.</code></p>
+
+<p>The curl demo:</p>
+
+<pre><code>curl -i http://127.0.0.1:8080/lookup/google.com
+curl -i http://127.0.0.1:8080/lookup/notadomain
+</code></pre>
+
+<p>Go code:</p>
+
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"log"</span>
+    <span class="s">"net"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">Message</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Body</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/lookup/#host"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">ip</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">net</span><span class="p">.</span><span class="nx">LookupIP</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"host"</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="p">}</span>
+            <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">ip</span><span class="p">)</span>
+        <span class="p">}},</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
 <span class="p">}</span>
 
 </pre></div>
@@ -1029,6 +1078,202 @@ is enough. As shown in this example.</p>
 </pre></div>
 
 <h4>
+<a name="api-versioning" class="anchor" href="#api-versioning"><span class="octicon octicon-link"></span></a>API Versioning</h4>
+
+<p>First, API versioning is not easy and you may want to favor a mechanism that uses only backward compatible changes and deprecation cycles.</p>
+
+<p>That been said, here is an example of API versioning using <a href="http://semver.org/">Semver</a></p>
+
+<p>It defines a middleware that parses the version, checks a min and a max, and makes it available in the <code>request.Env</code>.</p>
+
+<p>(TODO, there is an obvious need for PostRoutingMiddlewares here.)</p>
+
+<p>The curl demo:</p>
+
+<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/api/1.0.0/message
+curl -i http://127.0.0.1:8080/api/2.0.0/message
+curl -i http://127.0.0.1:8080/api/2.0.1/message
+curl -i http://127.0.0.1:8080/api/0.0.1/message
+curl -i http://127.0.0.1:8080/api/4.0.1/message
+
+</pre></div>
+
+<p>Go code:</p>
+
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"github.com/coreos/go-semver/semver"</span>
+    <span class="s">"log"</span>
+    <span class="s">"net/http"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">SemVerMiddleware</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">MinVersion</span> <span class="kt">string</span>
+    <span class="nx">MaxVersion</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">SemVerMiddleware</span><span class="p">)</span> <span class="nx">MiddlewareFunc</span><span class="p">(</span><span class="nx">handler</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">)</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span> <span class="p">{</span>
+
+    <span class="nx">minVersion</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">semver</span><span class="p">.</span><span class="nx">NewVersion</span><span class="p">(</span><span class="nx">mw</span><span class="p">.</span><span class="nx">MinVersion</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">maxVersion</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">semver</span><span class="p">.</span><span class="nx">NewVersion</span><span class="p">(</span><span class="nx">mw</span><span class="p">.</span><span class="nx">MaxVersion</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="kd">func</span><span class="p">(</span><span class="nx">writer</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nx">version</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">semver</span><span class="p">.</span><span class="nx">NewVersion</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">PathParam</span><span class="p">(</span><span class="s">"version"</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Invalid version: "</span><span class="o">+</span><span class="nx">err</span><span class="p">.</span><span class="nx">Error</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="nx">version</span><span class="p">.</span><span class="nx">LessThan</span><span class="p">(</span><span class="o">*</span><span class="nx">minVersion</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Min supported version is "</span><span class="o">+</span><span class="nx">minVersion</span><span class="p">.</span><span class="nx">String</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="nx">maxVersion</span><span class="p">.</span><span class="nx">LessThan</span><span class="p">(</span><span class="o">*</span><span class="nx">version</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">rest</span><span class="p">.</span><span class="nx">Error</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="s">"Max supported version is "</span><span class="o">+</span><span class="nx">maxVersion</span><span class="p">.</span><span class="nx">String</span><span class="p">(),</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="nx">request</span><span class="p">.</span><span class="nx">Env</span><span class="p">[</span><span class="s">"VERSION"</span><span class="p">]</span> <span class="p">=</span> <span class="nx">version</span>
+        <span class="nx">handler</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="nx">request</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Message</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Body</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{}</span>
+    <span class="nx">svmw</span> <span class="o">:=</span> <span class="nx">SemVerMiddleware</span><span class="p">{</span>
+        <span class="nx">MinVersion</span><span class="p">:</span> <span class="s">"1.0.0"</span><span class="p">,</span>
+        <span class="nx">MaxVersion</span><span class="p">:</span> <span class="s">"3.0.0"</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/#version/message"</span><span class="p">,</span> <span class="nx">svmw</span><span class="p">.</span><span class="nx">MiddlewareFunc</span><span class="p">(</span>
+            <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">version</span> <span class="o">:=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">Env</span><span class="p">[</span><span class="s">"VERSION"</span><span class="p">].(</span><span class="o">*</span><span class="nx">semver</span><span class="p">.</span><span class="nx">Version</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nx">version</span><span class="p">.</span><span class="nx">Major</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">{</span>
+                                        <span class="c1">// http://en.wikipedia.org/wiki/Second-system_effect</span>
+                    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span><span class="s">"Hello broken World!"</span><span class="p">})</span>
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span><span class="s">"Hello World!"</span><span class="p">})</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+        <span class="p">)},</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">"/api/"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StripPrefix</span><span class="p">(</span><span class="s">"/api"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="kc">nil</span><span class="p">))</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
+<a name="statsd" class="anchor" href="#statsd"><span class="octicon octicon-link"></span></a>Statsd</h4>
+
+<p>Demonstrate how to use OuterMiddlewares to do additional logging and reporting.</p>
+
+<p>Here <code>request.Env["STATUS_CODE"]</code> and <code>request.Env["ELAPSED_TIME"]</code> that are available to outer middlewares are used with the <a href="https://github.com/peterbourgon/g2s">g2s</a> statsd client to send these metrics to statsd.</p>
+
+<p>The curl demo:</p>
+
+<div class="highlight highlight-sh"><pre><span class="c"># start statsd server</span>
+<span class="c"># monitor network</span>
+ngrep -d any port 8125
+
+curl -i http://127.0.0.1:8080/message
+curl -i http://127.0.0.1:8080/doesnotexist
+
+</pre></div>
+
+<p>Go code:</p>
+
+<div class="highlight highlight-go"><pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/ant0ine/go-json-rest/rest"</span>
+    <span class="s">"github.com/peterbourgon/g2s"</span>
+    <span class="s">"log"</span>
+    <span class="s">"net/http"</span>
+    <span class="s">"strconv"</span>
+    <span class="s">"time"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">StatsdMiddleware</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">IpPort</span> <span class="kt">string</span>
+    <span class="nx">Prefix</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">mw</span> <span class="o">*</span><span class="nx">StatsdMiddleware</span><span class="p">)</span> <span class="nx">MiddlewareFunc</span><span class="p">(</span><span class="nx">handler</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">)</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">HandlerFunc</span> <span class="p">{</span>
+
+    <span class="nx">statsd</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">g2s</span><span class="p">.</span><span class="nx">Dial</span><span class="p">(</span><span class="s">"udp"</span><span class="p">,</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">IpPort</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">keyBase</span> <span class="o">:=</span> <span class="s">""</span>
+    <span class="k">if</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">Prefix</span> <span class="o">!=</span> <span class="s">""</span> <span class="p">{</span>
+        <span class="nx">keyBase</span> <span class="o">+=</span> <span class="nx">mw</span><span class="p">.</span><span class="nx">Prefix</span> <span class="o">+</span> <span class="s">"."</span>
+    <span class="p">}</span>
+    <span class="nx">keyBase</span> <span class="o">+=</span> <span class="s">"response."</span>
+
+    <span class="k">return</span> <span class="kd">func</span><span class="p">(</span><span class="nx">writer</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">request</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="nx">handler</span><span class="p">(</span><span class="nx">writer</span><span class="p">,</span> <span class="nx">request</span><span class="p">)</span>
+
+        <span class="nx">statusCode</span> <span class="o">:=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Env</span><span class="p">[</span><span class="s">"STATUS_CODE"</span><span class="p">].(</span><span class="kt">int</span><span class="p">)</span>
+        <span class="nx">statsd</span><span class="p">.</span><span class="nx">Counter</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nx">keyBase</span><span class="o">+</span><span class="s">"status_code."</span><span class="o">+</span><span class="nx">strconv</span><span class="p">.</span><span class="nx">Itoa</span><span class="p">(</span><span class="nx">statusCode</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="nx">elapsedTime</span> <span class="o">:=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">Env</span><span class="p">[</span><span class="s">"ELAPSED_TIME"</span><span class="p">].(</span><span class="o">*</span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span>
+        <span class="nx">statsd</span><span class="p">.</span><span class="nx">Timing</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nx">keyBase</span><span class="o">+</span><span class="s">"elapsed_time"</span><span class="p">,</span> <span class="o">*</span><span class="nx">elapsedTime</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">Message</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Body</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">handler</span> <span class="o">:=</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResourceHandler</span><span class="p">{</span>
+        <span class="nx">OuterMiddlewares</span><span class="p">:</span> <span class="p">[]</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Middleware</span><span class="p">{</span>
+            <span class="o">&amp;</span><span class="nx">StatsdMiddleware</span><span class="p">{</span>
+                <span class="nx">IpPort</span><span class="p">:</span> <span class="s">"localhost:8125"</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">handler</span><span class="p">.</span><span class="nx">SetRoutes</span><span class="p">(</span>
+        <span class="o">&amp;</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Route</span><span class="p">{</span><span class="s">"GET"</span><span class="p">,</span> <span class="s">"/message"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">rest</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">rest</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="c1">// take more than 1ms so statsd can report it</span>
+            <span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span>
+
+            <span class="nx">w</span><span class="p">.</span><span class="nx">WriteJson</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">Message</span><span class="p">{</span>
+                <span class="nx">Body</span><span class="p">:</span> <span class="s">"Hello World!"</span><span class="p">,</span>
+            <span class="p">})</span>
+        <span class="p">}},</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">":8080"</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">handler</span><span class="p">))</span>
+<span class="p">}</span>
+
+</pre></div>
+
+<h4>
 <a name="spdy" class="anchor" href="#spdy"><span class="octicon octicon-link"></span></a>SPDY</h4>
 
 <p>Demonstrate how to use SPDY with <a href="https://github.com/shykes/spdy-go">https://github.com/shykes/spdy-go</a></p>
@@ -1532,18 +1777,26 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 </ul><p>Copyright (c) 2013-2014 Antoine Imbert</p>
 
 <p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
-      </section>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/ant0ine/go-json-rest/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/ant0ine/go-json-rest/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/ant0ine/go-json-rest"></a> is maintained by <a href="https://github.com/ant0ine">ant0ine</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
     </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Go-json-rest maintained by <a href="https://github.com/ant0ine">ant0ine</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-              <script type="text/javascript">
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -1553,7 +1806,6 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
             pageTracker._trackPageview();
             } catch(err) {}
           </script>
-
 
   </body>
 </html>
