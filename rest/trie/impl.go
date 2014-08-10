@@ -418,7 +418,7 @@ func (t *Trie) Compress() {
 	t.root.compress()
 }
 
-// XXX Private function for now
+// Private function for now.
 func (t *Trie) printDebug() {
 	fmt.Print("<trie>\n")
 	t.root.printDebug(0)
