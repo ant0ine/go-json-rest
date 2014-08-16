@@ -350,6 +350,18 @@ func (t *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error {
 	return t.root.addRoute(httpMethod, pathExp, route, []string{})
 }
 
+// Reduce the size of the tree, must be done after the last AddRoute.
+func (t *Trie) Compress() {
+	t.root.compress()
+}
+
+// Private function for now.
+func (t *Trie) printDebug() {
+	fmt.Print("<trie>\n")
+	t.root.printDebug(0)
+	fmt.Print("</trie>\n")
+}
+
 // Given a path and an http method, return all the matching routes.
 func (t *Trie) FindRoutes(httpMethod, path string) []*Match {
 	context := newFindContext()
@@ -411,16 +423,4 @@ func (t *Trie) FindRoutesForPath(path string) []*Match {
 	}
 	t.root.find("", path, context)
 	return matches
-}
-
-// Reduce the size of the tree, must be done after the last AddRoute.
-func (t *Trie) Compress() {
-	t.root.compress()
-}
-
-// Private function for now.
-func (t *Trie) printDebug() {
-	fmt.Print("<trie>\n")
-	t.root.printDebug(0)
-	fmt.Print("</trie>\n")
 }
