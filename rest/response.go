@@ -89,7 +89,10 @@ func (w *responseWriter) WriteJson(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	w.Write(b)
+	_, err = w.Write(b)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
