@@ -162,6 +162,82 @@ func (n *node) addRoute(httpMethod, pathExp string, route interface{}, usedParam
 	return nextNode.addRoute(httpMethod, remaining, route, usedParams)
 }
 
+func (n *node) compress() {
+	// *splat branch
+	if n.SplatChild != nil {
+		n.SplatChild.compress()
+	}
+	// :param branch
+	if n.ParamChild != nil {
+		n.ParamChild.compress()
+	}
+	// #param branch
+	if n.RelaxedChild != nil {
+		n.RelaxedChild.compress()
+	}
+	// main branch
+	if len(n.Children) == 0 {
+		return
+	}
+	// compressable ?
+	canCompress := true
+	for _, node := range n.Children {
+		if node.HttpMethodToRoute != nil || node.SplatChild != nil || node.ParamChild != nil || node.RelaxedChild != nil {
+			canCompress = false
+		}
+	}
+	// compress
+	if canCompress {
+		merged := map[string]*node{}
+		for key, node := range n.Children {
+			for gdKey, gdNode := range node.Children {
+				mergedKey := key + gdKey
+				merged[mergedKey] = gdNode
+			}
+		}
+		n.Children = merged
+		n.ChildrenKeyLen++
+		n.compress()
+		// continue
+	} else {
+		for _, node := range n.Children {
+			node.compress()
+		}
+	}
+}
+
+func printFPadding(padding int, format string, a ...interface{}) {
+	for i := 0; i < padding; i++ {
+		fmt.Print(" ")
+	}
+	fmt.Printf(format, a...)
+}
+
+// Private function for now
+func (n *node) printDebug(level int) {
+	level++
+	// *splat branch
+	if n.SplatChild != nil {
+		printFPadding(level, "*splat\n")
+		n.SplatChild.printDebug(level)
+	}
+	// :param branch
+	if n.ParamChild != nil {
+		printFPadding(level, ":param\n")
+		n.ParamChild.printDebug(level)
+	}
+	// #param branch
+	if n.RelaxedChild != nil {
+		printFPadding(level, "#relaxed\n")
+		n.RelaxedChild.printDebug(level)
+	}
+	// main branch
+	for key, node := range n.Children {
+		printFPadding(level, "\"%s\"\n", key)
+		node.printDebug(level)
+	}
+}
+
 // utility for the node.findRoutes recursive method
 
 type paramMatch struct {
@@ -255,82 +331,6 @@ func (n *node) find(httpMethod, path string, context *findContext) {
 	remaining := path[length:]
 	if n.Children[token] != nil {
 		n.Children[token].find(httpMethod, remaining, context)
-	}
-}
-
-func (n *node) compress() {
-	// *splat branch
-	if n.SplatChild != nil {
-		n.SplatChild.compress()
-	}
-	// :param branch
-	if n.ParamChild != nil {
-		n.ParamChild.compress()
-	}
-	// #param branch
-	if n.RelaxedChild != nil {
-		n.RelaxedChild.compress()
-	}
-	// main branch
-	if len(n.Children) == 0 {
-		return
-	}
-	// compressable ?
-	canCompress := true
-	for _, node := range n.Children {
-		if node.HttpMethodToRoute != nil || node.SplatChild != nil || node.ParamChild != nil || node.RelaxedChild != nil {
-			canCompress = false
-		}
-	}
-	// compress
-	if canCompress {
-		merged := map[string]*node{}
-		for key, node := range n.Children {
-			for gdKey, gdNode := range node.Children {
-				mergedKey := key + gdKey
-				merged[mergedKey] = gdNode
-			}
-		}
-		n.Children = merged
-		n.ChildrenKeyLen++
-		n.compress()
-		// continue
-	} else {
-		for _, node := range n.Children {
-			node.compress()
-		}
-	}
-}
-
-func printFPadding(padding int, format string, a ...interface{}) {
-	for i := 0; i < padding; i++ {
-		fmt.Print(" ")
-	}
-	fmt.Printf(format, a...)
-}
-
-// Private function for now
-func (n *node) printDebug(level int) {
-	level++
-	// *splat branch
-	if n.SplatChild != nil {
-		printFPadding(level, "*splat\n")
-		n.SplatChild.printDebug(level)
-	}
-	// :param branch
-	if n.ParamChild != nil {
-		printFPadding(level, ":param\n")
-		n.ParamChild.printDebug(level)
-	}
-	// #param branch
-	if n.RelaxedChild != nil {
-		printFPadding(level, "#relaxed\n")
-		n.RelaxedChild.printDebug(level)
-	}
-	// main branch
-	for key, node := range n.Children {
-		printFPadding(level, "\"%s\"\n", key)
-		node.printDebug(level)
 	}
 }
 
