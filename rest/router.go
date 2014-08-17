@@ -14,6 +14,7 @@ type router struct {
 	trie                   *trie.Trie
 }
 
+// This is run for each new request, perf is important.
 func escapedPath(urlObj *url.URL) string {
 	// the escape method of url.URL should be public
 	// that would avoid this split.
@@ -25,6 +26,7 @@ var preEscape = strings.NewReplacer("*", "__SPLAT_PLACEHOLDER__", "#", "__RELAXE
 
 var postEscape = strings.NewReplacer("__SPLAT_PLACEHOLDER__", "*", "__RELAXED_PLACEHOLDER__", "#")
 
+// This is run at init time only.
 func escapedPathExp(pathExp string) (string, error) {
 
 	// PathExp validation
@@ -96,18 +98,18 @@ func (rt *router) start() error {
 // return the result that has the route defined the earliest
 func (rt *router) ofFirstDefinedRoute(matches []*trie.Match) *trie.Match {
 	minIndex := -1
-	matchesByIndex := map[int]*trie.Match{}
+	var bestMatch *trie.Match
 
 	for _, result := range matches {
 		route := result.Route.(*Route)
 		routeIndex := rt.index[route]
-		matchesByIndex[routeIndex] = result
 		if minIndex == -1 || routeIndex < minIndex {
 			minIndex = routeIndex
+			bestMatch = result
 		}
 	}
 
-	return matchesByIndex[minIndex]
+	return bestMatch
 }
 
 // Return the first matching Route and the corresponding parameters for a given URL object.
