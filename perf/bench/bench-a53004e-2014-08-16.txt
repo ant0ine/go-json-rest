@@ -1,0 +1,15 @@
+PASS
+BenchmarkNoCompression	  100000	     17658 ns/op
+BenchmarkCompression	  200000	     15520 ns/op
+BenchmarkRegExpLoop	    2000	    930384 ns/op
+ok  	github.com/ant0ine/go-json-rest/rest	7.198s
+PASS
+BenchmarkNoCompression	  100000	     16760 ns/op
+BenchmarkCompression	  200000	     14842 ns/op
+BenchmarkRegExpLoop	    2000	    935028 ns/op
+ok  	github.com/ant0ine/go-json-rest/rest	6.982s
+PASS
+BenchmarkNoCompression	  100000	     16570 ns/op
+BenchmarkCompression	  200000	     15455 ns/op
+BenchmarkRegExpLoop	    2000	    933782 ns/op
+ok  	github.com/ant0ine/go-json-rest/rest	7.088s
