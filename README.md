@@ -52,6 +52,7 @@ In fact the internal code of **go-json-rest** is itself implemented with Middlew
 	  - [Google App Engine](#gae)
 	  - [Basic Auth Custom](#basic-auth-custom)
 	  - [CORS Custom](#cors-custom)
+	  - [Disable default logging](#disable-default-logging)
 - [External Documentation](#external-documentation)
 - [Options](#options)
 - [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
@@ -1567,6 +1568,50 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 ```
 
+#### Disable default logging
+
+It's possible to disable default logging if the need arises.
+For example to implement custom logging.
+
+Go code:
+``` go
+package main
+
+import (
+  "github.com/ant0ine/go-json-rest/rest"
+  "log"
+  "net/http"
+)
+
+type Message struct {
+  Body string
+}
+
+type voidWriter struct{}
+func (ew voidWriter) Write(message []byte) (int, error) {
+  return 0, nil
+}
+
+func main() {
+  ew := voidWriter
+  handler := rest.ResourceHandler{
+    DisableLogging:      true,
+    ErrorWriter:         ew,
+  }
+  err := handler.SetRoutes(
+    &rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+      w.WriteJson(&Message{
+        Body: "Hello World!",
+      })
+    }},
+  )
+  if err != nil {
+    log.Fatal(err)
+  }
+  log.Fatal(http.ListenAndServe(":8080", &handler))
+}
+```
+
 
 
 ## External Documentation
@@ -1715,4 +1760,3 @@ Copyright (c) 2013-2014 Antoine Imbert
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
 [![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/master/readme)](https://github.com/igrigorik/ga-beacon)
-
