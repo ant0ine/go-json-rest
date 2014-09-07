@@ -14,7 +14,7 @@
 * Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
 In fact the internal code of **go-json-rest** is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.
 
-* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of *rest.ResponseWriter*, *http.Flusher*, *http.CloseNotifier*, and *http.ResponseWriter*. A lot more Go-ish, and very similar to `net/http`.
+* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of *rest.ResponseWriter*, *http.Flusher*, *http.CloseNotifier*, *http.Hijacker*, and *http.ResponseWriter*. A lot more Go-ish, and very similar to `net/http`.
 
 * The AuthBasic and CORS Middlewares have been added. More to come in the future.
 
