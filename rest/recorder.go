@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"bufio"
+	"net"
 	"net/http"
 )
 
@@ -27,6 +29,7 @@ func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 // http.ResponseWriter
 // http.Flusher
 // http.CloseNotifier
+// http.Hijacker
 type recorderResponseWriter struct {
 	ResponseWriter
 	statusCode  int
@@ -63,6 +66,12 @@ func (w *recorderResponseWriter) Flush() {
 func (w *recorderResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
+}
+
+// Provided in order to implement the http.Hijacker interface.
+func (w *recorderResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker := w.ResponseWriter.(http.Hijacker)
+	return hijacker.Hijack()
 }
 
 // Make sure the local WriteHeader is called, and call the parent Write.

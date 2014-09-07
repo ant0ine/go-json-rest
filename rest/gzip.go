@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"bufio"
 	"compress/gzip"
+	"net"
 	"net/http"
 	"strings"
 )
@@ -28,6 +30,7 @@ func (mw *gzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 // http.ResponseWriter
 // http.Flusher
 // http.CloseNotifier
+// http.Hijacker
 type gzipResponseWriter struct {
 	ResponseWriter
 	wroteHeader bool
@@ -74,6 +77,12 @@ func (w *gzipResponseWriter) Flush() {
 func (w *gzipResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
+}
+
+// Provided in order to implement the http.Hijacker interface.
+func (w *gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker := w.ResponseWriter.(http.Hijacker)
+	return hijacker.Hijack()
 }
 
 // Make sure the local WriteHeader is called, and encode the payload if necessary.

@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"bufio"
 	"encoding/json"
+	"net"
 	"net/http"
 )
 
@@ -51,6 +53,7 @@ func NotFound(w ResponseWriter, r *Request) {
 // http.ResponseWriter
 // http.Flusher
 // http.CloseNotifier
+// http.Hijacker
 type responseWriter struct {
 	http.ResponseWriter
 	wroteHeader bool
@@ -117,4 +120,10 @@ func (w *responseWriter) Flush() {
 func (w *responseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
+}
+
+// Provided in order to implement the http.Hijacker interface.
+func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker := w.ResponseWriter.(http.Hijacker)
+	return hijacker.Hijack()
 }
