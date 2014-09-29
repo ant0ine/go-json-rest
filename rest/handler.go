@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"io"
 	"log"
 	"mime"
 	"net/http"
@@ -31,9 +32,16 @@ type ResourceHandler struct {
 	// printed in the 500 response body.
 	EnableResponseStackTrace bool
 
+	// If true, default logging middleware will be disabled.
+	DisableLogging bool
+
 	// If true, the records logged to the access log and the error log will be
 	// printed as JSON. Convenient for log parsing.
 	EnableLogAsJson bool
+
+	// When DisableLogging is true, this will be used to write error messages
+	// when "panic" happens.
+	ErrorWriter io.Writer
 
 	// If true, the handler does NOT check the request Content-Type. Otherwise, it
 	// must be set to 'application/json' if the content is non-null.
@@ -77,12 +85,14 @@ type ResourceHandler struct {
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
-	// set the default Loggers
-	if rh.Logger == nil {
-		rh.Logger = log.New(os.Stderr, "", 0)
-	}
-	if rh.ErrorLogger == nil {
-		rh.ErrorLogger = log.New(os.Stderr, "", 0)
+	if !rh.DisableLogging {
+		// set the default Loggers
+		if rh.Logger == nil {
+			rh.Logger = log.New(os.Stderr, "", 0)
+		}
+		if rh.ErrorLogger == nil {
+			rh.ErrorLogger = log.New(os.Stderr, "", 0)
+		}
 	}
 
 	// start the router
@@ -116,13 +126,15 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		rh.OuterMiddlewares...,
 	)
 
-	// log as the first, depend on timer and recorder.
-	middlewares = append(middlewares,
-		&logMiddleware{
-			rh.Logger,
-			rh.EnableLogAsJson,
-		},
-	)
+	if !rh.DisableLogging {
+		// log as the first, depend on timer and recorder.
+		middlewares = append(middlewares,
+			&logMiddleware{
+				rh.Logger,
+				rh.EnableLogAsJson,
+			},
+		)
+	}
 
 	if rh.EnableGzip {
 		middlewares = append(middlewares, &gzipMiddleware{})
@@ -141,6 +153,8 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 			rh.ErrorLogger,
 			rh.EnableLogAsJson,
 			rh.EnableResponseStackTrace,
+			rh.DisableLogging,
+			rh.ErrorWriter,
 		},
 	)
 

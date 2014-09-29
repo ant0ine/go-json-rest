@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -13,6 +14,8 @@ type errorMiddleware struct {
 	Logger                   *log.Logger
 	EnableLogAsJson          bool
 	EnableResponseStackTrace bool
+	DisableLogging           bool
+	ErrorWriter              io.Writer
 }
 
 func (mw *errorMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
@@ -26,8 +29,11 @@ func (mw *errorMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 				// log the trace
 				message := fmt.Sprintf("%s\n%s", reco, trace)
-				mw.logError(message)
-
+				if mw.DisableLogging {
+					mw.ErrorWriter.Write([]byte(message))
+				} else {
+					mw.logError(message)
+				}
 				// write error response
 				if mw.EnableResponseStackTrace {
 					Error(w, message, http.StatusInternalServerError)
