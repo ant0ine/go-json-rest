@@ -109,7 +109,7 @@ func BenchmarkRegExpLoop(b *testing.B) {
 	if err != nil {
 		panic(err)
 	}
-	routeRegexps := []regexp.Regexp{}
+	routeRegexps := []*regexp.Regexp{}
 	for _, route := range routes {
 
 		// generate the regexp string
@@ -123,7 +123,7 @@ func BenchmarkRegExpLoop(b *testing.B) {
 			panic(err)
 		}
 
-		routeRegexps = append(routeRegexps, *reg)
+		routeRegexps = append(routeRegexps, reg)
 	}
 
 	b.StartTimer()
