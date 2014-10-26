@@ -27,6 +27,10 @@ type Route struct {
 // RouteObjectMethod creates a Route that points to an object method. It can be convenient to point to
 // an object method instead of a function, this helper makes it easy by passing the object instance and
 // the method name as parameters.
+//
+// DEPRECATED: Since Go 1.1 and the introduction of the Method Values, this is now useless, and will probably
+// be removed from the next major version of go-json-rest (v3)
+// See: https://golang.org/doc/go1.1#method_values
 func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) *Route {
 
 	value := reflect.ValueOf(objectInstance)
