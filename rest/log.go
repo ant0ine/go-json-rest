@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"time"
 )
 
@@ -14,6 +15,11 @@ type logMiddleware struct {
 }
 
 func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+
+	// set the default Logger
+	if mw.Logger == nil {
+		mw.Logger = log.New(os.Stderr, "", 0)
+	}
 
 	return func(w ResponseWriter, r *Request) {
 

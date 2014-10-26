@@ -4,7 +4,6 @@ import (
 	"log"
 	"mime"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -62,6 +61,10 @@ type ResourceHandler struct {
 	// optional, defaults to log.New(os.Stderr, "", 0)
 	Logger *log.Logger
 
+	// If true, the access log will be fully disabled.
+	// (the log middleware is not even instantiated, avoiding any performance penalty)
+	DisableLogger bool
+
 	// Custom logger used for logging the panic errors,
 	// optional, defaults to log.New(os.Stderr, "", 0)
 	ErrorLogger *log.Logger
@@ -76,14 +79,6 @@ type ResourceHandler struct {
 // SetRoutes defines the Routes. The order the Routes matters,
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
-
-	// set the default Loggers
-	if rh.Logger == nil {
-		rh.Logger = log.New(os.Stderr, "", 0)
-	}
-	if rh.ErrorLogger == nil {
-		rh.ErrorLogger = log.New(os.Stderr, "", 0)
-	}
 
 	// start the router
 	rh.internalRouter = &router{
@@ -116,13 +111,15 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		rh.OuterMiddlewares...,
 	)
 
-	// log as the first, depend on timer and recorder.
-	middlewares = append(middlewares,
-		&logMiddleware{
-			rh.Logger,
-			rh.EnableLogAsJson,
-		},
-	)
+	// log as the first, depends on timer and recorder.
+	if !rh.DisableLogger {
+		middlewares = append(middlewares,
+			&logMiddleware{
+				rh.Logger,
+				rh.EnableLogAsJson,
+			},
+		)
+	}
 
 	if rh.EnableGzip {
 		middlewares = append(middlewares, &gzipMiddleware{})
