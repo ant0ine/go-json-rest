@@ -248,9 +248,13 @@ func DeleteCountry(w rest.ResponseWriter, r *rest.Request) {
 
 #### Users
 
-Demonstrate how to use `rest.RouteObjectMethod`
+Demonstrate how to use Method Values.
 
-`rest.RouteObjectMethod` helps create a Route that points to an object method instead of just a function.
+Method Values have been [introduced in Go 1.1](https://golang.org/doc/go1.1#method_values).
+
+Until then `rest.RouteObjectMethod` was provided, this method is now deprecated.
+
+This shows how to map a Route to a method of an instantiated object (eg: receiver of the method)
 
 The curl demo:
 ```
@@ -283,11 +287,11 @@ func main() {
 		EnableRelaxedContentType: true,
 	}
 	err := handler.SetRoutes(
-		rest.RouteObjectMethod("GET", "/users", &users, "GetAllUsers"),
-		rest.RouteObjectMethod("POST", "/users", &users, "PostUser"),
-		rest.RouteObjectMethod("GET", "/users/:id", &users, "GetUser"),
-		rest.RouteObjectMethod("PUT", "/users/:id", &users, "PutUser"),
-		rest.RouteObjectMethod("DELETE", "/users/:id", &users, "DeleteUser"),
+		&rest.Route{"GET", "/users", users.GetAllUsers},
+		&rest.Route{"POST", "/users", users.PostUser},
+		&rest.Route{"GET", "/users/:id", users.GetUser},
+		&rest.Route{"PUT", "/users/:id", users.PutUser},
+		&rest.Route{"DELETE", "/users/:id", users.DeleteUser},
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -517,11 +521,11 @@ func main() {
 		EnableRelaxedContentType: true,
 	}
 	err := handler.SetRoutes(
-		rest.RouteObjectMethod("GET", "/reminders", &api, "GetAllReminders"),
-		rest.RouteObjectMethod("POST", "/reminders", &api, "PostReminder"),
-		rest.RouteObjectMethod("GET", "/reminders/:id", &api, "GetReminder"),
-		rest.RouteObjectMethod("PUT", "/reminders/:id", &api, "PutReminder"),
-		rest.RouteObjectMethod("DELETE", "/reminders/:id", &api, "DeleteReminder"),
+		&rest.Route{"GET", "/reminders", api.GetAllReminders},
+		&rest.Route{"POST", "/reminders", api.PostReminder},
+		&rest.Route{"GET", "/reminders/:id", api.GetReminder},
+		&rest.Route{"PUT", "/reminders/:id", api.PutReminder},
+		&rest.Route{"DELETE", "/reminders/:id", api.DeleteReminder},
 	)
 	if err != nil {
 		log.Fatal(err)
