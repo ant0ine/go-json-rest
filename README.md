@@ -9,22 +9,6 @@
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
 
 
-## What's new in version 2
-
-* Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
-In fact the internal code of **go-json-rest** is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.
-
-* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of *rest.ResponseWriter*, *http.Flusher*, *http.CloseNotifier*, *http.Hijacker*, and *http.ResponseWriter*. A lot more Go-ish, and very similar to `net/http`.
-
-* The AuthBasic and CORS Middlewares have been added. More to come in the future.
-
-* Faster, more tasks are performed at init time, and less for each request.
-
-* New documentation, with more examples.
-
-* A lot of other small improvements, See the [Migration guide to v2](#migration-guide-from-v1-to-v2)
-
-
 ## Table of content
 
 - [Features](#features)
@@ -54,6 +38,7 @@ In fact the internal code of **go-json-rest** is itself implemented with Middlew
 	  - [CORS Custom](#cors-custom)
 - [External Documentation](#external-documentation)
 - [Options](#options)
+- [Version 2 release notes](#version-2-release-notes)
 - [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
 - [Thanks](#thanks)
 
@@ -1593,6 +1578,22 @@ Things to enable in development:
 - Json indentation (default: enabled)
 - Relaxed ContentType (default: disabled)
 - Error stack trace in the response body (default: disabled)
+
+
+## Version 2 release notes
+
+* Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
+In fact the internal code of **go-json-rest** is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.
+
+* A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of *rest.ResponseWriter*, *http.Flusher*, *http.CloseNotifier*, *http.Hijacker*, and *http.ResponseWriter*. A lot more Go-ish, and very similar to `net/http`.
+
+* The AuthBasic and CORS Middlewares have been added. More to come in the future.
+
+* Faster, more tasks are performed at init time, and less for each request.
+
+* New documentation, with more examples.
+
+* A lot of other small improvements, See the [Migration guide to v2](#migration-guide-from-v1-to-v2)
 
 
 ## Migration guide from v1 to v2
