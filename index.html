@@ -41,19 +41,6 @@
 <p><strong>Go-Json-Rest</strong> is a thin layer on top of <code>net/http</code> that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...</p>
 
 <h2>
-<a name="whats-new-in-version-2" class="anchor" href="#whats-new-in-version-2"><span class="octicon octicon-link"></span></a>What's new in version 2</h2>
-
-<ul>
-<li><p>Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
-In fact the internal code of <strong>go-json-rest</strong> is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.</p></li>
-<li><p>A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of <em>rest.ResponseWriter</em>, <em>http.Flusher</em>, <em>http.CloseNotifier</em>, <em>http.Hijacker</em>, and <em>http.ResponseWriter</em>. A lot more Go-ish, and very similar to <code>net/http</code>.</p></li>
-<li><p>The AuthBasic and CORS Middlewares have been added. More to come in the future.</p></li>
-<li><p>Faster, more tasks are performed at init time, and less for each request.</p></li>
-<li><p>New documentation, with more examples.</p></li>
-<li><p>A lot of other small improvements, See the <a href="#migration-guide-from-v1-to-v2">Migration guide to v2</a></p></li>
-</ul>
-
-<h2>
 <a name="table-of-content" class="anchor" href="#table-of-content"><span class="octicon octicon-link"></span></a>Table of content</h2>
 
 <ul>
@@ -104,6 +91,7 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 </li>
 <li><a href="#external-documentation">External Documentation</a></li>
 <li><a href="#options">Options</a></li>
+<li><a href="#version-2-release-notes">Version 2 release notes</a></li>
 <li><a href="#migration-guide-from-v1-to-v2">Migration guide from v1 to v2</a></li>
 <li><a href="#thanks">Thanks</a></li>
 </ul>
@@ -1673,6 +1661,19 @@ and that the GAE SDK is also installed.</p>
 <li>Json indentation (default: enabled)</li>
 <li>Relaxed ContentType (default: disabled)</li>
 <li>Error stack trace in the response body (default: disabled)</li>
+</ul>
+
+<h2>
+<a name="version-2-release-notes" class="anchor" href="#version-2-release-notes"><span class="octicon octicon-link"></span></a>Version 2 release notes</h2>
+
+<ul>
+<li><p>Middlewares, the notion of middleware is now formally defined. They can be setup as global pre-routing Middlewares wrapping all the endpoints, or on a per endpoint basis.
+In fact the internal code of <strong>go-json-rest</strong> is itself implemented with Middlewares, they are just hidden behind configuration boolean flags to make these very common options even easier to use.</p></li>
+<li><p>A new ResponseWriter. This is now an interface, and allows Middlewares to wrap the writer. The provided writer implements, in addition of <em>rest.ResponseWriter</em>, <em>http.Flusher</em>, <em>http.CloseNotifier</em>, <em>http.Hijacker</em>, and <em>http.ResponseWriter</em>. A lot more Go-ish, and very similar to <code>net/http</code>.</p></li>
+<li><p>The AuthBasic and CORS Middlewares have been added. More to come in the future.</p></li>
+<li><p>Faster, more tasks are performed at init time, and less for each request.</p></li>
+<li><p>New documentation, with more examples.</p></li>
+<li><p>A lot of other small improvements, See the <a href="#migration-guide-from-v1-to-v2">Migration guide to v2</a></p></li>
 </ul>
 
 <h2>
