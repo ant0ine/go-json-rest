@@ -17,7 +17,7 @@ func (mw *gzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		// gzip support enabled
 		canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 		// client accepts gzip ?
-		writer := &gzipResponseWriter{w, false, canGzip}
+		writer := &gzipResponseWriter{w, false, canGzip, nil}
 		// call the handler with the wrapped writer
 		h(writer, r)
 	}
@@ -35,6 +35,7 @@ type gzipResponseWriter struct {
 	ResponseWriter
 	wroteHeader bool
 	canGzip     bool
+	gzipWriter  *gzip.Writer
 }
 
 // Set the right headers for gzip encoded responses.
@@ -96,9 +97,23 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 	writer := w.ResponseWriter.(http.ResponseWriter)
 
 	if w.canGzip {
-		gzipWriter := gzip.NewWriter(writer)
-		defer gzipWriter.Close()
-		return gzipWriter.Write(b)
+		// Write can be called multiple times for a given response.
+		// (see the streaming example:
+		// https://github.com/ant0ine/go-json-rest-examples/tree/master/streaming)
+		// The gzipWriter is instantiated only once, and flushed after
+		// each write.
+		if w.gzipWriter == nil {
+			w.gzipWriter = gzip.NewWriter(writer)
+		}
+		count, errW := w.gzipWriter.Write(b)
+		errF := w.gzipWriter.Flush()
+		if errW != nil {
+			return count, errW
+		}
+		if errF != nil {
+			return count, errF
+		}
+		return count, nil
 	}
 
 	return writer.Write(b)
