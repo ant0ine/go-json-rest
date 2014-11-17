@@ -76,7 +76,6 @@ Options
 
 Things to enable in production:
 - Gzip compression (default: disabled)
-- Custom Logger (default: Go default)
 
 Things to enable in development:
 - Json indentation (default: enabled)

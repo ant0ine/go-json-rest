@@ -2,8 +2,6 @@ package rest
 
 import (
 	"github.com/zenoss/go-json-rest/test"
-	"io/ioutil"
-	"log"
 	"testing"
 )
 
@@ -98,10 +96,7 @@ func TestHandler(t *testing.T) {
 	recorded.BodyIs(`{"Error":"Resource not found"}`)
 
 	// auto 500 on unhandled userecorder error
-	origLogger := handler.Logger
-	handler.Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/auto-fails", nil))
-	handler.Logger = origLogger
 	recorded.CodeIs(500)
 
 	// userecorder error

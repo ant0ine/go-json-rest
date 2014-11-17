@@ -2,10 +2,10 @@ package rest
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/zenoss/glog"
 )
 
 type responseLogRecord struct {
@@ -21,9 +21,9 @@ func (self *ResourceHandler) logResponseRecord(record *responseLogRecord) {
 		if err != nil {
 			panic(err)
 		}
-		self.Logger.Printf("%s", b)
+		glog.V(1).Infof("%s", b)
 	} else {
-		self.Logger.Printf("%d %v %s %s",
+		glog.V(1).Infof("%d %v %s %s",
 			record.StatusCode,
 			record.ResponseTime,
 			record.HttpMethod,
@@ -33,11 +33,6 @@ func (self *ResourceHandler) logResponseRecord(record *responseLogRecord) {
 }
 
 func (self *ResourceHandler) logWrapper(h http.HandlerFunc) http.HandlerFunc {
-
-	// set a default Logger
-	if self.Logger == nil {
-		self.Logger = log.New(os.Stderr, "", log.LstdFlags)
-	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 

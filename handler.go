@@ -47,12 +47,13 @@ package rest
 
 import (
 	"fmt"
-	"log"
 	"mime"
 	"net/http"
 	"reflect"
 	"runtime/debug"
 	"strings"
+
+	"github.com/zenoss/glog"
 )
 
 // Implement the http.Handler interface and act as a router for the defined Routes.
@@ -86,9 +87,6 @@ type ResourceHandler struct {
 	// must be set to 'application/json' if the content is non-null.
 	// Note: If a charset parameter exists, it MUST be UTF-8
 	EnableRelaxedContentType bool
-
-	// Custom logger, defaults to log.New(os.Stderr, "", log.LstdFlags)
-	Logger *log.Logger
 }
 
 // Used with SetRoutes.
@@ -171,7 +169,7 @@ func (self *ResourceHandler) app() http.HandlerFunc {
 				trace := debug.Stack()
 
 				// log the trace
-				self.Logger.Printf("%s\n%s", reco, trace)
+				glog.Warningf("%s\n%s", reco, trace)
 
 				// write error response
 				message := "Internal Server Error"
