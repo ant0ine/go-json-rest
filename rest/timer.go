@@ -12,6 +12,7 @@ func (mw *timerMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	return func(w ResponseWriter, r *Request) {
 
 		start := time.Now()
+		r.Env["START_TIME"] = &start
 
 		// call the handler
 		h(w, r)

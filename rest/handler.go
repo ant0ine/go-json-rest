@@ -61,6 +61,12 @@ type ResourceHandler struct {
 	// optional, defaults to log.New(os.Stderr, "", 0)
 	Logger *log.Logger
 
+	// Define the format of the access log record.
+	// When EnableLogAsJson is false, this format is used to generate the access log.
+	// See AccessLogFormat for the options and the predefined formats.
+	// Defaults to a developement friendly format specified by the Default constant.
+	LoggerFormat AccessLogFormat
+
 	// If true, the access log will be fully disabled.
 	// (the log middleware is not even instantiated, avoiding any performance penalty)
 	DisableLogger bool
@@ -115,8 +121,10 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 	if !rh.DisableLogger {
 		middlewares = append(middlewares,
 			&logMiddleware{
-				rh.Logger,
-				rh.EnableLogAsJson,
+				Logger:          rh.Logger,
+				EnableLogAsJson: rh.EnableLogAsJson,
+				textTemplate:    nil,
+				format:          rh.LoggerFormat,
 			},
 		)
 	}
