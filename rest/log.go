@@ -13,7 +13,6 @@ import (
 
 // TODO Future improvements:
 // * support %{strftime}t ?
-// * support %b content-length
 // * support %{<header>}o to print headers
 // * split this middleware in two, Apache and JSON
 
