@@ -31,4 +31,12 @@ func TestTimerMiddleware(t *testing.T) {
 	if elapsedTime.Nanoseconds() <= 0 {
 		t.Errorf("ELAPSED_TIME is expected to be at least 1 nanosecond %d", elapsedTime.Nanoseconds())
 	}
+
+	if r.Env["START_TIME"] == nil {
+		t.Error("START_TIME is nil")
+	}
+	start := r.Env["START_TIME"].(*time.Time)
+	if start.After(time.Now()) {
+		t.Errorf("START_TIME is expected to be in the past %s", start.String())
+	}
 }
