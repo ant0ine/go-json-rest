@@ -6,19 +6,22 @@ import (
 	"net/http"
 )
 
-// recorderMiddleware keeps a record of the HTTP status code of the response.
-// The result is available to the wrapping handlers in request.Env["STATUS_CODE"] as an int.
+// recorderMiddleware keeps a record of the HTTP status code of the response,
+// and the number of bytes written.
+// The result is available to the wrapping handlers in request.Env["STATUS_CODE"] as an int,
+// request.Env["BYTES_WRITTEN"] as an int64.
 type recorderMiddleware struct{}
 
 func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	return func(w ResponseWriter, r *Request) {
 
-		writer := &recorderResponseWriter{w, 0, false}
+		writer := &recorderResponseWriter{w, 0, false, 0}
 
 		// call the handler
 		h(writer, r)
 
 		r.Env["STATUS_CODE"] = writer.statusCode
+		r.Env["BYTES_WRITTEN"] = writer.bytesWritten
 	}
 }
 
@@ -32,8 +35,9 @@ func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 // http.Hijacker
 type recorderResponseWriter struct {
 	ResponseWriter
-	statusCode  int
-	wroteHeader bool
+	statusCode   int
+	wroteHeader  bool
+	bytesWritten int64
 }
 
 // Record the status code.
@@ -81,5 +85,7 @@ func (w *recorderResponseWriter) Write(b []byte) (int, error) {
 		w.WriteHeader(http.StatusOK)
 	}
 	writer := w.ResponseWriter.(http.ResponseWriter)
-	return writer.Write(b)
+	written, err := writer.Write(b)
+	w.bytesWritten += int64(written)
+	return written, err
 }

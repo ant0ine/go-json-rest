@@ -15,6 +15,7 @@ import (
 // * support %{strftime}t ?
 // * support %b content-length
 // * support %{<header>}o to print headers
+// * split this middleware in two, Apache and JSON
 
 // AccessLogFormat defines the format of the access log record.
 // This implementation is a subset of Apache mod_log_config.
@@ -86,7 +87,7 @@ func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 }
 
 var apacheAdapter = strings.NewReplacer(
-	"%b", "-",
+	"%b", "{{.BytesWritten}}",
 	"%D", "{{.ResponseTime | microseconds}}",
 	"%h", "{{.ApacheRemoteAddr}}",
 	"%H", "{{.R.Proto}}",
@@ -107,7 +108,7 @@ var apacheAdapter = strings.NewReplacer(
 // Convert the Apache access log format into a text/template
 func (mw *logMiddleware) convertFormat() {
 
-	tmplText := apacheAdapter.Replace(Default)
+	tmplText := apacheAdapter.Replace(string(mw.format))
 
 	funcMap := template.FuncMap{
 		"dashIfEmptyStr": func(value string) string {
@@ -204,6 +205,11 @@ func (u *accessLogUtil) ResponseTime() *time.Duration {
 // Process id.
 func (u *accessLogUtil) Pid() int {
 	return os.Getpid()
+}
+
+// As recorded by the recorder middleware.
+func (u *accessLogUtil) BytesWritten() int64 {
+	return u.R.Env["BYTES_WRITTEN"].(int64)
 }
 
 // When EnableLogAsJson is true, this object is dumped as JSON in the Logger.

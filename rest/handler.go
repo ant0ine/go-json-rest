@@ -129,19 +129,25 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		)
 	}
 
-	if rh.EnableGzip {
-		middlewares = append(middlewares, &gzipMiddleware{})
-	}
-
+	// also depends on timer and recorder
 	if rh.EnableStatusService {
 		// keep track of this middleware for GetStatus()
 		rh.statusMiddleware = newStatusMiddleware()
 		middlewares = append(middlewares, rh.statusMiddleware)
 	}
 
+	// after gzip in order to track to the content length and speed
 	middlewares = append(middlewares,
 		&timerMiddleware{},
 		&recorderMiddleware{},
+	)
+
+	if rh.EnableGzip {
+		middlewares = append(middlewares, &gzipMiddleware{})
+	}
+
+	// catch user errors
+	middlewares = append(middlewares,
 		&errorMiddleware{
 			rh.ErrorLogger,
 			rh.EnableLogAsJson,
