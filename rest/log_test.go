@@ -1,30 +1,39 @@
 package rest
 
 import (
+	"bytes"
+	"log"
+	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
-        "net/http"
 )
 
 func TestLogMiddleware(t *testing.T) {
 
 	recorder := &recorderMiddleware{}
 	timer := &timerMiddleware{}
-        logger := &logMiddleware{}
 
-        // TODO test the defaults
+	buffer := bytes.NewBufferString("")
+	logger := &logMiddleware{
+		Logger:          log.New(buffer, "", 0),
+		EnableLogAsJson: false,
+		textTemplate:    nil,
+		format:          ApacheCommon,
+	}
 
 	app := func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}
 
-        // same order as in ResourceHandler
+	// same order as in ResourceHandler
 	handlerFunc := WrapMiddlewares([]Middleware{logger, timer, recorder}, app)
 
 	// fake request
-        origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
+	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
+	origRequest.RemoteAddr = "127.0.0.1:1234"
 	r := &Request{
-                origRequest,
+		origRequest,
 		nil,
 		map[string]interface{}{},
 	}
@@ -39,5 +48,10 @@ func TestLogMiddleware(t *testing.T) {
 
 	handlerFunc(w, r)
 
-        // TODO actually test the output
+	// eg: '127.0.0.1 - - 29/Nov/2014:22:28:34 +0000 "GET / HTTP/1.1" 200 12'
+	apacheCommon := regexp.MustCompile(`127.0.0.1 - - \d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2} \+0000 "GET / HTTP/1.1" 200 12`)
+
+	if !apacheCommon.Match(buffer.Bytes()) {
+		t.Errorf("Got: %s", buffer.String())
+	}
 }
