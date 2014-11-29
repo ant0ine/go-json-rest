@@ -37,6 +37,15 @@ func TestRecorderMiddleware(t *testing.T) {
 	}
 	statusCode := r.Env["STATUS_CODE"].(int)
 	if statusCode != 200 {
-		t.Errorf("statusCode = 200 expected, got %d", statusCode)
+		t.Errorf("STATUS_CODE = 200 expected, got %d", statusCode)
+	}
+
+	if r.Env["BYTES_WRITTEN"] == nil {
+		t.Error("BYTES_WRITTEN is nil")
+	}
+	bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
+	// '{"Id":"123"}' => 12 chars
+	if bytesWritten != 12 {
+		t.Errorf("BYTES_WRITTEN 200 expected, got %d", bytesWritten)
 	}
 }
