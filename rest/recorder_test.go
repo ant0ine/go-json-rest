@@ -64,12 +64,10 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 	handlerFunc := WrapMiddlewares([]Middleware{mw, gzip}, app)
 
 	// fake request
+        origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
+        origRequest.Header.Set("Accept-Encoding", "gzip")
 	r := &Request{
-		&http.Request{
-			Header: http.Header{
-				"Accept-Encoding": []string{"gzip"},
-			},
-		},
+                origRequest,
 		nil,
 		map[string]interface{}{},
 	}
