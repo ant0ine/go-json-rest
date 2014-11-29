@@ -20,7 +20,7 @@ import (
 // This implementation is a subset of Apache mod_log_config.
 // (See http://httpd.apache.org/docs/2.0/mod/mod_log_config.html)
 //
-// %b content length, not implemented yet, -
+// %b content length in bytes
 // %D response elapsed time in microseconds
 // %h remote address
 // %H server protocol
