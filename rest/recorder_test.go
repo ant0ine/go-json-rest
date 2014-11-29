@@ -88,7 +88,7 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 		t.Error("BYTES_WRITTEN is nil")
 	}
 	bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
-	// Yes, the gzipped version actually takes more spaces.
+	// Yes, the gzipped version actually takes more space.
 	if bytesWritten != 28 {
 		t.Errorf("BYTES_WRITTEN 28 expected, got %d", bytesWritten)
 	}
