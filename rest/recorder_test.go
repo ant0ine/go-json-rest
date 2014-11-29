@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -46,6 +47,49 @@ func TestRecorderMiddleware(t *testing.T) {
 	bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
 	// '{"Id":"123"}' => 12 chars
 	if bytesWritten != 12 {
-		t.Errorf("BYTES_WRITTEN 200 expected, got %d", bytesWritten)
+		t.Errorf("BYTES_WRITTEN 12 expected, got %d", bytesWritten)
+	}
+}
+
+// See how many bytes are written when gzipping
+func TestRecorderAndGzipMiddleware(t *testing.T) {
+
+	mw := &recorderMiddleware{}
+	gzip := &gzipMiddleware{}
+
+	app := func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}
+
+	handlerFunc := WrapMiddlewares([]Middleware{mw, gzip}, app)
+
+	// fake request
+	r := &Request{
+		&http.Request{
+			Header: http.Header{
+				"Accept-Encoding": []string{"gzip"},
+			},
+		},
+		nil,
+		map[string]interface{}{},
+	}
+
+	// fake writer
+	w := &responseWriter{
+		httptest.NewRecorder(),
+		false,
+		false,
+		"",
+	}
+
+	handlerFunc(w, r)
+
+	if r.Env["BYTES_WRITTEN"] == nil {
+		t.Error("BYTES_WRITTEN is nil")
+	}
+	bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
+	// Yes, the gzipped version actually takes more spaces.
+	if bytesWritten != 28 {
+		t.Errorf("BYTES_WRITTEN 28 expected, got %d", bytesWritten)
 	}
 }
