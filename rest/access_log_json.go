@@ -25,7 +25,7 @@ func (mw *accessLogJsonMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		// call the handler
 		h(w, r)
 
-		mw.Logger.Print(makeAccessLogJsonRecord(r).asJson())
+		mw.Logger.Printf("%s", makeAccessLogJsonRecord(r).asJson())
 	}
 }
 
@@ -42,13 +42,19 @@ type AccessLogJsonRecord struct {
 }
 
 func makeAccessLogJsonRecord(r *Request) *AccessLogJsonRecord {
+
+	remoteUser := ""
+	if r.Env["REMOTE_USER"] != nil {
+		remoteUser = r.Env["REMOTE_USER"].(string)
+	}
+
 	return &AccessLogJsonRecord{
 		Timestamp:    r.Env["START_TIME"].(*time.Time),
 		StatusCode:   r.Env["STATUS_CODE"].(int),
 		ResponseTime: r.Env["ELAPSED_TIME"].(*time.Duration),
 		HttpMethod:   r.Method,
 		RequestURI:   r.URL.RequestURI(),
-		RemoteUser:   r.Env["REMOTE_USER"].(string),
+		RemoteUser:   remoteUser,
 		UserAgent:    r.UserAgent(),
 	}
 }
