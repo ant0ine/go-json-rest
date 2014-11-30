@@ -2,7 +2,6 @@ package rest
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -14,7 +13,6 @@ import (
 // TODO Future improvements:
 // * support %{strftime}t ?
 // * support %{<header>}o to print headers
-// * split this middleware in two, Apache and JSON
 
 // AccessLogFormat defines the format of the access log record.
 // This implementation is a subset of Apache mod_log_config.
@@ -38,10 +36,12 @@ import (
 // %{Referer}i referer, - is missing
 //
 // Some predefined format are provided, see the contant below.
+// TODO rename to put Apache ?
 type AccessLogFormat string
 
 const (
 	// Common Log Format (CLF).
+	// TODO rename to put accessLog ?
 	ApacheCommon = "%h %l %u %t \"%r\" %s %b"
 
 	// NCSA extended/combined log format.
@@ -51,16 +51,15 @@ const (
 	Default = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
 )
 
-// logMiddleware manages the Logger.
-// It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"].
-type logMiddleware struct {
-	Logger          *log.Logger
-	EnableLogAsJson bool
-	textTemplate    *template.Template
-	format          AccessLogFormat
+// accessLogApacheMiddleware produces the access log following a format inpired
+// by Apache mod_log_config. It depends on the timer, recorder and auth middlewares.
+type accessLogApacheMiddleware struct {
+	Logger       *log.Logger
+	Format       AccessLogFormat
+	textTemplate *template.Template
 }
 
-func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+func (mw *accessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
 	if mw.Logger == nil {
@@ -68,8 +67,8 @@ func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	}
 
 	// set default format
-	if mw.format == "" {
-		mw.format = Default
+	if mw.Format == "" {
+		mw.Format = Default
 	}
 
 	mw.convertFormat()
@@ -81,7 +80,7 @@ func (mw *logMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 		util := &accessLogUtil{w, r}
 
-		mw.logRecord(util)
+		mw.Logger.Print(mw.executeTextTemplate(util))
 	}
 }
 
@@ -105,9 +104,9 @@ var apacheAdapter = strings.NewReplacer(
 )
 
 // Convert the Apache access log format into a text/template
-func (mw *logMiddleware) convertFormat() {
+func (mw *accessLogApacheMiddleware) convertFormat() {
 
-	tmplText := apacheAdapter.Replace(string(mw.format))
+	tmplText := apacheAdapter.Replace(string(mw.Format))
 
 	funcMap := template.FuncMap{
 		"dashIfEmptyStr": func(value string) string {
@@ -136,21 +135,14 @@ func (mw *logMiddleware) convertFormat() {
 	}
 }
 
-func (mw *logMiddleware) executeTextTemplate(util *accessLogUtil) string {
+// Execute the text template with the data derived from the request, and return a string.
+func (mw *accessLogApacheMiddleware) executeTextTemplate(util *accessLogUtil) string {
 	buf := bytes.NewBufferString("")
 	err := mw.textTemplate.Execute(buf, util)
 	if err != nil {
 		panic(err)
 	}
 	return buf.String()
-}
-
-func (mw *logMiddleware) logRecord(util *accessLogUtil) {
-	if mw.EnableLogAsJson {
-		mw.Logger.Print(makeAccessLogJsonRecord(util).asJson())
-	} else {
-		mw.Logger.Print(mw.executeTextTemplate(util))
-	}
 }
 
 // accessLogUtil provides a collection of utility functions that devrive data from the Request object.
@@ -209,37 +201,4 @@ func (u *accessLogUtil) Pid() int {
 // As recorded by the recorder middleware.
 func (u *accessLogUtil) BytesWritten() int64 {
 	return u.R.Env["BYTES_WRITTEN"].(int64)
-}
-
-// When EnableLogAsJson is true, this object is dumped as JSON in the Logger.
-// (Public for documentation only, no public method uses it).
-type AccessLogJsonRecord struct {
-	Timestamp    *time.Time
-	StatusCode   int
-	ResponseTime *time.Duration
-	HttpMethod   string
-	RequestURI   string
-	RemoteUser   string
-	UserAgent    string
-}
-
-func makeAccessLogJsonRecord(u *accessLogUtil) *AccessLogJsonRecord {
-	return &AccessLogJsonRecord{
-		Timestamp:    u.StartTime(),
-		StatusCode:   u.StatusCode(),
-		ResponseTime: u.ResponseTime(),
-		HttpMethod:   u.R.Method,
-		RequestURI:   u.R.URL.RequestURI(),
-		RemoteUser:   u.RemoteUser(),
-		UserAgent:    u.R.UserAgent(),
-	}
-}
-
-// The preferred format for machine readable logs.
-func (r *AccessLogJsonRecord) asJson() []byte {
-	b, err := json.Marshal(r)
-	if err != nil {
-		panic(err)
-	}
-	return b
 }

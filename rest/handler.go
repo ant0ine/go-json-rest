@@ -32,6 +32,7 @@ type ResourceHandler struct {
 
 	// If true, the records logged to the access log and the error log will be
 	// printed as JSON. Convenient for log parsing.
+	// See the AccessLogJsonRecord type for details of the JSON record.
 	EnableLogAsJson bool
 
 	// If true, the handler does NOT check the request Content-Type. Otherwise, it
@@ -119,14 +120,21 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 
 	// log as the first, depends on timer and recorder.
 	if !rh.DisableLogger {
-		middlewares = append(middlewares,
-			&logMiddleware{
-				Logger:          rh.Logger,
-				EnableLogAsJson: rh.EnableLogAsJson,
-				textTemplate:    nil,
-				format:          rh.LoggerFormat,
-			},
-		)
+		if rh.EnableLogAsJson {
+			middlewares = append(middlewares,
+				&accessLogJsonMiddleware{
+					Logger: rh.Logger,
+				},
+			)
+		} else {
+			middlewares = append(middlewares,
+				&accessLogApacheMiddleware{
+					Logger:       rh.Logger,
+					Format:       rh.LoggerFormat,
+					textTemplate: nil,
+				},
+			)
+		}
 	}
 
 	// also depends on timer and recorder

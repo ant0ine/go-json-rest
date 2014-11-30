@@ -9,17 +9,16 @@ import (
 	"testing"
 )
 
-func TestLogMiddleware(t *testing.T) {
+func TestAccessLogApacheMiddleware(t *testing.T) {
 
 	recorder := &recorderMiddleware{}
 	timer := &timerMiddleware{}
 
 	buffer := bytes.NewBufferString("")
-	logger := &logMiddleware{
-		Logger:          log.New(buffer, "", 0),
-		EnableLogAsJson: false,
-		textTemplate:    nil,
-		format:          ApacheCommon,
+	logger := &accessLogApacheMiddleware{
+		Logger:       log.New(buffer, "", 0),
+		Format:       ApacheCommon,
+		textTemplate: nil,
 	}
 
 	app := func(w ResponseWriter, r *Request) {
