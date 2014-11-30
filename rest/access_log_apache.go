@@ -18,23 +18,23 @@ import (
 // This implementation is a subset of Apache mod_log_config.
 // (See http://httpd.apache.org/docs/2.0/mod/mod_log_config.html)
 //
-// %b content length in bytes, - if 0
-// %B content length in bytes
-// %D response elapsed time in microseconds
-// %h remote address
-// %H server protocol
-// %l identd logname, not supported, -
-// %m http method
-// %P process id
-// %q query string
-// %r first line of the request
-// %s status code
-// %S status code preceeded by a terminal color
-// %t time of the request
-// %T response elapsed time in seconds, 3 decimals
-// %u remote user, - if missing
-// %{User-Agent}i user agent, - if missing
-// %{Referer}i referer, - is missing
+//   %b content length in bytes, - if 0
+//   %B content length in bytes
+//   %D response elapsed time in microseconds
+//   %h remote address
+//   %H server protocol
+//   %l identd logname, not supported, -
+//   %m http method
+//   %P process id
+//   %q query string
+//   %r first line of the request
+//   %s status code
+//   %S status code preceeded by a terminal color
+//   %t time of the request
+//   %T response elapsed time in seconds, 3 decimals
+//   %u remote user, - if missing
+//   %{User-Agent}i user agent, - if missing
+//   %{Referer}i referer, - is missing
 //
 // Some predefined formats are provided as contants.
 type AccessLogFormat string
