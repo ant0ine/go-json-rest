@@ -32,7 +32,7 @@ type ResourceHandler struct {
 
 	// If true, the records logged to the access log and the error log will be
 	// printed as JSON. Convenient for log parsing.
-	// See the AccessLogJsonRecord type for details of the JSON record.
+	// See the AccessLogJsonRecord type for details of the access log JSON record.
 	EnableLogAsJson bool
 
 	// If true, the handler does NOT check the request Content-Type. Otherwise, it

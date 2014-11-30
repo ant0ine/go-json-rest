@@ -30,7 +30,7 @@ import (
 // %s status code
 // %S status code preceeded by a terminal color
 // %t time of the request
-// %T response elapsed time in seconds, 3 decimal
+// %T response elapsed time in seconds, 3 decimals
 // %u remote user, - if missing
 // %{User-Agent}i user agent, - if missing
 // %{Referer}i referer, - is missing
@@ -146,7 +146,7 @@ func (mw *accessLogApacheMiddleware) executeTextTemplate(util *accessLogUtil) st
 }
 
 // accessLogUtil provides a collection of utility functions that devrive data from the Request object.
-// This object id used to provide data to the Apache Style template and the the JSON log record.
+// This object is used to provide data to the Apache Style template and the the JSON log record.
 type accessLogUtil struct {
 	W ResponseWriter
 	R *Request
