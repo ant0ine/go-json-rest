@@ -17,7 +17,7 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 	buffer := bytes.NewBufferString("")
 	logger := &accessLogApacheMiddleware{
 		Logger:       log.New(buffer, "", 0),
-		Format:       ApacheCommon,
+		Format:       CommonLogFormat,
 		textTemplate: nil,
 	}
 

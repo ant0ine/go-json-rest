@@ -35,20 +35,18 @@ import (
 // %{User-Agent}i user agent, - if missing
 // %{Referer}i referer, - is missing
 //
-// Some predefined format are provided, see the contant below.
-// TODO rename to put Apache ?
+// Some predefined formats are provided as contants.
 type AccessLogFormat string
 
 const (
 	// Common Log Format (CLF).
-	// TODO rename to put accessLog ?
-	ApacheCommon = "%h %l %u %t \"%r\" %s %b"
+	CommonLogFormat = "%h %l %u %t \"%r\" %s %b"
 
 	// NCSA extended/combined log format.
-	ApacheCombined = "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\""
+	CombinedLogFormat = "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\""
 
 	// Default format, colored output and response time, convenient for development.
-	Default = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
+	DefaultLogFormat = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
 )
 
 // accessLogApacheMiddleware produces the access log following a format inpired
@@ -68,7 +66,7 @@ func (mw *accessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set default format
 	if mw.Format == "" {
-		mw.Format = Default
+		mw.Format = DefaultLogFormat
 	}
 
 	mw.convertFormat()
