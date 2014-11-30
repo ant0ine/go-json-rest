@@ -32,6 +32,7 @@ type ResourceHandler struct {
 
 	// If true, the records logged to the access log and the error log will be
 	// printed as JSON. Convenient for log parsing.
+	// See the AccessLogJsonRecord type for details of the access log JSON record.
 	EnableLogAsJson bool
 
 	// If true, the handler does NOT check the request Content-Type. Otherwise, it
@@ -60,6 +61,12 @@ type ResourceHandler struct {
 	// Custom logger for the access log,
 	// optional, defaults to log.New(os.Stderr, "", 0)
 	Logger *log.Logger
+
+	// Define the format of the access log record.
+	// When EnableLogAsJson is false, this format is used to generate the access log.
+	// See AccessLogFormat for the options and the predefined formats.
+	// Defaults to a developement friendly format specified by the Default constant.
+	LoggerFormat AccessLogFormat
 
 	// If true, the access log will be fully disabled.
 	// (the log middleware is not even instantiated, avoiding any performance penalty)
@@ -113,27 +120,42 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 
 	// log as the first, depends on timer and recorder.
 	if !rh.DisableLogger {
-		middlewares = append(middlewares,
-			&logMiddleware{
-				rh.Logger,
-				rh.EnableLogAsJson,
-			},
-		)
+		if rh.EnableLogAsJson {
+			middlewares = append(middlewares,
+				&accessLogJsonMiddleware{
+					Logger: rh.Logger,
+				},
+			)
+		} else {
+			middlewares = append(middlewares,
+				&accessLogApacheMiddleware{
+					Logger:       rh.Logger,
+					Format:       rh.LoggerFormat,
+					textTemplate: nil,
+				},
+			)
+		}
 	}
 
-	if rh.EnableGzip {
-		middlewares = append(middlewares, &gzipMiddleware{})
-	}
-
+	// also depends on timer and recorder
 	if rh.EnableStatusService {
 		// keep track of this middleware for GetStatus()
 		rh.statusMiddleware = newStatusMiddleware()
 		middlewares = append(middlewares, rh.statusMiddleware)
 	}
 
+	// after gzip in order to track to the content length and speed
 	middlewares = append(middlewares,
 		&timerMiddleware{},
 		&recorderMiddleware{},
+	)
+
+	if rh.EnableGzip {
+		middlewares = append(middlewares, &gzipMiddleware{})
+	}
+
+	// catch user errors
+	middlewares = append(middlewares,
 		&errorMiddleware{
 			rh.ErrorLogger,
 			rh.EnableLogAsJson,
