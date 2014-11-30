@@ -18,7 +18,8 @@ import (
 // This implementation is a subset of Apache mod_log_config.
 // (See http://httpd.apache.org/docs/2.0/mod/mod_log_config.html)
 //
-// %b content length in bytes
+// %b content length in bytes, - if 0
+// %B content length in bytes
 // %D response elapsed time in microseconds
 // %h remote address
 // %H server protocol
@@ -83,7 +84,8 @@ func (mw *accessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 }
 
 var apacheAdapter = strings.NewReplacer(
-	"%b", "{{.BytesWritten}}",
+	"%b", "{{.BytesWritten | dashIf0}}",
+	"%B", "{{.BytesWritten}}",
 	"%D", "{{.ResponseTime | microseconds}}",
 	"%h", "{{.ApacheRemoteAddr}}",
 	"%H", "{{.R.Proto}}",
@@ -112,6 +114,12 @@ func (mw *accessLogApacheMiddleware) convertFormat() {
 				return "-"
 			}
 			return value
+		},
+		"dashIf0": func(value int64) string {
+			if value == 0 {
+				return "-"
+			}
+			return fmt.Sprintf("%d", value)
 		},
 		"microseconds": func(dur *time.Duration) string {
 			return fmt.Sprintf("%d", dur.Nanoseconds()/1000)
