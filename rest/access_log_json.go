@@ -43,15 +43,30 @@ type AccessLogJsonRecord struct {
 
 func makeAccessLogJsonRecord(r *Request) *AccessLogJsonRecord {
 
-	remoteUser := ""
+	var timestamp *time.Time
+	if r.Env["START_TIME"] != nil {
+		timestamp = r.Env["START_TIME"].(*time.Time)
+	}
+
+	var statusCode int
+	if r.Env["STATUS_CODE"] != nil {
+		statusCode = r.Env["STATUS_CODE"].(int)
+	}
+
+	var responseTime *time.Duration
+	if r.Env["ELAPSED_TIME"] != nil {
+		responseTime = r.Env["ELAPSED_TIME"].(*time.Duration)
+	}
+
+	var remoteUser string
 	if r.Env["REMOTE_USER"] != nil {
 		remoteUser = r.Env["REMOTE_USER"].(string)
 	}
 
 	return &AccessLogJsonRecord{
-		Timestamp:    r.Env["START_TIME"].(*time.Time),
-		StatusCode:   r.Env["STATUS_CODE"].(int),
-		ResponseTime: r.Env["ELAPSED_TIME"].(*time.Duration),
+		Timestamp:    timestamp,
+		StatusCode:   statusCode,
+		ResponseTime: responseTime,
 		HttpMethod:   r.Method,
 		RequestURI:   r.URL.RequestURI(),
 		RemoteUser:   remoteUser,
