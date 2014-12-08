@@ -55,7 +55,7 @@ type ResourceHandler struct {
 	// They are run pre REST routing, request.PathParams is not set yet.
 	// They are run post auto error handling, "panic" will be converted to 500 errors.
 	// They can be used for instance to manage CORS or authentication.
-	// (see the CORS and Auth examples in https://github.com/ant0ine/go-json-rest-examples)
+	// (see CORS and Auth examples in https://github.com/ant0ine/go-json-rest-examples)
 	PreRoutingMiddlewares []Middleware
 
 	// Custom logger for the access log,

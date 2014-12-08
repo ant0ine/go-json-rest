@@ -17,15 +17,17 @@ type ResponseWriter interface {
 	// Identical to the http.ResponseWriter interface
 	Header() http.Header
 
-	// Use EncodeJson to generate the payload, write the headers with http.StatusOK if they
-	// are not already written, then write the payload.
+	// Use EncodeJson to generate the payload, write the headers with http.StatusOK if
+        // they are not already written, then write the payload.
 	// The Content-Type header is set to "application/json", unless already specified.
 	WriteJson(v interface{}) error
 
-	// Encode the data structure to JSON, mainly used to wrap ResponseWriter in middlewares.
+	// Encode the data structure to JSON, mainly used to wrap ResponseWriter in
+        // middlewares.
 	EncodeJson(v interface{}) ([]byte, error)
 
-	// Similar to the http.ResponseWriter interface, with additional JSON related headers set.
+	// Similar to the http.ResponseWriter interface, with additional JSON related
+        // headers set.
 	WriteHeader(int)
 }
 

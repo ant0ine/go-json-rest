@@ -16,8 +16,8 @@ type AuthBasicMiddleware struct {
 	// Realm name to display to the user. (Required)
 	Realm string
 
-	// Callback function that should perform the authentication of the user based on userId and password.
-	// Must return true on success, false on failure. (Required)
+	// Callback function that should perform the authentication of the user based on
+        // userId and password. Must return true on success, false on failure. (Required)
 	Authenticator func(userId string, password string) bool
 }
 
