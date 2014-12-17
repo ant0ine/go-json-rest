@@ -34,6 +34,7 @@
 	  - [API Versioning](#api-versioning)
 	  - [Statsd](#statsd)
 	  - [NewRelic](#newrelic)
+	  - [Graceful Shutdown](#graceful-shutdown)
 	  - [SPDY](#spdy)
 	  - [Google App Engine](#gae)
 	  - [Basic Auth Custom](#basic-auth-custom)
@@ -1325,6 +1326,68 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Fatal(http.ListenAndServe(":8080", &handler))
+}
+
+```
+
+#### Graceful Shutdown
+
+This example uses [github.com/stretchr/graceful](github.com/stretchr/graceful) to try to be nice with the clients waiting for responses during a server shutdown (or restart).
+The HTTP response takes 10 seconds to be completed, printing a message on the wire every second.
+10 seconds is also the timeout set for the graceful shutdown.
+You can play with these numbers to show that the server waits for the responses to complete.
+
+The curl demo:
+``` sh
+curl -i http://127.0.0.1:8080/message
+```
+
+
+Go code:
+``` go
+package main
+
+import (
+	"fmt"
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/stretchr/graceful"
+	"log"
+	"net/http"
+	"time"
+)
+
+func main() {
+
+	handler := rest.ResourceHandler{}
+
+	err := handler.SetRoutes(
+		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+			for cpt := 1; cpt <= 10; cpt++ {
+
+				// wait 1 second
+				time.Sleep(time.Duration(1) * time.Second)
+
+				w.WriteJson(map[string]string{"Message": fmt.Sprintf("%d seconds", cpt)})
+				w.(http.ResponseWriter).Write([]byte("\n"))
+
+				// Flush the buffer to client
+				w.(http.Flusher).Flush()
+			}
+		}},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server := &graceful.Server{
+		Timeout: 10 * time.Second,
+		Server: &http.Server{
+			Addr:    ":8080",
+			Handler: &handler,
+		},
+	}
+
+	log.Fatal(server.ListenAndServe())
 }
 
 ```
