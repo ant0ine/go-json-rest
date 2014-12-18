@@ -543,7 +543,7 @@ func (api *Api) InitDB() {
 }
 
 func (api *Api) InitSchema() {
-	api.DB.AutoMigrate(Reminder{})
+	api.DB.AutoMigrate(&Reminder{})
 }
 
 func (api *Api) GetAllReminders(w rest.ResponseWriter, r *rest.Request) {
