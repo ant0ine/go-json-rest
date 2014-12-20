@@ -19,55 +19,55 @@ func TestFindRouteAPI(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	// full url string
 	input := "http://example.org/"
 	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	if route.PathExp != "/" {
-		t.Error()
+		t.Error("Expected PathExp to be /")
 	}
 	if len(params) != 0 {
-		t.Error()
+		t.Error("Expected 0 param")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 
 	// part of the url string
 	input = "/"
 	route, params, pathMatched, err = r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	if route.PathExp != "/" {
-		t.Error()
+		t.Error("Expected PathExp to be /")
 	}
 	if len(params) != 0 {
-		t.Error()
+		t.Error("Expected 0 param")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 
 	// url object
 	urlObj, err := url.Parse("http://example.org/")
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	route, params, pathMatched = r.findRouteFromURL("GET", urlObj)
 	if route.PathExp != "/" {
-		t.Error()
+		t.Error("Expected PathExp to be /")
 	}
 	if len(params) != 0 {
-		t.Error()
+		t.Error("Expected 0 param")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -79,13 +79,13 @@ func TestNoRoute(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/notfound"
 	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	if route != nil {
@@ -95,7 +95,7 @@ func TestNoRoute(t *testing.T) {
 		t.Error("params must be nil too")
 	}
 	if pathMatched != false {
-		t.Error()
+		t.Error("Expected pathMatched to be false")
 	}
 }
 
@@ -146,19 +146,19 @@ func TestUrlEncodedFind(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/with%20space" // urlencoded
 	route, _, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	if route.PathExp != "/with space" {
-		t.Error()
+		t.Error("Expected PathExp to be /with space")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -175,13 +175,13 @@ func TestWithQueryString(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/r/123?arg=value"
 	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	if route == nil {
 		t.Fatal("Expected a match")
@@ -190,7 +190,7 @@ func TestWithQueryString(t *testing.T) {
 		t.Errorf("expected 123, got %s", params["id"])
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -207,19 +207,19 @@ func TestNonUrlEncodedFind(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/with space" // not urlencoded
 	route, _, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	if route.PathExp != "/with%20space" {
-		t.Error()
+		t.Error("Expected PathExp to be /with%20space")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -257,22 +257,22 @@ func TestSplatUrlEncoded(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/r/123"
 	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	if route == nil {
 		t.Fatal("Expected a match")
 	}
 	if params["rest"] != "123" {
-		t.Error()
+		t.Error("Expected rest to be 123")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -308,10 +308,10 @@ func TestRouteOrder(t *testing.T) {
 		t.Errorf("both match, expected the first defined, got %s", route.PathExp)
 	}
 	if params["id"] != "123" {
-		t.Error()
+		t.Error("Expected id to be 123")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -332,7 +332,7 @@ func TestRelaxedPlaceholder(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/r/a.txt"
@@ -347,10 +347,10 @@ func TestRelaxedPlaceholder(t *testing.T) {
 		t.Errorf("expected the second route, got %s", route.PathExp)
 	}
 	if params["filename"] != "a.txt" {
-		t.Error()
+		t.Error("Expected filename to be a.txt")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }
 
@@ -371,22 +371,22 @@ func TestSimpleExample(t *testing.T) {
 
 	err := r.start()
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	input := "http://example.org/resources/123"
 	route, params, pathMatched, err := r.findRoute("GET", input)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
 	if route.PathExp != "/resources/:id" {
-		t.Error()
+		t.Error("Expected PathExp to be /resources/:id")
 	}
 	if params["id"] != "123" {
-		t.Error()
+		t.Error("Expected id to be 123")
 	}
 	if pathMatched != true {
-		t.Error()
+		t.Error("Expected pathMatched to be true")
 	}
 }

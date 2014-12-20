@@ -9,7 +9,7 @@ import (
 func defaultRequest(method string, urlStr string, body io.Reader, t *testing.T) *Request {
 	origReq, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 	return &Request{
 		origReq,
