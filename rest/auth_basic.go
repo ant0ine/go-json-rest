@@ -17,7 +17,7 @@ type AuthBasicMiddleware struct {
 	Realm string
 
 	// Callback function that should perform the authentication of the user based on
-        // userId and password. Must return true on success, false on failure. (Required)
+	// userId and password. Must return true on success, false on failure. (Required)
 	Authenticator func(userId string, password string) bool
 }
 

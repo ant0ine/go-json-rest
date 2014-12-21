@@ -28,8 +28,8 @@ type CorsMiddleware struct {
 	OriginValidator func(origin string, request *Request) bool
 
 	// List of allowed HTTP methods. Note that the comparison will be made in
-        // uppercase to avoid common mistakes. And that the
-        // Access-Control-Allow-Methods response header also uses uppercase.
+	// uppercase to avoid common mistakes. And that the
+	// Access-Control-Allow-Methods response header also uses uppercase.
 	// (see CorsInfo.AccessControlRequestMethod)
 	AllowedMethods []string
 
