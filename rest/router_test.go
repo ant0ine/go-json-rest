@@ -216,7 +216,7 @@ func TestNonUrlEncodedFind(t *testing.T) {
 		t.Fatal(err)
 	}
 	if route.PathExp != "/with%20space" {
-		t.Error("Expected PathExp to be /with%20space")
+		t.Errorf("Expected PathExp to be %s", "/with20space")
 	}
 	if pathMatched != true {
 		t.Error("Expected pathMatched to be true")
