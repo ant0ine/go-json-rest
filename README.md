@@ -445,17 +445,11 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	Body string
-}
-
 func main() {
 	handler := rest.ResourceHandler{}
 	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(&Message{
-				Body: "Hello World!",
-			})
+			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
 	)
 	if err != nil {
@@ -704,10 +698,6 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	Body string
-}
-
 func main() {
 	handler := rest.ResourceHandler{
 		PreRoutingMiddlewares: []rest.Middleware{
@@ -718,9 +708,7 @@ func main() {
 	}
 	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(&Message{
-				Body: "Hello World!",
-			})
+			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
 	)
 	if err != nil {
@@ -1134,10 +1122,6 @@ func (mw *SemVerMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 	}
 }
 
-type Message struct {
-	Body string
-}
-
 func main() {
 	handler := rest.ResourceHandler{}
 	svmw := SemVerMiddleware{
@@ -1149,10 +1133,10 @@ func main() {
 			func(w rest.ResponseWriter, req *rest.Request) {
 				version := req.Env["VERSION"].(*semver.Version)
 				if version.Major == 2 {
-                                        // http://en.wikipedia.org/wiki/Second-system_effect
-					w.WriteJson(&Message{"Hello broken World!"})
+					// http://en.wikipedia.org/wiki/Second-system_effect
+					w.WriteJson(map[string]string{"Body": "Hello broken World!"})
 				} else {
-					w.WriteJson(&Message{"Hello World!"})
+					w.WriteJson(map[string]string{"Body": "Hello World!"})
 				}
 			},
 		)},
@@ -1226,10 +1210,6 @@ func (mw *StatsdMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 	}
 }
 
-type Message struct {
-	Body string
-}
-
 func main() {
 	handler := rest.ResourceHandler{
 		OuterMiddlewares: []rest.Middleware{
@@ -1244,9 +1224,7 @@ func main() {
 			// take more than 1ms so statsd can report it
 			time.Sleep(100 * time.Millisecond)
 
-			w.WriteJson(&Message{
-				Body: "Hello World!",
-			})
+			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
 	)
 	if err != nil {
@@ -1473,17 +1451,11 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	Body string
-}
-
 func init() {
 	handler := rest.ResourceHandler{}
 	err := handler.SetRoutes(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(&Message{
-				Body: "Hello World!",
-			})
+			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
 	)
 	if err != nil {
