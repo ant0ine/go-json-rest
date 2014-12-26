@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-const xPoweredByDefault = "go-json-rest"
-
 // A ResponseWriter interface dedicated to JSON HTTP response.
 // Note that the object instantiated by the ResourceHandler that implements this interface,
 // also happens to implement http.ResponseWriter, http.Flusher and http.CloseNotifier.

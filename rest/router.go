@@ -3,15 +3,45 @@ package rest
 import (
 	"errors"
 	"github.com/ant0ine/go-json-rest/rest/trie"
+	"net/http"
 	"net/url"
 	"strings"
 )
 
 type router struct {
-	routes                 []*Route
+	Routes []*Route
+
 	disableTrieCompression bool
 	index                  map[*Route]int
 	trie                   *trie.Trie
+}
+
+// Handle the REST routing and run the user code.
+func (rt *router) AppFunc() HandlerFunc {
+	return func(writer ResponseWriter, request *Request) {
+
+		// find the route
+		route, params, pathMatched := rt.findRouteFromURL(request.Method, request.URL)
+		if route == nil {
+
+			if pathMatched {
+				// no route found, but path was matched: 405 Method Not Allowed
+				Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+
+			// no route found, the path was not matched: 404 Not Found
+			NotFound(writer, request)
+			return
+		}
+
+		// a route was found, set the PathParams
+		request.PathParams = params
+
+		// run the user code
+		handler := route.Func
+		handler(writer, request)
+	}
 }
 
 // This is run for each new request, perf is important.
@@ -66,7 +96,7 @@ func (rt *router) start() error {
 	rt.trie = trie.New()
 	rt.index = map[*Route]int{}
 
-	for i, route := range rt.routes {
+	for i, route := range rt.Routes {
 
 		// work with the PathExp urlencoded.
 		pathExp, err := escapedPathExp(route.PathExp)
