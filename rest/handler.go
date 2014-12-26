@@ -2,9 +2,7 @@ package rest
 
 import (
 	"log"
-	"mime"
 	"net/http"
-	"strings"
 )
 
 // ResourceHandler implements the http.Handler interface and acts a router for the defined Routes.
@@ -87,31 +85,7 @@ type ResourceHandler struct {
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
-	// start the router
-	rh.internalRouter = &router{
-		routes: routes,
-	}
-	err := rh.internalRouter.start()
-	if err != nil {
-		return err
-	}
-
-	if rh.DisableXPoweredBy {
-		rh.XPoweredBy = ""
-	} else {
-		if len(rh.XPoweredBy) == 0 {
-			rh.XPoweredBy = xPoweredByDefault
-		}
-	}
-
-	rh.instantiateMiddlewares()
-
-	return nil
-}
-
-// Instantiate all the middlewares.
-func (rh *ResourceHandler) instantiateMiddlewares() {
-
+	// intantiate all the middlewares based on the settings.
 	middlewares := []Middleware{}
 
 	middlewares = append(middlewares,
@@ -129,9 +103,8 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		} else {
 			middlewares = append(middlewares,
 				&accessLogApacheMiddleware{
-					Logger:       rh.Logger,
-					Format:       rh.LoggerFormat,
-					textTemplate: nil,
+					Logger: rh.Logger,
+					Format: rh.LoggerFormat,
 				},
 			)
 		}
@@ -157,9 +130,9 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 	// catch user errors
 	middlewares = append(middlewares,
 		&errorMiddleware{
-			rh.ErrorLogger,
-			rh.EnableLogAsJson,
-			rh.EnableResponseStackTrace,
+			Logger:                   rh.ErrorLogger,
+			EnableLogAsJson:          rh.EnableLogAsJson,
+			EnableResponseStackTrace: rh.EnableResponseStackTrace,
 		},
 	)
 
@@ -167,80 +140,35 @@ func (rh *ResourceHandler) instantiateMiddlewares() {
 		rh.PreRoutingMiddlewares...,
 	)
 
-	rh.handlerFunc = rh.adapter(
-		WrapMiddlewares(middlewares, rh.app()),
+	// verify the request content type
+	if !rh.EnableRelaxedContentType {
+		middlewares = append(middlewares,
+			&contentTypeCheckerMiddleware{},
+		)
+	}
+
+	// instantiate the router
+	rh.internalRouter = &router{
+		Routes: routes,
+	}
+	err := rh.internalRouter.start()
+	if err != nil {
+		return err
+	}
+
+	// intantiate the adapter
+	adapter := &jsonAdapter{
+		DisableJsonIndent: rh.DisableJsonIndent,
+		XPoweredBy:        rh.XPoweredBy,
+		DisableXPoweredBy: rh.DisableXPoweredBy,
+	}
+
+	// wrap everything
+	rh.handlerFunc = adapter.AdapterFunc(
+		WrapMiddlewares(middlewares, rh.internalRouter.AppFunc()),
 	)
-}
 
-// Handle the transition between http and rest objects.
-func (rh *ResourceHandler) adapter(handler HandlerFunc) http.HandlerFunc {
-	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
-
-		// instantiate the rest objects
-		request := Request{
-			origRequest,
-			nil,
-			map[string]interface{}{},
-		}
-
-		isIndented := !rh.DisableJsonIndent
-
-		writer := responseWriter{
-			origWriter,
-			false,
-			isIndented,
-			rh.XPoweredBy,
-		}
-
-		// call the wrapped handler
-		handler(&writer, &request)
-	}
-}
-
-// Handle the REST routing and run the user code.
-func (rh *ResourceHandler) app() HandlerFunc {
-	return func(writer ResponseWriter, request *Request) {
-
-		// check the Content-Type
-		mediatype, params, _ := mime.ParseMediaType(request.Header.Get("Content-Type"))
-		charset, ok := params["charset"]
-		if !ok {
-			charset = "UTF-8"
-		}
-
-		if rh.EnableRelaxedContentType == false &&
-			request.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
-			!(mediatype == "application/json" && strings.ToUpper(charset) == "UTF-8") {
-
-			Error(writer,
-				"Bad Content-Type or charset, expected 'application/json'",
-				http.StatusUnsupportedMediaType,
-			)
-			return
-		}
-
-		// find the route
-		route, params, pathMatched := rh.internalRouter.findRouteFromURL(request.Method, request.URL)
-		if route == nil {
-
-			if pathMatched {
-				// no route found, but path was matched: 405 Method Not Allowed
-				Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
-				return
-			}
-
-			// no route found, the path was not matched: 404 Not Found
-			NotFound(writer, request)
-			return
-		}
-
-		// a route was found, set the PathParams
-		request.PathParams = params
-
-		// run the user code
-		handler := route.Func
-		handler(writer, request)
-	}
+	return nil
 }
 
 // This makes ResourceHandler implement the http.Handler interface.
