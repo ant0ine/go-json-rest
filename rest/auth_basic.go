@@ -18,7 +18,7 @@ type AuthBasicMiddleware struct {
 
 	// Callback function that should perform the authentication of the user based on
 	// userId and password. Must return true on success, false on failure. (Required)
-	Authenticator func(userId string, password string) bool
+	Authenticator func(userId string, password string, request *Request) bool
 }
 
 // MiddlewareFunc tries to authenticate the user. It sends a 401 on failure,
@@ -48,7 +48,7 @@ func (mw *AuthBasicMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 			return
 		}
 
-		if !mw.Authenticator(providedUserId, providedPassword) {
+		if !mw.Authenticator(providedUserId, providedPassword, request) {
 			mw.unauthorized(writer)
 			return
 		}

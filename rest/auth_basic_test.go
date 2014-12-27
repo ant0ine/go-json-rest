@@ -12,7 +12,7 @@ func TestAuthBasic(t *testing.T) {
 		PreRoutingMiddlewares: []Middleware{
 			&AuthBasicMiddleware{
 				Realm: "test zone",
-				Authenticator: func(userId string, password string) bool {
+				Authenticator: func(userId string, password string, request *Request) bool {
 					if userId == "admin" && password == "admin" {
 						return true
 					}
