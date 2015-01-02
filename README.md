@@ -1873,7 +1873,7 @@ Overall, they provide the same features, but with two methods instead of three, 
 - [Paul Lam](https://github.com/Quantisan)
 
 
-Copyright (c) 2013-2014 Antoine Imbert
+Copyright (c) 2013-2015 Antoine Imbert
 
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
