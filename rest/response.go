@@ -57,7 +57,6 @@ func NotFound(w ResponseWriter, r *Request) {
 type responseWriter struct {
 	http.ResponseWriter
 	wroteHeader bool
-	isIndented  bool
 	xPoweredBy  string
 }
 
@@ -73,13 +72,7 @@ func (w *responseWriter) WriteHeader(code int) {
 }
 
 func (w *responseWriter) EncodeJson(v interface{}) ([]byte, error) {
-	var b []byte
-	var err error
-	if w.isIndented {
-		b, err = json.MarshalIndent(v, "", "  ")
-	} else {
-		b, err = json.Marshal(v)
-	}
+	b, err := json.Marshal(v)
 	if err != nil {
 		return nil, err
 	}
