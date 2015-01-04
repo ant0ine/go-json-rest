@@ -6,20 +6,19 @@ import (
 	"testing"
 )
 
-func TestPoweredByMiddleware(t *testing.T) {
+func TestJsonIndentMiddleware(t *testing.T) {
 
-	poweredBy := &poweredByMiddleware{
-		XPoweredBy: "test",
-	}
+	jsonIndent := &jsonIndentMiddleware{}
 
 	app := func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}
 
-	handlerFunc := WrapMiddlewares([]Middleware{poweredBy}, app)
+	handlerFunc := WrapMiddlewares([]Middleware{jsonIndent}, app)
 
 	// fake request
 	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
+	origRequest.RemoteAddr = "127.0.0.1:1234"
 	r := &Request{
 		origRequest,
 		nil,
@@ -27,18 +26,17 @@ func TestPoweredByMiddleware(t *testing.T) {
 	}
 
 	// fake writer
+
 	recorder := httptest.NewRecorder()
 	w := &responseWriter{
 		recorder,
 		false,
 	}
 
-	// run
 	handlerFunc(w, r)
 
-	// header
-	value := recorder.HeaderMap.Get("X-Powered-By")
-	if value != "test" {
-		t.Errorf("Expected X-Powered-By to be 'test', got %s", value)
+	expected := "{\n  \"Id\": \"123\"\n}"
+	if recorder.Body.String() != expected {
+		t.Errorf("expected %s, got : %s", expected, recorder.Body)
 	}
 }

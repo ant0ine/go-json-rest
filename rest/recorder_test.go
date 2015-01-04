@@ -27,7 +27,6 @@ func TestRecorderMiddleware(t *testing.T) {
 	w := &responseWriter{
 		httptest.NewRecorder(),
 		false,
-		false,
 	}
 
 	handlerFunc(w, r)
@@ -74,7 +73,6 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 	// fake writer
 	w := &responseWriter{
 		httptest.NewRecorder(),
-		false,
 		false,
 	}
 

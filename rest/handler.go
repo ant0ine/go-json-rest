@@ -135,6 +135,10 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 		)
 	}
 
+	if !rh.DisableJsonIndent {
+		middlewares = append(middlewares, &jsonIndentMiddleware{})
+	}
+
 	// catch user errors
 	middlewares = append(middlewares,
 		&recoverMiddleware{
@@ -164,13 +168,8 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 		return err
 	}
 
-	// intantiate the adapter
-	adapter := &jsonAdapter{
-		DisableJsonIndent: rh.DisableJsonIndent,
-	}
-
 	// wrap everything
-	rh.handlerFunc = adapter.AdapterFunc(
+	rh.handlerFunc = adapterFunc(
 		WrapMiddlewares(middlewares, rh.internalRouter.AppFunc()),
 	)
 

@@ -1,5 +1,9 @@
 package rest
 
+import (
+	"net/http"
+)
+
 // HandlerFunc defines the handler function. It is the go-json-rest equivalent of http.HandlerFunc.
 type HandlerFunc func(ResponseWriter, *Request)
 
@@ -18,4 +22,27 @@ func WrapMiddlewares(middlewares []Middleware, handler HandlerFunc) HandlerFunc 
 		wrapped = middlewares[i].MiddlewareFunc(wrapped)
 	}
 	return wrapped
+}
+
+// Handle the transition between net/http and go-json-rest objects.
+// It intanciates the rest.Request and rest.ResponseWriter, ...
+func adapterFunc(handler HandlerFunc) http.HandlerFunc {
+
+	return func(origWriter http.ResponseWriter, origRequest *http.Request) {
+
+		// instantiate the rest objects
+		request := &Request{
+			origRequest,
+			nil,
+			map[string]interface{}{},
+		}
+
+		writer := &responseWriter{
+			origWriter,
+			false,
+		}
+
+		// call the wrapped handler
+		handler(writer, request)
+	}
 }
