@@ -129,7 +129,7 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
 	// catch user errors
 	middlewares = append(middlewares,
-		&errorMiddleware{
+		&recoverMiddleware{
 			Logger:                   rh.ErrorLogger,
 			EnableLogAsJson:          rh.EnableLogAsJson,
 			EnableResponseStackTrace: rh.EnableResponseStackTrace,

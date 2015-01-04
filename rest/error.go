@@ -9,14 +9,14 @@ import (
 	"runtime/debug"
 )
 
-// errorMiddleware catches the user panic errors and convert them to 500
-type errorMiddleware struct {
+// recoverMiddleware catches the user panic errors and convert them to 500
+type recoverMiddleware struct {
 	Logger                   *log.Logger
 	EnableLogAsJson          bool
 	EnableResponseStackTrace bool
 }
 
-func (mw *errorMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+func (mw *recoverMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
 	if mw.Logger == nil {
@@ -48,7 +48,7 @@ func (mw *errorMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	}
 }
 
-func (mw *errorMiddleware) logError(message string) {
+func (mw *recoverMiddleware) logError(message string) {
 	if mw.EnableLogAsJson {
 		record := map[string]string{
 			"error": message,
