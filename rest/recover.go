@@ -9,13 +9,23 @@ import (
 	"runtime/debug"
 )
 
-// recoverMiddleware catches the user panic errors and convert them to 500
+// recoverMiddleware catches the panic errors that occur in the wrapped HandleFunc,
+// and convert them to 500 responses.
 type recoverMiddleware struct {
-	Logger                   *log.Logger
-	EnableLogAsJson          bool
+
+	// Custom logger used for logging the panic errors,
+	// optional, defaults to log.New(os.Stderr, "", 0)
+	Logger *log.Logger
+
+	// If true, the log records will be printed as JSON. Convenient for log parsing.
+	EnableLogAsJson bool
+
+	// If true, when a "panic" happens, the error string and the stack trace will be
+	// printed in the 500 response body.
 	EnableResponseStackTrace bool
 }
 
+// Makes recoverMiddleware implement the Middleware interface.
 func (mw *recoverMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
