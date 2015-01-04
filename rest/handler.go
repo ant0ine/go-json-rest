@@ -113,7 +113,7 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 	// also depends on timer and recorder
 	if rh.EnableStatusService {
 		// keep track of this middleware for GetStatus()
-		rh.statusMiddleware = newStatusMiddleware()
+		rh.statusMiddleware = &statusMiddleware{}
 		middlewares = append(middlewares, rh.statusMiddleware)
 	}
 

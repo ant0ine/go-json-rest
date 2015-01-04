@@ -8,7 +8,8 @@ import (
 )
 
 // statusMiddleware keeps track of various stats about the processed requests.
-// It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"]
+// It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"],
+// recorderMiddleware and timerMiddleware must be in the wrapped middlewares.
 type statusMiddleware struct {
 	lock              sync.RWMutex
 	start             time.Time
@@ -17,33 +18,26 @@ type statusMiddleware struct {
 	totalResponseTime time.Time
 }
 
-func newStatusMiddleware() *statusMiddleware {
-	return &statusMiddleware{
-		start:             time.Now(),
-		pid:               os.Getpid(),
-		responseCounts:    map[string]int{},
-		totalResponseTime: time.Time{},
-	}
-}
-
-func (mw *statusMiddleware) update(statusCode int, responseTime *time.Duration) {
-	mw.lock.Lock()
-	mw.responseCounts[fmt.Sprintf("%d", statusCode)]++
-	mw.totalResponseTime = mw.totalResponseTime.Add(*responseTime)
-	mw.lock.Unlock()
-}
-
 // MiddlewareFunc makes statusMiddleware implement the Middleware interface.
 func (mw *statusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+
+	mw.start = time.Now()
+	mw.pid = os.Getpid()
+	mw.responseCounts = map[string]int{}
+	mw.totalResponseTime = time.Time{}
+
 	return func(w ResponseWriter, r *Request) {
 
 		// call the handler
 		h(w, r)
 
-		mw.update(
-			r.Env["STATUS_CODE"].(int),
-			r.Env["ELAPSED_TIME"].(*time.Duration),
-		)
+		statusCode := r.Env["STATUS_CODE"].(int)
+		responseTime := r.Env["ELAPSED_TIME"].(*time.Duration)
+
+		mw.lock.Lock()
+		mw.responseCounts[fmt.Sprintf("%d", statusCode)]++
+		mw.totalResponseTime = mw.totalResponseTime.Add(*responseTime)
+		mw.lock.Unlock()
 	}
 }
 
