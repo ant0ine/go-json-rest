@@ -21,7 +21,7 @@ func TestJSONP(t *testing.T) {
 		},
 		&Route{"GET", "/error",
 			func(w ResponseWriter, r *Request) {
-				Error(w, "gzipped error", 500)
+				Error(w, "jsonp error", 500)
 			},
 		},
 	)
@@ -34,5 +34,5 @@ func TestJSONP(t *testing.T) {
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/error?callback=parseResponse", nil))
 	recorded.CodeIs(500)
 	recorded.HeaderIs("Content-Type", "text/javascript")
-	recorded.BodyIs("parseResponse({\"Error\":\"gzipped error\"})")
+	recorded.BodyIs("parseResponse({\"Error\":\"jsonp error\"})")
 }
