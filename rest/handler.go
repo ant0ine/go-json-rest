@@ -127,6 +127,10 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 		middlewares = append(middlewares, &gzipMiddleware{})
 	}
 
+	if !rh.DisableJsonIndent {
+		middlewares = append(middlewares, &jsonIndentMiddleware{})
+	}
+
 	// catch user errors
 	middlewares = append(middlewares,
 		&recoverMiddleware{
@@ -158,7 +162,6 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
 	// intantiate the adapter
 	adapter := &jsonAdapter{
-		DisableJsonIndent: rh.DisableJsonIndent,
 		XPoweredBy:        rh.XPoweredBy,
 		DisableXPoweredBy: rh.DisableXPoweredBy,
 	}
