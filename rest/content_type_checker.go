@@ -10,7 +10,7 @@ import (
 // StatusUnsupportedMediaType (415) HTTP error response if it's incorrect.
 type contentTypeCheckerMiddleware struct{}
 
-// MiddlewareFunc returns a HandlerFunc that implements the middleware.
+// MiddlewareFunc makes contentTypeCheckerMiddleware implement the Middleware interface.
 func (mw *contentTypeCheckerMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 
 	return func(w ResponseWriter, r *Request) {

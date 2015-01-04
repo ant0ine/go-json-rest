@@ -25,7 +25,7 @@ type recoverMiddleware struct {
 	EnableResponseStackTrace bool
 }
 
-// Makes recoverMiddleware implement the Middleware interface.
+// MiddlewareFunc makes recoverMiddleware implement the Middleware interface.
 func (mw *recoverMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger

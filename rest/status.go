@@ -33,6 +33,7 @@ func (mw *statusMiddleware) update(statusCode int, responseTime *time.Duration) 
 	mw.lock.Unlock()
 }
 
+// MiddlewareFunc makes statusMiddleware implement the Middleware interface.
 func (mw *statusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	return func(w ResponseWriter, r *Request) {
 

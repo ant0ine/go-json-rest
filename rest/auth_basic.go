@@ -23,7 +23,7 @@ type AuthBasicMiddleware struct {
 
 // MiddlewareFunc tries to authenticate the user. It sends a 401 on failure,
 // and executes the wrapped handler on success.
-// Note that, on success, the userId is made available in the environment at request.Env["REMOTE_USER"]
+// Note that, on success, the userId is made available in the environment as request.Env["REMOTE_USER"].(string)
 func (mw *AuthBasicMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 
 	if mw.Realm == "" {

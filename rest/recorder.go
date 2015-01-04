@@ -8,10 +8,11 @@ import (
 
 // recorderMiddleware keeps a record of the HTTP status code of the response,
 // and the number of bytes written.
-// The result is available to the wrapping handlers in request.Env["STATUS_CODE"] as an int,
-// request.Env["BYTES_WRITTEN"] as an int64.
+// The result is available to the wrapping handlers as request.Env["STATUS_CODE"].(int),
+// and as request.Env["BYTES_WRITTEN"].(int64)
 type recorderMiddleware struct{}
 
+// MiddlewareFunc makes recorderMiddleware implement the Middleware interface.
 func (mw *recorderMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	return func(w ResponseWriter, r *Request) {
 

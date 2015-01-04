@@ -12,6 +12,7 @@ import (
 // and setting the proper headers when supported by the client.
 type gzipMiddleware struct{}
 
+// MiddlewareFunc makes gzipMiddleware implement the Middleware interface.
 func (mw *gzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	return func(w ResponseWriter, r *Request) {
 		// gzip support enabled
