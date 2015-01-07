@@ -9,7 +9,6 @@ const xPoweredByDefault = "go-json-rest"
 // Handle the transition between net/http and go-json-rest objects.
 // It intanciates the rest.Request and rest.ResponseWriter, ...
 type jsonAdapter struct {
-	DisableJsonIndent bool
 	XPoweredBy        string
 	DisableXPoweredBy bool
 }
@@ -37,7 +36,6 @@ func (ja *jsonAdapter) AdapterFunc(handler HandlerFunc) http.HandlerFunc {
 		writer := &responseWriter{
 			origWriter,
 			false,
-			!ja.DisableJsonIndent,
 			poweredBy,
 		}
 

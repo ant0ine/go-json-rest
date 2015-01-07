@@ -11,7 +11,6 @@ func TestResponseNotIndent(t *testing.T) {
 	writer := responseWriter{
 		nil,
 		false,
-		false,
 		xPoweredByDefault,
 	}
 
