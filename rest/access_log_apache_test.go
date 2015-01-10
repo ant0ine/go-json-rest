@@ -48,7 +48,7 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 	handlerFunc(w, r)
 
 	// eg: '127.0.0.1 - - 29/Nov/2014:22:28:34 +0000 "GET / HTTP/1.1" 200 12'
-	apacheCommon := regexp.MustCompile(`127.0.0.1 - - \d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2} \+0000 "GET / HTTP/1.1" 200 12`)
+	apacheCommon := regexp.MustCompile(`127.0.0.1 - - \d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2} [+\-]\d{4}\ "GET / HTTP/1.1" 200 12`)
 
 	if !apacheCommon.Match(buffer.Bytes()) {
 		t.Errorf("Got: %s", buffer.String())
