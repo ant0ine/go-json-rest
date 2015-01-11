@@ -42,7 +42,6 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 		httptest.NewRecorder(),
 		false,
 		false,
-		"",
 	}
 
 	handlerFunc(w, r)
