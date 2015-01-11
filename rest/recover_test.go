@@ -36,7 +36,6 @@ func TestRecoverMiddleware(t *testing.T) {
 	w := &responseWriter{
 		recorder,
 		false,
-		false,
 	}
 
 	// run
