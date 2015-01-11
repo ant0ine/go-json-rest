@@ -39,7 +39,6 @@ func TestAccessLogJsonMiddleware(t *testing.T) {
 	w := &responseWriter{
 		httptest.NewRecorder(),
 		false,
-		false,
 		"",
 	}
 
