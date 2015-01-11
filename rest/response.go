@@ -58,15 +58,11 @@ type responseWriter struct {
 	http.ResponseWriter
 	wroteHeader bool
 	isIndented  bool
-	xPoweredBy  string
 }
 
 func (w *responseWriter) WriteHeader(code int) {
 	if w.Header().Get("Content-Type") == "" {
 		w.Header().Set("Content-Type", "application/json")
-	}
-	if len(w.xPoweredBy) > 0 {
-		w.Header().Add("X-Powered-By", w.xPoweredBy)
 	}
 	w.ResponseWriter.WriteHeader(code)
 	w.wroteHeader = true

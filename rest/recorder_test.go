@@ -28,7 +28,6 @@ func TestRecorderMiddleware(t *testing.T) {
 		httptest.NewRecorder(),
 		false,
 		false,
-		"",
 	}
 
 	handlerFunc(w, r)
@@ -77,7 +76,6 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 		httptest.NewRecorder(),
 		false,
 		false,
-		"",
 	}
 
 	handlerFunc(w, r)
