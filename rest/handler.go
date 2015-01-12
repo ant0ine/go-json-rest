@@ -184,5 +184,5 @@ func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // GetStatus returns a Status object. EnableStatusService must be true.
 func (rh *ResourceHandler) GetStatus() *Status {
-	return rh.statusMiddleware.getStatus()
+	return rh.statusMiddleware.GetStatus()
 }

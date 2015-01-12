@@ -76,7 +76,7 @@ type Status struct {
 	AverageResponseTimeSec float64
 }
 
-func (mw *statusMiddleware) getStatus() *Status {
+func (mw *statusMiddleware) GetStatus() *Status {
 
 	mw.lock.RLock()
 
