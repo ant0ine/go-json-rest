@@ -18,6 +18,12 @@ func TestAuthBasic(t *testing.T) {
 					}
 					return false
 				},
+				Authorizator: func(userId string, request *Request) bool {
+					if request.Method == "GET" {
+						return true
+					}
+					return false
+				},
 			},
 		},
 	}
@@ -34,7 +40,7 @@ func TestAuthBasic(t *testing.T) {
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
-	// auth with wrong cred fails
+	// auth with wrong cred and right method fails
 	wrongCredReq := test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
 	encoded := base64.StdEncoding.EncodeToString([]byte("admin:AdmIn"))
 	wrongCredReq.Header.Set("Authorization", "Basic "+encoded)
@@ -42,8 +48,16 @@ func TestAuthBasic(t *testing.T) {
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
-	// auth with right cred succeeds
-	rightCredReq := test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
+	// auth with right cred and wrong method fails
+	rightCredReq := test.MakeSimpleRequest("POST", "http://1.2.3.4/r", nil)
+	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
+	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
+	recorded = test.RunRequest(t, &handler, rightCredReq)
+	recorded.CodeIs(401)
+	recorded.ContentTypeIsJson()
+
+	// auth with right cred and right method succeeds
+	rightCredReq = test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
 	recorded = test.RunRequest(t, &handler, rightCredReq)

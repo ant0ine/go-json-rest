@@ -8,29 +8,42 @@ import (
 	"strings"
 )
 
-// AuthBasicMiddleware provides a simple AuthBasic implementation.
-// It can be used before routing to protect all the endpoints, see PreRoutingMiddlewares.
-// Or it can be used to wrap a particular endpoint HandlerFunc.
+// AuthBasicMiddleware provides a simple AuthBasic implementation. On failure,
+// a 401 HTTP response is returned. On success, the wrapped middleware is
+// called, and the userId is made available as
+// request.Env["REMOTE_USER"].(string)
 type AuthBasicMiddleware struct {
 
 	// Realm name to display to the user. (Required)
 	Realm string
 
-	// Callback function that should perform the authentication of the user based on
-	// userId and password. Must return true on success, false on failure. (Required)
+	// Callback function that should perform the authentication of the user
+	// based on userId and password. Must return true on success, false on
+	// failure. (Required)
 	Authenticator func(userId string, password string) bool
+
+	// Callback function that should perform the authorization of the
+	// authenticated user. Called only after an authentication success.
+	// Must return true on success, false on failure. (Optional, default
+	// to success)
+	Authorizator func(userId string, request *Request) bool
 }
 
-// MiddlewareFunc tries to authenticate the user. It sends a 401 on failure,
-// and executes the wrapped handler on success.
-// Note that, on success, the userId is made available in the environment as request.Env["REMOTE_USER"].(string)
+// MiddlewareFunc makes AuthBasicMiddleware implement the Middleware interface.
 func (mw *AuthBasicMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 
 	if mw.Realm == "" {
 		log.Fatal("Realm is required")
 	}
+
 	if mw.Authenticator == nil {
 		log.Fatal("Authenticator is required")
+	}
+
+	if mw.Authorizator == nil {
+		mw.Authorizator = func(userId string, request *Request) bool {
+			return true
+		}
 	}
 
 	return func(writer ResponseWriter, request *Request) {
@@ -49,6 +62,11 @@ func (mw *AuthBasicMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 		}
 
 		if !mw.Authenticator(providedUserId, providedPassword) {
+			mw.unauthorized(writer)
+			return
+		}
+
+		if !mw.Authorizator(providedUserId, request) {
 			mw.unauthorized(writer)
 			return
 		}
