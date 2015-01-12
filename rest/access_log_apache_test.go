@@ -11,6 +11,7 @@ import (
 
 func TestAccessLogApacheMiddleware(t *testing.T) {
 
+	// the middlewares
 	recorder := &recorderMiddleware{}
 	timer := &timerMiddleware{}
 
@@ -21,27 +22,20 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 		textTemplate: nil,
 	}
 
+	// the app
 	app := func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}
 
-	// same order as in ResourceHandler
-	handlerFunc := WrapMiddlewares([]Middleware{logger, timer, recorder}, app)
+	// wrap all
+	handlerFunc := adapterFunc(WrapMiddlewares([]Middleware{logger, timer, recorder}, app))
 
 	// fake request
-	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
-	origRequest.RemoteAddr = "127.0.0.1:1234"
-	r := &Request{
-		origRequest,
-		nil,
-		map[string]interface{}{},
-	}
+	r, _ := http.NewRequest("GET", "http://localhost/", nil)
+	r.RemoteAddr = "127.0.0.1:1234"
 
 	// fake writer
-	w := &responseWriter{
-		httptest.NewRecorder(),
-		false,
-	}
+	w := httptest.NewRecorder()
 
 	handlerFunc(w, r)
 
