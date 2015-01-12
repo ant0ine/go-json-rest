@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 )
@@ -32,6 +33,8 @@ type Route struct {
 // be removed from the next major version of go-json-rest (v3)
 // See: https://golang.org/doc/go1.1#method_values
 func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) *Route {
+
+	log.Print("RouteObjectMethod is deprecated and will be removed with go-json-rest v3.0.0, see documentation")
 
 	value := reflect.ValueOf(objectInstance)
 	funcValue := value.MethodByName(objectMethod)
