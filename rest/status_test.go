@@ -2,34 +2,32 @@ package rest
 
 import (
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"net/http"
 	"testing"
 )
 
 func TestStatus(t *testing.T) {
 
-	handler := ResourceHandler{
-		EnableStatusService: true,
-	}
-	handler.SetRoutes(
-		&Route{"GET", "/r",
-			func(w ResponseWriter, r *Request) {
-				w.WriteJson(map[string]string{"Id": "123"})
-			},
-		},
-		&Route{"GET", "/.status",
-			func(w ResponseWriter, r *Request) {
-				w.WriteJson(handler.GetStatus())
-			},
-		},
-	)
+	// the middlewares
+	recorder := &recorderMiddleware{}
+	timer := &timerMiddleware{}
+	status := &statusMiddleware{}
 
-	// one request to the API
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
+	// the app
+	app := func(w ResponseWriter, r *Request) {
+		w.WriteJson(status.GetStatus())
+	}
+
+	// wrap all
+	handler := http.HandlerFunc(adapterFunc(WrapMiddlewares([]Middleware{status, timer, recorder}, app)))
+
+	// one request
+	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/1", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
-	// check the status
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/.status", nil))
+	// another request
+	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/2", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
