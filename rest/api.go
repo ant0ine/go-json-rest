@@ -6,7 +6,7 @@ import (
 
 // Api defines a stack of middlewares and an app.
 type Api struct {
-        middlewares []Middleware
+        stack []Middleware
         app App
 }
 
@@ -18,7 +18,7 @@ func NewApi(app App) *Api {
         }
 
         return &Api{
-                middlewares: []Middleware{},
+                stack: []Middleware{},
                 app: app,
         }
 }
@@ -26,7 +26,7 @@ func NewApi(app App) *Api {
 // Use pushes one or multiple middlewares to the stack for middlewares
 // maintained in the Api object.
 func (api *Api) Use(middlewares ...Middleware) {
-        api.middlewares = append(api.middlewares, middlewares...)
+        api.stack = append(api.stack, middlewares...)
 }
 
 // MakeHandler wraps all the middlewares of the stack and the app together, and
@@ -34,7 +34,7 @@ func (api *Api) Use(middlewares ...Middleware) {
 func (api *Api) MakeHandler() http.Handler {
 	return http.HandlerFunc(
                 adapterFunc(
-		        WrapMiddlewares(api.middlewares, api.app.AppFunc()),
+		        WrapMiddlewares(api.stack, api.app.AppFunc()),
 	        ),
         )
 }
