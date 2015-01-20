@@ -16,6 +16,18 @@ type router struct {
 	trie                   *trie.Trie
 }
 
+// XXX API still in flux
+func MakeRouter(routes ...*Route) (App, error) {
+	r := &router{
+		Routes: routes,
+	}
+	err := r.start()
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
 // Handle the REST routing and run the user code.
 func (rt *router) AppFunc() HandlerFunc {
 	return func(writer ResponseWriter, request *Request) {
