@@ -85,6 +85,8 @@ type ResourceHandler struct {
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
+        log.Print("ResourceHandler is deprecated, replaced by Api, see migration guide")
+
 	// intantiate all the middlewares based on the settings.
 	middlewares := []Middleware{}
 
