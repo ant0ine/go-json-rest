@@ -3,7 +3,6 @@ package rest
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"strings"
 )
 
@@ -23,40 +22,6 @@ type Route struct {
 
 	// Code that will be executed when this route is taken.
 	Func HandlerFunc
-}
-
-// RouteObjectMethod creates a Route that points to an object method. It can be convenient to point to
-// an object method instead of a function, this helper makes it easy by passing the object instance and
-// the method name as parameters.
-//
-// DEPRECATED: Since Go 1.1 and the introduction of the Method Values, this is now useless, and will probably
-// be removed from the next major version of go-json-rest (v3)
-// See: https://golang.org/doc/go1.1#method_values
-func RouteObjectMethod(httpMethod string, pathExp string, objectInstance interface{}, objectMethod string) *Route {
-
-	log.Print("RouteObjectMethod is deprecated and will be removed with go-json-rest v3.0.0, see documentation")
-
-	value := reflect.ValueOf(objectInstance)
-	funcValue := value.MethodByName(objectMethod)
-	if funcValue.IsValid() == false {
-		panic(fmt.Sprintf(
-			"Cannot find the object method %s on %s",
-			objectMethod,
-			value,
-		))
-	}
-	routeFunc := func(w ResponseWriter, r *Request) {
-		funcValue.Call([]reflect.Value{
-			reflect.ValueOf(w),
-			reflect.ValueOf(r),
-		})
-	}
-
-	return &Route{
-		HttpMethod: httpMethod,
-		PathExp:    pathExp,
-		Func:       routeFunc,
-	}
 }
 
 // MakePath generates the path corresponding to this Route and the provided path parameters.
