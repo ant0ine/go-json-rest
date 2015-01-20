@@ -1,8 +1,6 @@
 package rest
 
 import (
-	"fmt"
-	"log"
 	"strings"
 )
 
