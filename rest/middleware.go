@@ -10,7 +10,7 @@ type HandlerFunc func(ResponseWriter, *Request)
 // AppFunc makes any HandlerFunc statisfy the App interface. This is convenient to simply use a
 // HandlerFunc as an App. eg: rest.NewApi(rest.HandlerFunc(func(w rest.ResponseWriter, r *rest.Request) { ... }))
 func (hf HandlerFunc) AppFunc() HandlerFunc {
-        return hf
+	return hf
 }
 
 // Middleware defines the interface that objects must implement in order to wrap a HandlerFunc and
@@ -21,7 +21,7 @@ type Middleware interface {
 
 // App interface
 type App interface {
-        AppFunc() HandlerFunc
+	AppFunc() HandlerFunc
 }
 
 // WrapMiddlewares calls the MiddlewareFunc methods in the reverse order and returns an HandlerFunc
