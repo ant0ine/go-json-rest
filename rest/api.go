@@ -41,12 +41,12 @@ func (api *Api) MakeHandler() http.Handler {
 
 // Defines a stack of middlewares that is convenient for development.
 var DefaultDevStack = []Middleware{
-	&accessLogApacheMiddleware{},
-	&timerMiddleware{},
-	&recorderMiddleware{},
-	&jsonIndentMiddleware{},
-	&poweredByMiddleware{},
-	&recoverMiddleware{
+	&AccessLogApacheMiddleware{},
+	&TimerMiddleware{},
+	&RecorderMiddleware{},
+	&JsonIndentMiddleware{},
+	&PoweredByMiddleware{},
+	&RecoverMiddleware{
 		EnableResponseStackTrace: true,
 	},
 }

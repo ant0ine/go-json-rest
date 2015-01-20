@@ -50,15 +50,15 @@ const (
 	DefaultLogFormat = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
 )
 
-// accessLogApacheMiddleware produces the access log following a format inpired
+// AccessLogApacheMiddleware produces the access log following a format inpired
 // by Apache mod_log_config. It depends on the timer, recorder and auth middlewares.
-type accessLogApacheMiddleware struct {
+type AccessLogApacheMiddleware struct {
 	Logger       *log.Logger
 	Format       AccessLogFormat
 	textTemplate *template.Template
 }
 
-func (mw *accessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+func (mw *AccessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
 	if mw.Logger == nil {
@@ -104,7 +104,7 @@ var apacheAdapter = strings.NewReplacer(
 )
 
 // Convert the Apache access log format into a text/template
-func (mw *accessLogApacheMiddleware) convertFormat() {
+func (mw *AccessLogApacheMiddleware) convertFormat() {
 
 	tmplText := apacheAdapter.Replace(string(mw.Format))
 
@@ -142,7 +142,7 @@ func (mw *accessLogApacheMiddleware) convertFormat() {
 }
 
 // Execute the text template with the data derived from the request, and return a string.
-func (mw *accessLogApacheMiddleware) executeTextTemplate(util *accessLogUtil) string {
+func (mw *AccessLogApacheMiddleware) executeTextTemplate(util *accessLogUtil) string {
 	buf := bytes.NewBufferString("")
 	err := mw.textTemplate.Execute(buf, util)
 	if err != nil {

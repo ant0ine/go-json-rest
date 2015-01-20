@@ -8,7 +8,7 @@ import (
 
 func TestRecorderMiddleware(t *testing.T) {
 
-	mw := &recorderMiddleware{}
+	mw := &RecorderMiddleware{}
 
 	app := func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
@@ -52,8 +52,8 @@ func TestRecorderMiddleware(t *testing.T) {
 // See how many bytes are written when gzipping
 func TestRecorderAndGzipMiddleware(t *testing.T) {
 
-	mw := &recorderMiddleware{}
-	gzip := &gzipMiddleware{}
+	mw := &RecorderMiddleware{}
+	gzip := &GzipMiddleware{}
 
 	app := func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})

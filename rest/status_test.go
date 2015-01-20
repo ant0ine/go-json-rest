@@ -9,9 +9,9 @@ import (
 func TestStatus(t *testing.T) {
 
 	// the middlewares
-	recorder := &recorderMiddleware{}
-	timer := &timerMiddleware{}
-	status := &statusMiddleware{}
+	recorder := &RecorderMiddleware{}
+	timer := &TimerMiddleware{}
+	status := &StatusMiddleware{}
 
 	// the app
 	app := func(w ResponseWriter, r *Request) {

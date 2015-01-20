@@ -2,16 +2,16 @@ package rest
 
 const xPoweredByDefault = "go-json-rest"
 
-// poweredByMiddleware adds the "X-Powered-By" header to the HTTP response.
-type poweredByMiddleware struct {
+// PoweredByMiddleware adds the "X-Powered-By" header to the HTTP response.
+type PoweredByMiddleware struct {
 
 	// If specified, used as the value for the "X-Powered-By" response header.
 	// Defaults to "go-json-rest".
 	XPoweredBy string
 }
 
-// MiddlewareFunc makes poweredByMiddleware implement the Middleware interface.
-func (mw *poweredByMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+// MiddlewareFunc makes PoweredByMiddleware implement the Middleware interface.
+func (mw *PoweredByMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	poweredBy := xPoweredByDefault
 	if mw.XPoweredBy != "" {

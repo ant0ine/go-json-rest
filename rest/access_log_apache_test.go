@@ -12,11 +12,11 @@ import (
 func TestAccessLogApacheMiddleware(t *testing.T) {
 
 	// the middlewares
-	recorder := &recorderMiddleware{}
-	timer := &timerMiddleware{}
+	recorder := &RecorderMiddleware{}
+	timer := &TimerMiddleware{}
 
 	buffer := bytes.NewBufferString("")
-	logger := &accessLogApacheMiddleware{
+	logger := &AccessLogApacheMiddleware{
 		Logger:       log.New(buffer, "", 0),
 		Format:       CommonLogFormat,
 		textTemplate: nil,

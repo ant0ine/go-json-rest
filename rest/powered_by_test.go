@@ -8,7 +8,7 @@ import (
 
 func TestPoweredByMiddleware(t *testing.T) {
 
-	poweredBy := &poweredByMiddleware{
+	poweredBy := &PoweredByMiddleware{
 		XPoweredBy: "test",
 	}
 

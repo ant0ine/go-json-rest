@@ -7,7 +7,7 @@ import (
 
 func TestTimerMiddleware(t *testing.T) {
 
-	mw := &timerMiddleware{}
+	mw := &TimerMiddleware{}
 
 	app := func(w ResponseWriter, r *Request) {
 		// do nothing

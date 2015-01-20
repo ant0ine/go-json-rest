@@ -11,7 +11,7 @@ import (
 
 func TestRecoverMiddleware(t *testing.T) {
 
-	recov := &recoverMiddleware{
+	recov := &RecoverMiddleware{
 		Logger:                   log.New(ioutil.Discard, "", 0),
 		EnableLogAsJson:          false,
 		EnableResponseStackTrace: true,

@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-// accessLogJsonMiddleware produces the access log with records written as JSON.
+// AccessLogJsonMiddleware produces the access log with records written as JSON.
 // It depends on the timer, recorder and auth middlewares.
-type accessLogJsonMiddleware struct {
+type AccessLogJsonMiddleware struct {
 	Logger *log.Logger
 }
 
-func (mw *accessLogJsonMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+func (mw *AccessLogJsonMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
 	if mw.Logger == nil {

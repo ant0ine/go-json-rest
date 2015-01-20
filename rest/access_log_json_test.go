@@ -12,11 +12,11 @@ import (
 func TestAccessLogJsonMiddleware(t *testing.T) {
 
 	// the middlewares
-	recorder := &recorderMiddleware{}
-	timer := &timerMiddleware{}
+	recorder := &RecorderMiddleware{}
+	timer := &TimerMiddleware{}
 
 	buffer := bytes.NewBufferString("")
-	logger := &accessLogJsonMiddleware{
+	logger := &AccessLogJsonMiddleware{
 		Logger: log.New(buffer, "", 0),
 	}
 
