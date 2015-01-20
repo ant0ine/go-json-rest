@@ -58,6 +58,7 @@ type AccessLogApacheMiddleware struct {
 	textTemplate *template.Template
 }
 
+// MiddlewareFunc makes AccessLogApacheMiddleware implement the Middleware interface.
 func (mw *AccessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger

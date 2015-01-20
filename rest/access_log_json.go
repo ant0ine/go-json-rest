@@ -13,6 +13,7 @@ type AccessLogJsonMiddleware struct {
 	Logger *log.Logger
 }
 
+// MiddlewareFunc makes AccessLogJsonMiddleware implement the Middleware interface.
 func (mw *AccessLogJsonMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
