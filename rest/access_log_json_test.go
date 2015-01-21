@@ -11,22 +11,21 @@ import (
 
 func TestAccessLogJsonMiddleware(t *testing.T) {
 
-	// the middlewares
-	recorder := &RecorderMiddleware{}
-	timer := &TimerMiddleware{}
-
-	buffer := bytes.NewBufferString("")
-	logger := &AccessLogJsonMiddleware{
-		Logger: log.New(buffer, "", 0),
-	}
-
-	// the app
-	app := func(w ResponseWriter, r *Request) {
+	// api with simple app
+	api := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	}))
+
+	// the middlewares stack
+	buffer := bytes.NewBufferString("")
+	api.Use(&AccessLogJsonMiddleware{
+		Logger: log.New(buffer, "", 0),
+	})
+	api.Use(&TimerMiddleware{})
+	api.Use(&RecorderMiddleware{})
 
 	// wrap all
-	handlerFunc := adapterFunc(WrapMiddlewares([]Middleware{logger, timer, recorder}, app))
+	handler := api.MakeHandler()
 
 	// fake request
 	r, _ := http.NewRequest("GET", "http://localhost/", nil)
@@ -35,7 +34,7 @@ func TestAccessLogJsonMiddleware(t *testing.T) {
 	// fake writer
 	w := httptest.NewRecorder()
 
-	handlerFunc(w, r)
+	handler.ServeHTTP(w, r)
 
 	decoded := &AccessLogJsonRecord{}
 	err := json.Unmarshal(buffer.Bytes(), decoded)

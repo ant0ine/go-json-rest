@@ -11,24 +11,23 @@ import (
 
 func TestAccessLogApacheMiddleware(t *testing.T) {
 
-	// the middlewares
-	recorder := &RecorderMiddleware{}
-	timer := &TimerMiddleware{}
+	// api with simple app
+	api := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
 
+	// the middlewares stack
 	buffer := bytes.NewBufferString("")
-	logger := &AccessLogApacheMiddleware{
+	api.Use(&AccessLogApacheMiddleware{
 		Logger:       log.New(buffer, "", 0),
 		Format:       CommonLogFormat,
 		textTemplate: nil,
-	}
-
-	// the app
-	app := func(w ResponseWriter, r *Request) {
-		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	})
+	api.Use(&TimerMiddleware{})
+	api.Use(&RecorderMiddleware{})
 
 	// wrap all
-	handlerFunc := adapterFunc(WrapMiddlewares([]Middleware{logger, timer, recorder}, app))
+	handler := api.MakeHandler()
 
 	// fake request
 	r, _ := http.NewRequest("GET", "http://localhost/", nil)
@@ -37,7 +36,7 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 	// fake writer
 	w := httptest.NewRecorder()
 
-	handlerFunc(w, r)
+	handler.ServeHTTP(w, r)
 
 	// eg: '127.0.0.1 - - 29/Nov/2014:22:28:34 +0000 "GET / HTTP/1.1" 200 12'
 	apacheCommon := regexp.MustCompile(`127.0.0.1 - - \d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2} [+\-]\d{4}\ "GET / HTTP/1.1" 200 12`)

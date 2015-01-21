@@ -8,35 +8,33 @@ import (
 
 func TestAuthBasic(t *testing.T) {
 
-	handler := ResourceHandler{
-		PreRoutingMiddlewares: []Middleware{
-			&AuthBasicMiddleware{
-				Realm: "test zone",
-				Authenticator: func(userId string, password string) bool {
-					if userId == "admin" && password == "admin" {
-						return true
-					}
-					return false
-				},
-				Authorizator: func(userId string, request *Request) bool {
-					if request.Method == "GET" {
-						return true
-					}
-					return false
-				},
-			},
+	// api with simple app
+	api := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
+
+	// the middlewares stack
+	api.Use(&AuthBasicMiddleware{
+		Realm: "test zone",
+		Authenticator: func(userId string, password string) bool {
+			if userId == "admin" && password == "admin" {
+				return true
+			}
+			return false
 		},
-	}
-	handler.SetRoutes(
-		&Route{"GET", "/r",
-			func(w ResponseWriter, r *Request) {
-				w.WriteJson(map[string]string{"Id": "123"})
-			},
+		Authorizator: func(userId string, request *Request) bool {
+			if request.Method == "GET" {
+				return true
+			}
+			return false
 		},
-	)
+	})
+
+	// wrap all
+	handler := api.MakeHandler()
 
 	// simple request fails
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
+	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
@@ -44,7 +42,7 @@ func TestAuthBasic(t *testing.T) {
 	wrongCredReq := test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
 	encoded := base64.StdEncoding.EncodeToString([]byte("admin:AdmIn"))
 	wrongCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, &handler, wrongCredReq)
+	recorded = test.RunRequest(t, handler, wrongCredReq)
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
@@ -52,7 +50,7 @@ func TestAuthBasic(t *testing.T) {
 	rightCredReq := test.MakeSimpleRequest("POST", "http://1.2.3.4/r", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, &handler, rightCredReq)
+	recorded = test.RunRequest(t, handler, rightCredReq)
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
@@ -60,7 +58,7 @@ func TestAuthBasic(t *testing.T) {
 	rightCredReq = test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, &handler, rightCredReq)
+	recorded = test.RunRequest(t, handler, rightCredReq)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 }
