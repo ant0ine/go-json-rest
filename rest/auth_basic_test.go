@@ -8,13 +8,8 @@ import (
 
 func TestAuthBasic(t *testing.T) {
 
-	// api with simple app
-	api := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
-		w.WriteJson(map[string]string{"Id": "123"})
-	}))
-
-	// the middlewares stack
-	api.Use(&AuthBasicMiddleware{
+	// the middleware to test
+	authMiddleware := &AuthBasicMiddleware{
 		Realm: "test zone",
 		Authenticator: func(userId string, password string) bool {
 			if userId == "admin" && password == "admin" {
@@ -28,10 +23,14 @@ func TestAuthBasic(t *testing.T) {
 			}
 			return false
 		},
-	})
+	}
 
-	// wrap all
-	handler := api.MakeHandler()
+	// api for testing failure
+	apiFailure := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+		t.Error("Should never be executed")
+	}))
+	apiFailure.Use(authMiddleware)
+	handler := apiFailure.MakeHandler()
 
 	// simple request fails
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
@@ -54,11 +53,24 @@ func TestAuthBasic(t *testing.T) {
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
+	// api for testing success
+	apiSuccess := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+		if r.Env["REMOTE_USER"] == nil {
+			t.Error("REMOTE_USER is nil")
+		}
+		user := r.Env["REMOTE_USER"].(string)
+		if user != "admin" {
+			t.Error("REMOTE_USER is expected to be 'admin'")
+		}
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
+	apiSuccess.Use(authMiddleware)
+
 	// auth with right cred and right method succeeds
 	rightCredReq = test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, handler, rightCredReq)
+	recorded = test.RunRequest(t, apiSuccess.MakeHandler(), rightCredReq)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 }
