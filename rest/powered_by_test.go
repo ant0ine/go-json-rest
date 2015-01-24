@@ -1,44 +1,28 @@
 package rest
 
 import (
-	"net/http"
-	"net/http/httptest"
+	"github.com/ant0ine/go-json-rest/rest/test"
 	"testing"
 )
 
 func TestPoweredByMiddleware(t *testing.T) {
 
-	poweredBy := &PoweredByMiddleware{
-		XPoweredBy: "test",
-	}
-
-	app := func(w ResponseWriter, r *Request) {
+	// api a with simple app
+	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	}))
 
-	handlerFunc := WrapMiddlewares([]Middleware{poweredBy}, app)
+	// the middleware to test
+	api.Use(&PoweredByMiddleware{
+		XPoweredBy: "test",
+	})
 
-	// fake request
-	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
-	r := &Request{
-		origRequest,
-		nil,
-		map[string]interface{}{},
-	}
+	// wrap all
+	handler := api.MakeHandler()
 
-	// fake writer
-	recorder := httptest.NewRecorder()
-	w := &responseWriter{
-		recorder,
-		false,
-	}
-
-	// run
-	handlerFunc(w, r)
-
-	// header
-	value := recorder.HeaderMap.Get("X-Powered-By")
-	if value != "test" {
-		t.Errorf("Expected X-Powered-By to be 'test', got %s", value)
-	}
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.HeaderIs("X-Powered-By", "test")
 }
