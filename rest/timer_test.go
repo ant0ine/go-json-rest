@@ -49,7 +49,7 @@ func TestTimerMiddleware(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	req := test.MakeSimpleRequest("GET", "http://1.2.3.4/", nil)
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
 	recorded := test.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()

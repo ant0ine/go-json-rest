@@ -1,89 +1,89 @@
 package rest
 
 import (
-	"net/http"
-	"net/http/httptest"
+	"github.com/ant0ine/go-json-rest/rest/test"
 	"testing"
 )
 
 func TestRecorderMiddleware(t *testing.T) {
 
-	mw := &RecorderMiddleware{}
-
-	app := func(w ResponseWriter, r *Request) {
+	// api a with simple app
+	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	}))
 
-	handlerFunc := WrapMiddlewares([]Middleware{mw}, app)
+	// a middleware carrying the Env tests
+	api.Use(MiddlewareSimple(func(handler HandlerFunc) HandlerFunc {
+		return func(w ResponseWriter, r *Request) {
 
-	// fake request
-	r := &Request{
-		nil,
-		nil,
-		map[string]interface{}{},
-	}
+			handler(w, r)
 
-	// fake writer
-	w := &responseWriter{
-		httptest.NewRecorder(),
-		false,
-	}
+			if r.Env["STATUS_CODE"] == nil {
+				t.Error("STATUS_CODE is nil")
+			}
+			statusCode := r.Env["STATUS_CODE"].(int)
+			if statusCode != 200 {
+				t.Errorf("STATUS_CODE = 200 expected, got %d", statusCode)
+			}
 
-	handlerFunc(w, r)
+			if r.Env["BYTES_WRITTEN"] == nil {
+				t.Error("BYTES_WRITTEN is nil")
+			}
+			bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
+			// '{"Id":"123"}' => 12 chars
+			if bytesWritten != 12 {
+				t.Errorf("BYTES_WRITTEN 12 expected, got %d", bytesWritten)
+			}
+		}
+	}))
 
-	if r.Env["STATUS_CODE"] == nil {
-		t.Error("STATUS_CODE is nil")
-	}
-	statusCode := r.Env["STATUS_CODE"].(int)
-	if statusCode != 200 {
-		t.Errorf("STATUS_CODE = 200 expected, got %d", statusCode)
-	}
+	// the middleware to test
+	api.Use(&RecorderMiddleware{})
 
-	if r.Env["BYTES_WRITTEN"] == nil {
-		t.Error("BYTES_WRITTEN is nil")
-	}
-	bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
-	// '{"Id":"123"}' => 12 chars
-	if bytesWritten != 12 {
-		t.Errorf("BYTES_WRITTEN 12 expected, got %d", bytesWritten)
-	}
+	// wrap all
+	handler := api.MakeHandler()
+
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
 }
 
 // See how many bytes are written when gzipping
 func TestRecorderAndGzipMiddleware(t *testing.T) {
 
-	mw := &RecorderMiddleware{}
-	gzip := &GzipMiddleware{}
-
-	app := func(w ResponseWriter, r *Request) {
+	// api a with simple app
+	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	}))
 
-	handlerFunc := WrapMiddlewares([]Middleware{mw, gzip}, app)
+	// a middleware carrying the Env tests
+	api.Use(MiddlewareSimple(func(handler HandlerFunc) HandlerFunc {
+		return func(w ResponseWriter, r *Request) {
 
-	// fake request
-	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
-	origRequest.Header.Set("Accept-Encoding", "gzip")
-	r := &Request{
-		origRequest,
-		nil,
-		map[string]interface{}{},
-	}
+			handler(w, r)
 
-	// fake writer
-	w := &responseWriter{
-		httptest.NewRecorder(),
-		false,
-	}
+			if r.Env["BYTES_WRITTEN"] == nil {
+				t.Error("BYTES_WRITTEN is nil")
+			}
+			bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
+			// Yes, the gzipped version actually takes more space.
+			if bytesWritten != 28 {
+				t.Errorf("BYTES_WRITTEN 28 expected, got %d", bytesWritten)
+			}
+		}
+	}))
 
-	handlerFunc(w, r)
+	// the middlewares to test
+	api.Use(&RecorderMiddleware{})
+	api.Use(&GzipMiddleware{})
 
-	if r.Env["BYTES_WRITTEN"] == nil {
-		t.Error("BYTES_WRITTEN is nil")
-	}
-	bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
-	// Yes, the gzipped version actually takes more space.
-	if bytesWritten != 28 {
-		t.Errorf("BYTES_WRITTEN 28 expected, got %d", bytesWritten)
-	}
+	// wrap all
+	handler := api.MakeHandler()
+
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	// "Accept-Encoding", "gzip" is set by test.MakeSimpleRequest
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
 }
