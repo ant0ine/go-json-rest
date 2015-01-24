@@ -12,7 +12,7 @@ import (
 func TestAccessLogJsonMiddleware(t *testing.T) {
 
 	// api with simple app
-	api := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))
 

@@ -26,7 +26,7 @@ func TestAuthBasic(t *testing.T) {
 	}
 
 	// api for testing failure
-	apiFailure := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+	apiFailure := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		t.Error("Should never be executed")
 	}))
 	apiFailure.Use(authMiddleware)
@@ -54,7 +54,7 @@ func TestAuthBasic(t *testing.T) {
 	recorded.ContentTypeIsJson()
 
 	// api for testing success
-	apiSuccess := NewApi(HandlerFunc(func(w ResponseWriter, r *Request) {
+	apiSuccess := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		if r.Env["REMOTE_USER"] == nil {
 			t.Error("REMOTE_USER is nil")
 		}
