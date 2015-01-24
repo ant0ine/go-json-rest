@@ -7,13 +7,8 @@ import (
 
 func TestJSONP(t *testing.T) {
 
-	handler := ResourceHandler{
-		DisableJsonIndent: true,
-		PreRoutingMiddlewares: []Middleware{
-			&JsonpMiddleware{},
-		},
-	}
-	handler.SetRoutes(
+	// router app with success and error paths
+	router, err := MakeRouter(
 		&Route{"GET", "/ok",
 			func(w ResponseWriter, r *Request) {
 				w.WriteJson(map[string]string{"Id": "123"})
@@ -25,13 +20,24 @@ func TestJSONP(t *testing.T) {
 			},
 		},
 	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/ok?callback=parseResponse", nil))
+	api := NewApi(router)
+
+	// the middleware to test
+	api.Use(&JsonpMiddleware{})
+
+	// wrap all
+	handler := api.MakeHandler()
+
+	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/ok?callback=parseResponse", nil))
 	recorded.CodeIs(200)
 	recorded.HeaderIs("Content-Type", "text/javascript")
 	recorded.BodyIs("parseResponse({\"Id\":\"123\"})")
 
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/error?callback=parseResponse", nil))
+	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/error?callback=parseResponse", nil))
 	recorded.CodeIs(500)
 	recorded.HeaderIs("Content-Type", "text/javascript")
 	recorded.BodyIs("parseResponse({\"Error\":\"jsonp error\"})")

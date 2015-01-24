@@ -29,7 +29,7 @@ type Middleware interface {
 }
 
 // MiddlewareSimple is an adapter type that makes it easy to write a Middleware with a simple
-// function. eg: api.Use(rest.MiddlewareSimple(func(h HandlerFunc) Handlerfunc { .. }))
+// function. eg: api.Use(rest.MiddlewareSimple(func(h HandlerFunc) Handlerfunc { ... }))
 type MiddlewareSimple func(handler HandlerFunc) HandlerFunc
 
 // MiddlewareFunc makes MiddlewareSimple implement the Middleware interface.
