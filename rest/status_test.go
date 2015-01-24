@@ -2,7 +2,6 @@ package rest
 
 import (
 	"github.com/ant0ine/go-json-rest/rest/test"
-	"net/http"
 	"testing"
 )
 
@@ -16,9 +15,9 @@ func TestStatus(t *testing.T) {
 	}))
 
 	// the middlewares
-	api.Use(&RecorderMiddleware{})
-	api.Use(&TimerMiddleware{})
 	api.Use(status)
+	api.Use(&TimerMiddleware{})
+	api.Use(&RecorderMiddleware{})
 
 	// wrap all
 	handler := api.MakeHandler()
@@ -34,7 +33,7 @@ func TestStatus(t *testing.T) {
 	recorded.ContentTypeIsJson()
 
 	// payload
-	payload := map[string]interface{}
+	payload := map[string]interface{}{}
 	err := recorded.DecodeJsonPayload(&payload)
 	if err != nil {
 		t.Fatal(err)
