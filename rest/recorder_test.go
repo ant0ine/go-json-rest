@@ -7,7 +7,7 @@ import (
 
 func TestRecorderMiddleware(t *testing.T) {
 
-	// api a with simple app
+	// api with a simple app
 	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))
@@ -52,7 +52,7 @@ func TestRecorderMiddleware(t *testing.T) {
 // See how many bytes are written when gzipping
 func TestRecorderAndGzipMiddleware(t *testing.T) {
 
-	// api a with simple app
+	// api with a simple app
 	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))

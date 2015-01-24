@@ -7,7 +7,7 @@ import (
 
 func TestJsonIndentMiddleware(t *testing.T) {
 
-	// api a with simple app
+	// api with a simple app
 	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))

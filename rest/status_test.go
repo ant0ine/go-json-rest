@@ -8,31 +8,33 @@ import (
 
 func TestStatus(t *testing.T) {
 
-	// the middlewares
-	recorder := &RecorderMiddleware{}
-	timer := &TimerMiddleware{}
 	status := &StatusMiddleware{}
 
-	// the app
-	app := func(w ResponseWriter, r *Request) {
+	// api with an app that return the Status
+	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(status.GetStatus())
-	}
+	}))
+
+	// the middlewares
+	api.Use(&RecorderMiddleware{})
+	api.Use(&TimerMiddleware{})
+	api.Use(status)
 
 	// wrap all
-	handler := http.HandlerFunc(adapterFunc(WrapMiddlewares([]Middleware{status, timer, recorder}, app)))
+	handler := api.MakeHandler()
 
 	// one request
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/1", nil))
+	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/1", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
 	// another request
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/2", nil))
+	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/2", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
-	payload := map[string]interface{}{}
-
+	// payload
+	payload := map[string]interface{}
 	err := recorded.DecodeJsonPayload(&payload)
 	if err != nil {
 		t.Fatal(err)

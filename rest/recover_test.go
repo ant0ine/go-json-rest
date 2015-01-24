@@ -9,7 +9,7 @@ import (
 
 func TestRecoverMiddleware(t *testing.T) {
 
-	// api a with simple app
+	// api with a simple app that fails
 	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
 		panic("test")
 	}))
