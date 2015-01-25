@@ -28,12 +28,12 @@ func TestContentTypeCheckerMiddleware(t *testing.T) {
 
 	// JSON payload with correct content type specifying the utf-8 charset
 	req := test.MakeSimpleRequest("POST", "http://localhost/", map[string]string{"Id": "123"})
-	req.Header.Set("Content-Type", "application/json; charset=utf8")
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	recorded = test.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
 
 	// JSON payload with incorrect content type
-	req := test.MakeSimpleRequest("POST", "http://localhost/", map[string]string{"Id": "123"})
+	req = test.MakeSimpleRequest("POST", "http://localhost/", map[string]string{"Id": "123"})
 	req.Header.Set("Content-Type", "text/x-json")
 	recorded = test.RunRequest(t, handler, req)
 	recorded.CodeIs(415)
