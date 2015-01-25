@@ -39,14 +39,30 @@ func (api *Api) MakeHandler() http.Handler {
 	)
 }
 
-// Defines a stack of middlewares that is convenient for development.
+// Defines a stack of middlewares convenient for development. Among other things:
+// console friendly logging, JSON indentation, error stack strace in the response.
 var DefaultDevStack = []Middleware{
 	&AccessLogApacheMiddleware{},
 	&TimerMiddleware{},
 	&RecorderMiddleware{},
 	&JsonIndentMiddleware{},
 	&PoweredByMiddleware{},
+	&ContentTypeCheckerMiddleware{},
 	&RecoverMiddleware{
 		EnableResponseStackTrace: true,
 	},
+}
+
+// Defines a stack of middlewares convenient for production. Among other things:
+// Apache CombinedLogFormat logging, gzip compression.
+var DefaultProdStack = []Middleware{
+	&AccessLogApacheMiddleware{
+		Format: CombinedLogFormat,
+	},
+	&TimerMiddleware{},
+	&RecorderMiddleware{},
+	&GzipMiddleware{},
+	&PoweredByMiddleware{},
+	&ContentTypeCheckerMiddleware{},
+	&RecoverMiddleware{},
 }
