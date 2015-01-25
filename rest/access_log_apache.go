@@ -51,7 +51,9 @@ const (
 )
 
 // AccessLogApacheMiddleware produces the access log following a format inpired
-// by Apache mod_log_config. It depends on the timer, recorder and auth middlewares.
+// by Apache mod_log_config. Format defaults to DefaultLogFormat. Logger defaults
+// to log.New(os.Stderr, "", 0). This middleware depends on TimerMiddleware and RecorderMiddleware.
+// It also uses request.Env["REMOTE_USER"].(string) set by the auth middlewares.
 type AccessLogApacheMiddleware struct {
 	Logger       *log.Logger
 	Format       AccessLogFormat
