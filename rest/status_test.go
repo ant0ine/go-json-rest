@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestStatus(t *testing.T) {
+func TestStatusMiddleware(t *testing.T) {
 
 	status := &StatusMiddleware{}
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestJSONP(t *testing.T) {
+func TestJsonpMiddleware(t *testing.T) {
 
 	// router app with success and error paths
 	router, err := MakeRouter(
