@@ -8,7 +8,9 @@ import (
 )
 
 // AccessLogJsonMiddleware produces the access log with records written as JSON.
-// It depends on the timer, recorder and auth middlewares.
+// Logger defaults to log.New(os.Stderr, "", 0). This middleware depends on TimerMiddleware
+// and RecorderMiddleware. It also uses request.Env["REMOTE_USER"].(string) set by the auth
+// middlewares.
 type AccessLogJsonMiddleware struct {
 	Logger *log.Logger
 }
@@ -30,8 +32,8 @@ func (mw *AccessLogJsonMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	}
 }
 
-// When EnableLogAsJson is true, this object is dumped as JSON in the Logger.
-// (Public for documentation only, no public method uses it).
+// AccessLogJsonRecord is the data structure used by AccessLogJsonMiddleware to create the JSON
+// records. (Public for documentation only, no public method uses it)
 type AccessLogJsonRecord struct {
 	Timestamp    *time.Time
 	StatusCode   int
