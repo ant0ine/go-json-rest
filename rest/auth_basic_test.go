@@ -33,12 +33,12 @@ func TestAuthBasic(t *testing.T) {
 	handler := apiFailure.MakeHandler()
 
 	// simple request fails
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))
+	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
 	// auth with wrong cred and right method fails
-	wrongCredReq := test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
+	wrongCredReq := test.MakeSimpleRequest("GET", "http://localhost/", nil)
 	encoded := base64.StdEncoding.EncodeToString([]byte("admin:AdmIn"))
 	wrongCredReq.Header.Set("Authorization", "Basic "+encoded)
 	recorded = test.RunRequest(t, handler, wrongCredReq)
@@ -46,7 +46,7 @@ func TestAuthBasic(t *testing.T) {
 	recorded.ContentTypeIsJson()
 
 	// auth with right cred and wrong method fails
-	rightCredReq := test.MakeSimpleRequest("POST", "http://1.2.3.4/r", nil)
+	rightCredReq := test.MakeSimpleRequest("POST", "http://localhost/", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
 	recorded = test.RunRequest(t, handler, rightCredReq)
@@ -67,7 +67,7 @@ func TestAuthBasic(t *testing.T) {
 	apiSuccess.Use(authMiddleware)
 
 	// auth with right cred and right method succeeds
-	rightCredReq = test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil)
+	rightCredReq = test.MakeSimpleRequest("GET", "http://localhost/", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
 	recorded = test.RunRequest(t, apiSuccess.MakeHandler(), rightCredReq)
