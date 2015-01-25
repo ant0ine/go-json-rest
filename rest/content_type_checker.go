@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
-// ContentTypeCheckerMiddleware verify the Request content type and returns a
+// ContentTypeCheckerMiddleware verifies the request Content-Type header and returns a
 // StatusUnsupportedMediaType (415) HTTP error response if it's incorrect.
+// The expected Content-Type is 'application/json' if the content is non-null.
+// Note: If a charset parameter exists, it MUST be UTF-8.
 type ContentTypeCheckerMiddleware struct{}
 
 // MiddlewareFunc makes ContentTypeCheckerMiddleware implement the Middleware interface.
