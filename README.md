@@ -103,8 +103,7 @@ type Message struct {
 }
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(&Message{
 				Body: "Hello World!",
@@ -114,7 +113,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -149,10 +151,7 @@ import (
 
 func main() {
 
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"POST", "/countries", PostCountry},
 		&rest.Route{"GET", "/countries/:code", GetCountry},
@@ -161,7 +160,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -271,10 +273,7 @@ func main() {
 		Store: map[string]*User{},
 	}
 
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/users", users.GetAllUsers},
 		&rest.Route{"POST", "/users", users.PostUser},
 		&rest.Route{"GET", "/users/:id", users.GetUser},
@@ -284,7 +283,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type User struct {
@@ -398,8 +400,7 @@ type Message struct {
 }
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
 			ip, err := net.LookupIP(req.PathParam("host"))
 			if err != nil {
@@ -412,7 +413,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
