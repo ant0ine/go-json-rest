@@ -16,7 +16,8 @@ type router struct {
 	trie                   *trie.Trie
 }
 
-// XXX API still in flux
+// MakeRouter returns the router app. Given a set of Routes, it dispatches the request to the
+// HandlerFunc of the first route that matches. The order of the Routes matters.
 func MakeRouter(routes ...*Route) (App, error) {
 	r := &router{
 		Routes: routes,
