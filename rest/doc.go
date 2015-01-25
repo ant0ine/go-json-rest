@@ -12,6 +12,7 @@
 //
 //      import (
 //              "github.com/ant0ine/go-json-rest/rest"
+//              "log"
 //              "net/http"
 //      )
 //
@@ -29,11 +30,15 @@
 //      }
 //
 //      func main() {
-//              handler := rest.ResourceHandler{}
-//              handler.SetRoutes(
+//              router, err := rest.MakeRouter(
 //                      rest.Route{"GET", "/users/:id", GetUser},
 //              )
-//              http.ListenAndServe(":8080", &handler)
+//              if err != nil {
+//                      log.Fatal(err)
+//              }
+//              api := rest.NewApi(router)
+//              api.Use(rest.DefaultDevStack...)
+//              log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 //      }
 //
 //
