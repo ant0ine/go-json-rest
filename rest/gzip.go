@@ -8,8 +8,10 @@ import (
 	"strings"
 )
 
-// GzipMiddleware is responsible for compressing the payload with gzip
-// and setting the proper headers when supported by the client.
+// GzipMiddleware is responsible for compressing the payload with gzip and setting the proper
+// headers when supported by the client. It must be wrapped by TimerMiddleware for the
+// compression time to be captured. And It must be wrapped by RecorderMiddleware for the
+// compressed BYTES_WRITTEN to be captured.
 type GzipMiddleware struct{}
 
 // MiddlewareFunc makes GzipMiddleware implement the Middleware interface.
