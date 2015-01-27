@@ -45,12 +45,12 @@ var DefaultDevStack = []Middleware{
 	&AccessLogApacheMiddleware{},
 	&TimerMiddleware{},
 	&RecorderMiddleware{},
-	&JsonIndentMiddleware{},
 	&PoweredByMiddleware{},
-	&ContentTypeCheckerMiddleware{},
 	&RecoverMiddleware{
 		EnableResponseStackTrace: true,
 	},
+	&JsonIndentMiddleware{},
+	&ContentTypeCheckerMiddleware{},
 }
 
 // Defines a stack of middlewares convenient for production. Among other things:
@@ -61,8 +61,16 @@ var DefaultProdStack = []Middleware{
 	},
 	&TimerMiddleware{},
 	&RecorderMiddleware{},
-	&GzipMiddleware{},
 	&PoweredByMiddleware{},
+	&RecoverMiddleware{},
+	&GzipMiddleware{},
 	&ContentTypeCheckerMiddleware{},
+}
+
+// Defines a stack of middlewares that should be common to most of the middleware stacks.
+var DefaultCommonStack = []Middleware{
+	&TimerMiddleware{},
+	&RecorderMiddleware{},
+	&PoweredByMiddleware{},
 	&RecoverMiddleware{},
 }
