@@ -501,24 +501,24 @@ import (
 
 func main() {
 
-	api := Api{}
-	api.InitDB()
-	api.InitSchema()
+	i := Impl{}
+	i.InitDB()
+	i.InitSchema()
 
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/reminders", api.GetAllReminders},
-		&rest.Route{"POST", "/reminders", api.PostReminder},
-		&rest.Route{"GET", "/reminders/:id", api.GetReminder},
-		&rest.Route{"PUT", "/reminders/:id", api.PutReminder},
-		&rest.Route{"DELETE", "/reminders/:id", api.DeleteReminder},
+	router, err := rest.MakeRouter(
+		&rest.Route{"GET", "/reminders", i.GetAllReminders},
+		&rest.Route{"POST", "/reminders", i.PostReminder},
+		&rest.Route{"GET", "/reminders/:id", i.GetReminder},
+		&rest.Route{"PUT", "/reminders/:id", i.PutReminder},
+		&rest.Route{"DELETE", "/reminders/:id", i.DeleteReminder},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Reminder struct {
@@ -529,57 +529,57 @@ type Reminder struct {
 	DeletedAt time.Time `json:"-"`
 }
 
-type Api struct {
+type Impl struct {
 	DB gorm.DB
 }
 
-func (api *Api) InitDB() {
+func (i *Impl) InitDB() {
 	var err error
-	api.DB, err = gorm.Open("mysql", "gorm:gorm@/gorm?charset=utf8&parseTime=True")
+	i.DB, err = gorm.Open("mysql", "gorm:gorm@/gorm?charset=utf8&parseTime=True")
 	if err != nil {
 		log.Fatalf("Got error when connect database, the error is '%v'", err)
 	}
-	api.DB.LogMode(true)
+	i.DB.LogMode(true)
 }
 
-func (api *Api) InitSchema() {
-	api.DB.AutoMigrate(&Reminder{})
+func (i *Impl) InitSchema() {
+	i.DB.AutoMigrate(&Reminder{})
 }
 
-func (api *Api) GetAllReminders(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) GetAllReminders(w rest.ResponseWriter, r *rest.Request) {
 	reminders := []Reminder{}
-	api.DB.Find(&reminders)
+	i.DB.Find(&reminders)
 	w.WriteJson(&reminders)
 }
 
-func (api *Api) GetReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) GetReminder(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	reminder := Reminder{}
-	if api.DB.First(&reminder, id).Error != nil {
+	if i.DB.First(&reminder, id).Error != nil {
 		rest.NotFound(w, r)
 		return
 	}
 	w.WriteJson(&reminder)
 }
 
-func (api *Api) PostReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) PostReminder(w rest.ResponseWriter, r *rest.Request) {
 	reminder := Reminder{}
 	if err := r.DecodeJsonPayload(&reminder); err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err := api.DB.Save(&reminder).Error; err != nil {
+	if err := i.DB.Save(&reminder).Error; err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteJson(&reminder)
 }
 
-func (api *Api) PutReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) PutReminder(w rest.ResponseWriter, r *rest.Request) {
 
 	id := r.PathParam("id")
 	reminder := Reminder{}
-	if api.DB.First(&reminder, id).Error != nil {
+	if i.DB.First(&reminder, id).Error != nil {
 		rest.NotFound(w, r)
 		return
 	}
@@ -592,21 +592,21 @@ func (api *Api) PutReminder(w rest.ResponseWriter, r *rest.Request) {
 
 	reminder.Message = updated.Message
 
-	if err := api.DB.Save(&reminder).Error; err != nil {
+	if err := i.DB.Save(&reminder).Error; err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteJson(&reminder)
 }
 
-func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	reminder := Reminder{}
-	if api.DB.First(&reminder, id).Error != nil {
+	if i.DB.First(&reminder, id).Error != nil {
 		rest.NotFound(w, r)
 		return
 	}
-	if err := api.DB.Delete(&reminder).Error; err != nil {
+	if err := i.DB.Delete(&reminder).Error; err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -982,7 +982,7 @@ to build JSON responses. In order to serve different kind of content,
 it is recommended to either:
 a) use another server and configure CORS
    (see the cors/ example)
-b) combine the rest.ResourceHandler with another http.Handler
+b) combine the api.MakeHandler() with another http.Handler
    (see api-and-static/ example)
 
 That been said, exceptionally, it can be convenient to return a
@@ -1439,8 +1439,7 @@ import (
 )
 
 func init() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
@@ -1448,7 +1447,10 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/", &handler)
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	http.Handle("/", api.MakeHandler())
 }
 
 ```
