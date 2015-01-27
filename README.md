@@ -429,8 +429,8 @@ Common use cases, found in many applications.
 
 Combine Go-Json-Rest with other handlers.
 
-`rest.ResourceHandler` is a valid `http.Handler`, and can be combined with other handlers.
-In this example the ResourceHandler is used under the `/api/` prefix, while a FileServer is instantiated under the `/static/` prefix.
+`api.MakeHandler()` is a valid `http.Handler`, and can be combined with other handlers.
+In this example the api handler is used under the `/api/` prefix, while a FileServer is instantiated under the `/static/` prefix.
 
 The curl demo:
 ```
@@ -636,29 +636,27 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.CorsMiddleware{
-				RejectNonCorsRequests: false,
-				OriginValidator: func(origin string, request *rest.Request) bool {
-					return origin == "http://my.other.host"
-				},
-				AllowedMethods: []string{"GET", "POST", "PUT"},
-				AllowedHeaders: []string{
-					"Accept", "Content-Type", "X-Custom-Header", "Origin"},
-				AccessControlAllowCredentials: true,
-				AccessControlMaxAge:           3600,
-			},
-		},
-	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.CorsMiddleware{
+		RejectNonCorsRequests: false,
+		OriginValidator: func(origin string, request *rest.Request) bool {
+			return origin == "http://my.other.host"
+		},
+		AllowedMethods: []string{"GET", "POST", "PUT"},
+		AllowedHeaders: []string{
+			"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+		AccessControlAllowCredentials: true,
+		AccessControlMaxAge:           3600,
+	})
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -705,14 +703,7 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.JsonpMiddleware{
-				CallbackNameKey: "cb",
-			},
-		},
-	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
@@ -720,7 +711,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.JsonpMiddleware{
+		CallbackNameKey: "cb",
+	})
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -746,27 +743,25 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.AuthBasicMiddleware{
-				Realm: "test zone",
-				Authenticator: func(userId string, password string) bool {
-					if userId == "admin" && password == "admin" {
-						return true
-					}
-					return false
-				},
-			},
-		},
-	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.AuthBasicMiddleware{
+		Realm: "test zone",
+		Authenticator: func(userId string, password string) bool {
+			if userId == "admin" && password == "admin" {
+				return true
+			}
+			return false
+		},
+	})
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -837,20 +832,22 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{
-		EnableStatusService: true,
-	}
-	err := handler.SetRoutes(
+	statusMw := &rest.StatusMiddleware{}
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/.status",
 			func(w rest.ResponseWriter, r *rest.Request) {
-				w.WriteJson(handler.GetStatus())
+				w.WriteJson(statusMw.GetStatus())
 			},
 		},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(statusMw)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -880,9 +877,6 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{
-		EnableStatusService: true,
-	}
 	auth := &rest.AuthBasicMiddleware{
 		Realm: "test zone",
 		Authenticator: func(userId string, password string) bool {
@@ -892,7 +886,7 @@ func main() {
 			return false
 		},
 	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"GET", "/.status",
 			auth.MiddlewareFunc(
@@ -905,7 +899,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(statusMw)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -1044,8 +1042,7 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message.txt", func(w rest.ResponseWriter, req *rest.Request) {
 			w.Header().Set("Content-Type", "text/plain")
 			w.(http.ResponseWriter).Write([]byte("Hello World!"))
@@ -1054,7 +1051,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -1312,16 +1312,7 @@ func (mw *NewRelicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Hand
 }
 
 func main() {
-	handler := rest.ResourceHandler{
-		OuterMiddlewares: []rest.Middleware{
-			&NewRelicMiddleware{
-				License: "<REPLACE WITH THE LICENSE KEY>",
-				Name:    "<REPLACE WITH THE APP NAME>",
-				Verbose: true,
-			},
-		},
-	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
@@ -1329,7 +1320,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&NewRelicMiddleware{
+		License: "<REPLACE WITH THE LICENSE KEY>",
+		Name:    "<REPLACE WITH THE APP NAME>",
+		Verbose: true,
+	})
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -1435,14 +1434,16 @@ func GetUser(w rest.ResponseWriter, req *rest.Request) {
 }
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/users/:id", GetUser},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
+
+	api := rest.NewApi(router)
+	api.Use(rest.DefaultDevStack...)
+	log.Fatal(spdy.ListenAndServeTCP(":8080", api.MakeHandler()))
 }
 
 ```
