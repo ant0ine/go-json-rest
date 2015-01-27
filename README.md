@@ -126,8 +126,8 @@ Demonstrate simple POST GET and DELETE operations
 
 The curl demo:
 ```
-curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/countries/FR
 curl -i http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
@@ -247,9 +247,9 @@ This shows how to map a Route to a method of an instantiated object (eg: receive
 
 The curl demo:
 ```
-curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+curl -i -H 'Content-Type: application/json' -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
 curl -i http://127.0.0.1:8080/users/0
-curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+curl -i -X PUT -H 'Content-Type: application/json' -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
 curl -i -X DELETE http://127.0.0.1:8080/users/0
 curl -i http://127.0.0.1:8080/users
 ```
@@ -479,10 +479,10 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 The curl demo:
 ```
-curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+curl -i -H 'Content-Type: application/json' -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
 curl -i http://127.0.0.1:8080/reminders/1
 curl -i http://127.0.0.1:8080/reminders
-curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+curl -i -X PUT -H 'Content-Type: application/json' -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
 curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 ```
 
@@ -687,8 +687,8 @@ Demonstrate how to use the JSONP middleware.
 
 The curl demo:
 ``` sh
-curl -i http://127.0.0.1:8080/message
-curl -i http://127.0.0.1:8080/message?cb=parseResponse
+curl -i http://127.0.0.1:8080/
+curl -i http://127.0.0.1:8080/?cb=parseResponse
 ```
 
 
@@ -703,16 +703,9 @@ import (
 )
 
 func main() {
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	api := rest.NewApi(router)
+	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&rest.JsonpMiddleware{
 		CallbackNameKey: "cb",
@@ -728,8 +721,8 @@ Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
 
 The curl demo:
 ```
-curl -i http://127.0.0.1:8080/countries
-curl -i -u admin:admin http://127.0.0.1:8080/countries
+curl -i http://127.0.0.1:8080/
+curl -i -u admin:admin http://127.0.0.1:8080/
 ```
 
 Go code:
@@ -743,14 +736,9 @@ import (
 )
 
 func main() {
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	api := rest.NewApi(router)
+	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&rest.AuthBasicMiddleware{
 		Realm: "test zone",
@@ -762,26 +750,6 @@ func main() {
 		},
 	})
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
 }
 
 ```
@@ -969,7 +937,6 @@ import (
 )
 
 func main() {
-
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/stream", StreamThings},
 	)
@@ -979,10 +946,7 @@ func main() {
 
 	api := rest.NewApi(router)
 	api.Use(&rest.AccessLogApacheMiddleware{})
-	api.Use(&rest.TimerMiddleware{})
-	api.Use(&rest.RecorderMiddleware{})
-	api.Use(&rest.RecoverMiddleware{})
-
+	api.Use(rest.DefaultCommonStack...)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -1267,7 +1231,7 @@ NewRelic integration based on the GoRelic plugin: [github.com/yvasiyarov/gorelic
 
 The curl demo:
 ``` sh
-curl -i http://127.0.0.1:8080/message
+curl -i http://127.0.0.1:8080/
 ```
 
 
@@ -1312,16 +1276,9 @@ func (mw *NewRelicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Hand
 }
 
 func main() {
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	api := rest.NewApi(router)
+	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&NewRelicMiddleware{
 		License: "<REPLACE WITH THE LICENSE KEY>",
