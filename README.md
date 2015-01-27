@@ -83,7 +83,7 @@ Tradition!
 
 The curl demo:
 ``` sh
-curl -i http://127.0.0.1:8080/message
+curl -i http://127.0.0.1:8080/
 ```
 
 
@@ -97,23 +97,10 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	Body string
-}
-
 func main() {
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(&Message{
-				Body: "Hello World!",
-			})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	api := rest.NewApi(router)
+	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	api.Use(rest.DefaultDevStack...)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
@@ -126,8 +113,10 @@ Demonstrate simple POST GET and DELETE operations
 
 The curl demo:
 ```
-curl -i -H 'Content-Type: application/json' -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-curl -i -H 'Content-Type: application/json' -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/countries/FR
 curl -i http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
@@ -149,7 +138,6 @@ import (
 )
 
 func main() {
-
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"POST", "/countries", PostCountry},
@@ -247,9 +235,11 @@ This shows how to map a Route to a method of an instantiated object (eg: receive
 
 The curl demo:
 ```
-curl -i -H 'Content-Type: application/json' -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
 curl -i http://127.0.0.1:8080/users/0
-curl -i -X PUT -H 'Content-Type: application/json' -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+curl -i -X PUT -H 'Content-Type: application/json' \
+    -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
 curl -i -X DELETE http://127.0.0.1:8080/users/0
 curl -i http://127.0.0.1:8080/users
 ```
@@ -479,10 +469,12 @@ In this example the same struct is used both as the GORM model and as the JSON m
 
 The curl demo:
 ```
-curl -i -H 'Content-Type: application/json' -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
 curl -i http://127.0.0.1:8080/reminders/1
 curl -i http://127.0.0.1:8080/reminders
-curl -i -X PUT -H 'Content-Type: application/json' -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+curl -i -X PUT -H 'Content-Type: application/json' \
+    -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
 curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 ```
 
