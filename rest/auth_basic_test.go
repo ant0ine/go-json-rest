@@ -26,10 +26,11 @@ func TestAuthBasic(t *testing.T) {
 	}
 
 	// api for testing failure
-	apiFailure := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
+	apiFailure := NewApi()
+	apiFailure.Use(authMiddleware)
+	apiFailure.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
 		t.Error("Should never be executed")
 	}))
-	apiFailure.Use(authMiddleware)
 	handler := apiFailure.MakeHandler()
 
 	// simple request fails
@@ -54,7 +55,9 @@ func TestAuthBasic(t *testing.T) {
 	recorded.ContentTypeIsJson()
 
 	// api for testing success
-	apiSuccess := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
+	apiSuccess := NewApi()
+	apiSuccess.Use(authMiddleware)
+	apiSuccess.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
 		if r.Env["REMOTE_USER"] == nil {
 			t.Error("REMOTE_USER is nil")
 		}
@@ -64,7 +67,6 @@ func TestAuthBasic(t *testing.T) {
 		}
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))
-	apiSuccess.Use(authMiddleware)
 
 	// auth with right cred and right method succeeds
 	rightCredReq = test.MakeSimpleRequest("GET", "http://localhost/", nil)

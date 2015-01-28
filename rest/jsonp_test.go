@@ -7,6 +7,11 @@ import (
 
 func TestJsonpMiddleware(t *testing.T) {
 
+	api := NewApi()
+
+	// the middleware to test
+	api.Use(&JsonpMiddleware{})
+
 	// router app with success and error paths
 	router, err := MakeRouter(
 		&Route{"GET", "/ok",
@@ -24,10 +29,7 @@ func TestJsonpMiddleware(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	api := NewApi(router)
-
-	// the middleware to test
-	api.Use(&JsonpMiddleware{})
+	api.SetApp(router)
 
 	// wrap all
 	handler := api.MakeHandler()

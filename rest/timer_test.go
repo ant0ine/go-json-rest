@@ -8,10 +8,7 @@ import (
 
 func TestTimerMiddleware(t *testing.T) {
 
-	// api with a simple app
-	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
-		w.WriteJson(map[string]string{"Id": "123"})
-	}))
+	api := NewApi()
 
 	// a middleware carrying the Env tests
 	api.Use(MiddlewareSimple(func(handler HandlerFunc) HandlerFunc {
@@ -45,6 +42,11 @@ func TestTimerMiddleware(t *testing.T) {
 
 	// the middleware to test
 	api.Use(&TimerMiddleware{})
+
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
 
 	// wrap all
 	handler := api.MakeHandler()

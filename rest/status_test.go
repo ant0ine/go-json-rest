@@ -7,17 +7,18 @@ import (
 
 func TestStatusMiddleware(t *testing.T) {
 
-	status := &StatusMiddleware{}
-
-	// api with an app that return the Status
-	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
-		w.WriteJson(status.GetStatus())
-	}))
+	api := NewApi()
 
 	// the middlewares
+	status := &StatusMiddleware{}
 	api.Use(status)
 	api.Use(&TimerMiddleware{})
 	api.Use(&RecorderMiddleware{})
+
+	// an app that return the Status
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		w.WriteJson(status.GetStatus())
+	}))
 
 	// wrap all
 	handler := api.MakeHandler()

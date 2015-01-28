@@ -7,10 +7,7 @@ import (
 
 func TestRecorderMiddleware(t *testing.T) {
 
-	// api with a simple app
-	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
-		w.WriteJson(map[string]string{"Id": "123"})
-	}))
+	api := NewApi()
 
 	// a middleware carrying the Env tests
 	api.Use(MiddlewareSimple(func(handler HandlerFunc) HandlerFunc {
@@ -40,6 +37,11 @@ func TestRecorderMiddleware(t *testing.T) {
 	// the middleware to test
 	api.Use(&RecorderMiddleware{})
 
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
+
 	// wrap all
 	handler := api.MakeHandler()
 
@@ -52,10 +54,7 @@ func TestRecorderMiddleware(t *testing.T) {
 // See how many bytes are written when gzipping
 func TestRecorderAndGzipMiddleware(t *testing.T) {
 
-	// api with a simple app
-	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
-		w.WriteJson(map[string]string{"Id": "123"})
-	}))
+	api := NewApi()
 
 	// a middleware carrying the Env tests
 	api.Use(MiddlewareSimple(func(handler HandlerFunc) HandlerFunc {
@@ -77,6 +76,11 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 	// the middlewares to test
 	api.Use(&RecorderMiddleware{})
 	api.Use(&GzipMiddleware{})
+
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
 
 	// wrap all
 	handler := api.MakeHandler()

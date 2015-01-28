@@ -4,22 +4,17 @@ import (
 	"net/http"
 )
 
-// Api defines a stack of middlewares and an app.
+// Api defines a stack of Middlewares and an App.
 type Api struct {
 	stack []Middleware
 	app   App
 }
 
-// NewApi makes a new Api object, the App is required.
-func NewApi(app App) *Api {
-
-	if app == nil {
-		panic("app is required")
-	}
-
+// NewApi makes a new Api object. The Middleware stack is empty, and the App is nil.
+func NewApi() *Api {
 	return &Api{
 		stack: []Middleware{},
-		app:   app,
+		app:   nil,
 	}
 }
 
@@ -29,12 +24,24 @@ func (api *Api) Use(middlewares ...Middleware) {
 	api.stack = append(api.stack, middlewares...)
 }
 
-// MakeHandler wraps all the middlewares of the stack and the app together, and
-// returns an http.Handler ready to be used.
+// SetApp sets the App in the Api object.
+func (api *Api) SetApp(app App) {
+	api.app = app
+}
+
+// MakeHandler wraps all the Middlewares of the stack and the App together, and returns an
+// http.Handler ready to be used. If the Middleware stack is empty the App is used directly. If the
+// App is nil, a HandlerFunc that does nothing is used instead.
 func (api *Api) MakeHandler() http.Handler {
+	var appFunc HandlerFunc
+	if api.app != nil {
+		appFunc = api.app.AppFunc()
+	} else {
+		appFunc = func(w ResponseWriter, r *Request) {}
+	}
 	return http.HandlerFunc(
 		adapterFunc(
-			WrapMiddlewares(api.stack, api.app.AppFunc()),
+			WrapMiddlewares(api.stack, appFunc),
 		),
 	)
 }

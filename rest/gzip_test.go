@@ -7,6 +7,11 @@ import (
 
 func TestGzipEnabled(t *testing.T) {
 
+	api := NewApi()
+
+	// the middleware to test
+	api.Use(&GzipMiddleware{})
+
 	// router app with success and error paths
 	router, err := MakeRouter(
 		&Route{"GET", "/ok",
@@ -24,10 +29,7 @@ func TestGzipEnabled(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	api := NewApi(router)
-
-	// the middleware to test
-	api.Use(&GzipMiddleware{})
+	api.SetApp(router)
 
 	// wrap all
 	handler := api.MakeHandler()
@@ -47,6 +49,8 @@ func TestGzipEnabled(t *testing.T) {
 
 func TestGzipDisabled(t *testing.T) {
 
+	api := NewApi()
+
 	// router app with success and error paths
 	router, err := MakeRouter(
 		&Route{"GET", "/ok",
@@ -59,7 +63,7 @@ func TestGzipDisabled(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	api := NewApi(router)
+	api.SetApp(router)
 	handler := api.MakeHandler()
 
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/ok", nil))

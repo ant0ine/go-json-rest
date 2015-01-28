@@ -9,10 +9,7 @@ import (
 
 func TestRecoverMiddleware(t *testing.T) {
 
-	// api with a simple app that fails
-	api := NewApi(AppSimple(func(w ResponseWriter, r *Request) {
-		panic("test")
-	}))
+	api := NewApi()
 
 	// the middleware to test
 	api.Use(&RecoverMiddleware{
@@ -20,6 +17,11 @@ func TestRecoverMiddleware(t *testing.T) {
 		EnableLogAsJson:          false,
 		EnableResponseStackTrace: true,
 	})
+
+	// a simple app that fails
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		panic("test")
+	}))
 
 	// wrap all
 	handler := api.MakeHandler()
