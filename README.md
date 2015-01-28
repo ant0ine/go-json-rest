@@ -98,10 +98,11 @@ import (
 )
 
 func main() {
-	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
 		w.WriteJson(map[string]string{"Body": "Hello World!"})
 	}))
-	api.Use(rest.DefaultDevStack...)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -138,6 +139,8 @@ import (
 )
 
 func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"POST", "/countries", PostCountry},
@@ -147,9 +150,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -262,6 +263,8 @@ func main() {
 		Store: map[string]*User{},
 	}
 
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/users", users.GetAllUsers},
 		&rest.Route{"POST", "/users", users.PostUser},
@@ -272,9 +275,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -389,6 +390,8 @@ type Message struct {
 }
 
 func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
 			ip, err := net.LookupIP(req.PathParam("host"))
@@ -402,9 +405,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -439,6 +440,9 @@ import (
 )
 
 func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
@@ -447,9 +451,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 
 	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
 
@@ -497,6 +499,8 @@ func main() {
 	i.InitDB()
 	i.InitSchema()
 
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/reminders", i.GetAllReminders},
 		&rest.Route{"POST", "/reminders", i.PostReminder},
@@ -507,9 +511,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -628,14 +630,7 @@ import (
 )
 
 func main() {
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	api := rest.NewApi(router)
+	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
@@ -648,6 +643,13 @@ func main() {
 		AccessControlAllowCredentials: true,
 		AccessControlMaxAge:           3600,
 	})
+	router, err := rest.MakeRouter(
+		&rest.Route{"GET", "/countries", GetAllCountries},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -695,13 +697,14 @@ import (
 )
 
 func main() {
-	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
-		w.WriteJson(map[string]string{"Body": "Hello World!"})
-	}))
+	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&rest.JsonpMiddleware{
 		CallbackNameKey: "cb",
 	})
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -728,9 +731,7 @@ import (
 )
 
 func main() {
-	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
-		w.WriteJson(map[string]string{"Body": "Hello World!"})
-	}))
+	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&rest.AuthBasicMiddleware{
 		Realm: "test zone",
@@ -741,6 +742,9 @@ func main() {
 			return false
 		},
 	})
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -792,7 +796,10 @@ import (
 )
 
 func main() {
+	api := rest.NewApi()
 	statusMw := &rest.StatusMiddleware{}
+	api.Use(statusMw)
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/.status",
 			func(w rest.ResponseWriter, r *rest.Request) {
@@ -803,10 +810,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(statusMw)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -837,6 +841,10 @@ import (
 )
 
 func main() {
+	api := rest.NewApi()
+	statusMw := &rest.StatusMiddleware{}
+	api.Use(statusMw)
+	api.Use(rest.DefaultDevStack...)
 	auth := &rest.AuthBasicMiddleware{
 		Realm: "test zone",
 		Authenticator: func(userId string, password string) bool {
@@ -851,7 +859,7 @@ func main() {
 		&rest.Route{"GET", "/.status",
 			auth.MiddlewareFunc(
 				func(w rest.ResponseWriter, r *rest.Request) {
-					w.WriteJson(handler.GetStatus())
+					w.WriteJson(statusMw.GetStatus())
 				},
 			),
 		},
@@ -859,10 +867,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(statusMw)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -929,16 +934,16 @@ import (
 )
 
 func main() {
+	api := rest.NewApi()
+	api.Use(&rest.AccessLogApacheMiddleware{})
+	api.Use(rest.DefaultCommonStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/stream", StreamThings},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(&rest.AccessLogApacheMiddleware{})
-	api.Use(rest.DefaultCommonStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -998,6 +1003,8 @@ import (
 )
 
 func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message.txt", func(w rest.ResponseWriter, req *rest.Request) {
 			w.Header().Set("Content-Type", "text/plain")
@@ -1007,9 +1014,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -1100,6 +1105,12 @@ func (mw *SemVerMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 }
 
 func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.Use(SemVerMiddleware{
+		MinVersion: "1.0.0",
+		MaxVersion: "3.0.0",
+	})
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/#version/message", svmw.MiddlewareFunc(
 			func(w rest.ResponseWriter, req *rest.Request) {
@@ -1120,13 +1131,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
-	api.Use(SemVerMiddleware{
-		MinVersion: "1.0.0",
-		MaxVersion: "3.0.0",
-	})
+	api.SetApp(router)
 	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -1194,24 +1199,18 @@ func (mw *StatsdMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 }
 
 func main() {
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-
-			// take more than 1ms so statsd can report it
-			time.Sleep(100 * time.Millisecond)
-
-			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	api := rest.NewApi(router)
+	api := rest.NewApi()
 	api.Use(&StatsdMiddleware{
 		IpPort: "localhost:8125",
 	})
 	api.Use(rest.DefaultDevStack...)
+	api.SetApp(AppSimple(func(w rest.ResponseWriter, req *rest.Request) {
+
+		// take more than 1ms so statsd can report it
+		time.Sleep(100 * time.Millisecond)
+
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -1268,15 +1267,16 @@ func (mw *NewRelicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Hand
 }
 
 func main() {
-	api := rest.NewApi(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
-		w.WriteJson(map[string]string{"Body": "Hello World!"})
-	}))
+	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	api.Use(&NewRelicMiddleware{
 		License: "<REPLACE WITH THE LICENSE KEY>",
 		Name:    "<REPLACE WITH THE APP NAME>",
 		Verbose: true,
 	})
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -1309,7 +1309,8 @@ import (
 )
 
 func main() {
-
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			for cpt := 1; cpt <= 10; cpt++ {
@@ -1330,9 +1331,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 
 	server := &graceful.Server{
 		Timeout: 10 * time.Second,
@@ -1383,15 +1382,15 @@ func GetUser(w rest.ResponseWriter, req *rest.Request) {
 }
 
 func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/users/:id", GetUser},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	log.Fatal(spdy.ListenAndServeTCP(":8080", api.MakeHandler()))
 }
 
@@ -1431,6 +1430,8 @@ import (
 )
 
 func init() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
@@ -1439,9 +1440,7 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	api := rest.NewApi(router)
-	api.Use(rest.DefaultDevStack...)
+	api.SetApp(router)
 	http.Handle("/", api.MakeHandler())
 }
 
