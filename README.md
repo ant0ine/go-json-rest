@@ -1460,7 +1460,7 @@ Old v1 blog posts:
 
 ## Version 3 release notes
 
-This new version version brings:
+This new version brings:
 
 * Public middlewares. (12 included in the package)
 * A new App interface. (the router being the provided App)
