@@ -1460,16 +1460,17 @@ Old v1 blog posts:
 
 ## Version 3 release notes
 
-*V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.* As a consequence, all the middlewares are now public,
-and the Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
+**V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.** As a consequence, all the middlewares are now public,
+and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
 of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
-See the design ideas and discussion (here)[https://github.com/ant0ine/go-json-rest/issues/110]
+See the design ideas and discussion [here](https://github.com/ant0ine/go-json-rest/issues/110)
 
 
 ## Migration guide from v2 to v3
 
-v3 introduces an API change (see [Semver](http://semver.org/)). But it was possible to maintain backward compatibility, and so, even if ResourceHandler
-still works, it is now considered as deprecated, and will be removed in a few months. In the meantime, it logs a deprecation warning.
+V3 introduces an API change (see [Semver](http://semver.org/)). But it was possible to maintain backward compatibility, and so, ResourceHandler still works.
+ResourceHandler does the same thing as in V2, **but it is now considered as deprecated, and will be removed in a few months**. In the meantime, it logs a
+deprecation warning.
 
 ### How to map the ResourceHandler options to the new stack of middlewares ?
 
