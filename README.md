@@ -1460,12 +1460,33 @@ Old v1 blog posts:
 
 ## Version 3 release notes
 
-TODO
+*V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.* As a consequence, all the middlewares are now public,
+and the Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
+of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
+See the design ideas and discussion (here)[https://github.com/ant0ine/go-json-rest/issues/110]
 
 
 ## Migration guide from v2 to v3
 
-TODO
+v3 introduces an API change (see [Semver](http://semver.org/)). But it was possible to maintain backward compatibility, and so, even if ResourceHandler
+still works, it is now considered as deprecated, and will be removed in a few months. In the meantime, it logs a deprecation warning.
+
+### How to map the ResourceHandler options to the new stack of middlewares ?
+
+* `EnableGzip bool`: Just include GzipMiddleware in the stack of middlewares.
+* `DisableJsonIndent bool`: Just don't include JsonIndentMiddleware in the stack of middlewares.
+* `EnableStatusService bool`: Include StatusMiddleware in the stack and keep a reference to it to access GetStatus().
+* `EnableResponseStackTrace bool`: Same exact option but moved to RecoverMiddleware.
+* `EnableLogAsJson bool`: Include AccessLogJsonMiddleware, and possibly remove AccessLogApacheMiddleware.
+* `EnableRelaxedContentType bool`: Just don't include ContentTypeCheckerMiddleware.
+* `OuterMiddlewares []Middleware`: You are now building the full stack, OuterMiddlewares are the first in the list.
+* `PreRoutingMiddlewares []Middleware`: You are now building the full stack, OuterMiddlewares are the last in the list.
+* `Logger *log.Logger`: Same option but moved to AccessLogApacheMiddleware and AccessLogJsonMiddleware.
+* `LoggerFormat AccessLogFormat`: Same exact option but moved to AccessLogApacheMiddleware.
+* `DisableLogger bool`: Just don't include any access log middleware.
+* `ErrorLogger *log.Logger`: Same exact option but moved to RecoverMiddleware.
+* `XPoweredBy string`: Same exact option but moved to PoweredByMiddleware.
+* `DisableXPoweredBy bool`: Just don't include PoweredByMiddleware.
 
 
 ## Version 2 release notes
