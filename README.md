@@ -1460,6 +1460,27 @@ Old v1 blog posts:
 
 ## Version 3 release notes
 
+This new version version brings:
+
+* Public middlewares. (12 included in the package)
+* A new App interface. (the router being the provided App)
+* A new Api object that manages the middlewares and the App.
+* Optional and interchangeable App/router.
+
+Here is for instance the minimal "Hello World!":
+
+```go
+        api := rest.NewApi()
+		api.Use(rest.DefaultDevStack...)
+		api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+				w.WriteJson(map[string]string{"Body": "Hello World!"})
+		}))
+		http.ListenAndServe(":8080", api.MakeHandler())
+```
+
+[All examples have been updated to use the new API.](https://github.com/ant0ine/go-json-rest#examples)
+
+
 **V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.** As a consequence, all the middlewares are now public,
 and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
 of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
