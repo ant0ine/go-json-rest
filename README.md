@@ -88,7 +88,7 @@ curl -i http://127.0.0.1:8080/
 ```
 
 
-Go code:
+code:
 ``` go
 package main
 
@@ -128,7 +128,7 @@ curl -i -X DELETE http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -246,7 +246,7 @@ curl -i -X DELETE http://127.0.0.1:8080/users/0
 curl -i http://127.0.0.1:8080/users
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -375,7 +375,7 @@ curl -i http://127.0.0.1:8080/lookup/google.com
 curl -i http://127.0.0.1:8080/lookup/notadomain
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -430,7 +430,7 @@ curl -i http://127.0.0.1:8080/api/message
 curl -i http://127.0.0.1:8080/static/main.go
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -481,7 +481,7 @@ curl -i -X PUT -H 'Content-Type: application/json' \
 curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -619,7 +619,7 @@ curl demo:
 curl -i http://127.0.0.1:8080/countries
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -685,7 +685,7 @@ curl -i http://127.0.0.1:8080/
 curl -i http://127.0.0.1:8080/?cb=parseResponse
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -719,7 +719,7 @@ curl -i http://127.0.0.1:8080/
 curl -i -u admin:admin http://127.0.0.1:8080/
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -783,7 +783,7 @@ Output example:
 }
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -828,7 +828,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 ...
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -919,7 +919,7 @@ Transfer-Encoding: chunked
 {"Name":"thing #3"}
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -990,7 +990,7 @@ curl demo:
 curl -i http://127.0.0.1:8080/message.txt
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1036,7 +1036,7 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1150,7 +1150,7 @@ curl -i http://127.0.0.1:8080/doesnotexist
 
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1220,7 +1220,7 @@ curl demo:
 curl -i http://127.0.0.1:8080/
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1288,7 +1288,7 @@ curl demo:
 curl -i http://127.0.0.1:8080/message
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1351,7 +1351,7 @@ spdycat demo:
 spdycat -v --no-tls -2 http://localhost:8080/users/0
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1412,7 +1412,7 @@ curl demo:
 curl -i http://127.0.0.1:8080/message
 ```
 
-Go code:
+code:
 ``` go
 package gaehelloworld
 
