@@ -6,7 +6,7 @@
 [![godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ant0ine/go-json-rest/rest) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ant0ine/go-json-rest/master/LICENSE) [![build](https://img.shields.io/travis/ant0ine/go-json-rest.svg?style=flat)](https://travis-ci.org/ant0ine/go-json-rest)
 
 
-**Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
+**Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast and scalable URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for functionalities like CORS, Auth, Gzip, Status ...
 
 
 ## Table of content
@@ -48,8 +48,9 @@
 ## Features
 
 - Many examples.
-- Fast and scalable URL routing. It implements the classic route description syntax using a scalable trie data structure.
-- Use Middlewares in order to implement and extend the functionalities. (Logging, Gzip, CORS, Auth, ...)
+- Fast and scalable URL routing. It implements the classic route description syntax using a Trie data structure.
+- Architecture based on a router(App) sitting on top of a stack of Middlewares.
+- The Middlewares implement functionalities like Logging, Gzip, CORS, Auth, Status, ...
 - Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
 - Test package to help writing tests for your API.
 - Monitoring statistics inspired by Memcached.
