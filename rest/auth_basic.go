@@ -8,24 +8,21 @@ import (
 	"strings"
 )
 
-// AuthBasicMiddleware provides a simple AuthBasic implementation. On failure,
-// a 401 HTTP response is returned. On success, the wrapped middleware is
-// called, and the userId is made available as
+// AuthBasicMiddleware provides a simple AuthBasic implementation. On failure, a 401 HTTP response
+//is returned. On success, the wrapped middleware is called, and the userId is made available as
 // request.Env["REMOTE_USER"].(string)
 type AuthBasicMiddleware struct {
 
-	// Realm name to display to the user. (Required)
+	// Realm name to display to the user. Required.
 	Realm string
 
-	// Callback function that should perform the authentication of the user
-	// based on userId and password. Must return true on success, false on
-	// failure. (Required)
+	// Callback function that should perform the authentication of the user based on userId and
+	// password. Must return true on success, false on failure. Required.
 	Authenticator func(userId string, password string) bool
 
-	// Callback function that should perform the authorization of the
-	// authenticated user. Called only after an authentication success.
-	// Must return true on success, false on failure. (Optional, default
-	// to success)
+	// Callback function that should perform the authorization of the authenticated user. Called
+	// only after an authentication success. Must return true on success, false on failure.
+	// Optional, default to success.
 	Authorizator func(userId string, request *Request) bool
 }
 

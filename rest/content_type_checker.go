@@ -7,9 +7,9 @@ import (
 )
 
 // ContentTypeCheckerMiddleware verifies the request Content-Type header and returns a
-// StatusUnsupportedMediaType (415) HTTP error response if it's incorrect.
-// The expected Content-Type is 'application/json' if the content is non-null.
-// Note: If a charset parameter exists, it MUST be UTF-8.
+// StatusUnsupportedMediaType (415) HTTP error response if it's incorrect. The expected
+// Content-Type is 'application/json' if the content is non-null. Note: If a charset parameter
+// exists, it MUST be UTF-8.
 type ContentTypeCheckerMiddleware struct{}
 
 // MiddlewareFunc makes ContentTypeCheckerMiddleware implement the Middleware interface.
@@ -23,7 +23,8 @@ func (mw *ContentTypeCheckerMiddleware) MiddlewareFunc(handler HandlerFunc) Hand
 			charset = "UTF-8"
 		}
 
-		if r.ContentLength > 0 && // per net/http doc, means that the length is known and non-null
+		// per net/http doc, means that the length is known and non-null
+		if r.ContentLength > 0 &&
 			!(mediatype == "application/json" && strings.ToUpper(charset) == "UTF-8") {
 
 			Error(w,

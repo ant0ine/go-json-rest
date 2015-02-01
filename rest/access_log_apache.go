@@ -50,9 +50,9 @@ const (
 	DefaultLogFormat = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
 )
 
-// AccessLogApacheMiddleware produces the access log following a format inpired by Apache
-// mod_log_config. It depends on TimerMiddleware and RecorderMiddleware. It also uses
-// request.Env["REMOTE_USER"].(string) set by the auth middlewares.
+// AccessLogApacheMiddleware produces the access log following a format inspired by Apache
+// mod_log_config. It depends on TimerMiddleware and RecorderMiddleware that must be in the wrapped
+// middlewares. It also uses request.Env["REMOTE_USER"].(string) set by the auth middlewares.
 type AccessLogApacheMiddleware struct {
 
 	// Logger points to the logger object used by this middleware, it defaults to

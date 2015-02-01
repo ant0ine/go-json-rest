@@ -76,7 +76,8 @@ type Status struct {
 	AverageResponseTimeSec float64
 }
 
-// GetStatus returns a Status object.
+// GetStatus computes and returns a Status object based on the request informations accumulated
+// since the start of the process.
 func (mw *StatusMiddleware) GetStatus() *Status {
 
 	mw.lock.RLock()
