@@ -231,9 +231,7 @@ Demonstrate how to use Method Values.
 
 Method Values have been [introduced in Go 1.1](https://golang.org/doc/go1.1#method_values).
 
-Until then `rest.RouteObjectMethod` was provided, this method is now deprecated.
-
-This shows how to map a Route to a method of an instantiated object (eg: receiver of the method)
+This shows how to map a Route to a method of an instantiated object (i.e: receiver of the method)
 
 curl demo:
 ```
