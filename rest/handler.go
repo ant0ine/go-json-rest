@@ -8,6 +8,7 @@ import (
 // ResourceHandler implements the http.Handler interface and acts a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation for instance.
+// ResourceHandler is now DEPRECATED in favor of the new Api object. See the migration guide.
 type ResourceHandler struct {
 	internalRouter   *router
 	statusMiddleware *StatusMiddleware
@@ -85,7 +86,7 @@ type ResourceHandler struct {
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
-	log.Print("ResourceHandler is deprecated, replaced by Api, see migration guide")
+	log.Print("ResourceHandler is now DEPRECATED in favor of the new Api object, see the migration guide")
 
 	// intantiate all the middlewares based on the settings.
 	middlewares := []Middleware{}
