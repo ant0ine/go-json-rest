@@ -82,7 +82,7 @@ First examples to try, as an introduction to go-json-rest.
 
 Tradition!
 
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/
 ```
@@ -113,7 +113,7 @@ func main() {
 
 Demonstrate simple POST GET and DELETE operations
 
-The curl demo:
+curl demo:
 ```
 curl -i -H 'Content-Type: application/json' \
     -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
@@ -235,7 +235,7 @@ Until then `rest.RouteObjectMethod` was provided, this method is now deprecated.
 
 This shows how to map a Route to a method of an instantiated object (eg: receiver of the method)
 
-The curl demo:
+curl demo:
 ```
 curl -i -H 'Content-Type: application/json' \
     -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
@@ -369,7 +369,7 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 Demonstrate how to use the relaxed placeholder (notation #paramName).
 This placeholder matches everything until the first `/`, including `.`
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/lookup/google.com
 curl -i http://127.0.0.1:8080/lookup/notadomain
@@ -424,7 +424,7 @@ Combine Go-Json-Rest with other handlers.
 `api.MakeHandler()` is a valid `http.Handler`, and can be combined with other handlers.
 In this example the api handler is used under the `/api/` prefix, while a FileServer is instantiated under the `/static/` prefix.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/api/message
 curl -i http://127.0.0.1:8080/static/main.go
@@ -470,7 +470,7 @@ Demonstrate basic CRUD operation using a store based on MySQL and GORM
 [GORM](https://github.com/jinzhu/gorm) is simple ORM library for Go.
 In this example the same struct is used both as the GORM model and as the JSON model.
 
-The curl demo:
+curl demo:
 ```
 curl -i -H 'Content-Type: application/json' \
     -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
@@ -614,11 +614,10 @@ func (i *Impl) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 
 Demonstrate how to setup CorsMiddleware around all the API endpoints.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/countries
 ```
-
 
 Go code:
 ``` go
@@ -680,12 +679,11 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 Demonstrate how to use the JSONP middleware.
 
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/
 curl -i http://127.0.0.1:8080/?cb=parseResponse
 ```
-
 
 Go code:
 ``` go
@@ -715,7 +713,7 @@ func main() {
 
 Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/
 curl -i -u admin:admin http://127.0.0.1:8080/
@@ -758,8 +756,7 @@ Demonstrate how to setup a `/.status` endpoint
 Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
 This example shows how to enable the stats, and how to setup the `/.status` route.
 
-
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/.status
 curl -i http://127.0.0.1:8080/.status
@@ -823,7 +820,7 @@ Demonstrate how to setup a /.status endpoint protected with basic authentication
 
 This is a good use case of middleware applied to only one API endpoint.
 
-The Curl Demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/.status
@@ -905,7 +902,7 @@ Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP
 
 The stream format is a Line Delimited JSON.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/stream
 ```
@@ -988,7 +985,7 @@ different content type on a JSON endpoint. In this case, setting the
 Content-Type and using the type assertion to access the Write method
 is enough. As shown in this example.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/message.txt
 ```
@@ -1029,9 +1026,7 @@ That been said, here is an example of API versioning using [Semver](http://semve
 
 It defines a middleware that parses the version, checks a min and a max, and makes it available in the `request.Env`.
 
-(TODO, there is an obvious need for PostRoutingMiddlewares here.)
-
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/api/1.0.0/message
 curl -i http://127.0.0.1:8080/api/2.0.0/message
@@ -1040,7 +1035,6 @@ curl -i http://127.0.0.1:8080/api/0.0.1/message
 curl -i http://127.0.0.1:8080/api/4.0.1/message
 
 ```
-
 
 Go code:
 ``` go
@@ -1145,7 +1139,7 @@ Demonstrate how to use OuterMiddlewares to do additional logging and reporting.
 
 Here `request.Env["STATUS_CODE"]` and `request.Env["ELAPSED_TIME"]` that are available to outer middlewares are used with the [g2s](https://github.com/peterbourgon/g2s) statsd client to send these metrics to statsd.
 
-The curl demo:
+curl demo:
 ``` sh
 # start statsd server
 # monitor network
@@ -1221,11 +1215,10 @@ func main() {
 
 NewRelic integration based on the GoRelic plugin: [github.com/yvasiyarov/gorelic](http://github.com/yvasiyarov/gorelic)
 
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/
 ```
-
 
 Go code:
 ``` go
@@ -1290,11 +1283,10 @@ The HTTP response takes 10 seconds to be completed, printing a message on the wi
 10 seconds is also the timeout set for the graceful shutdown.
 You can play with these numbers to show that the server waits for the responses to complete.
 
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/message
 ```
-
 
 Go code:
 ``` go
@@ -1354,7 +1346,7 @@ Demonstrate how to use SPDY with https://github.com/shykes/spdy-go
 For a command line client, install spdycat from:
 https://github.com/tatsuhiro-t/spdylay
 
-The spdycat demo:
+spdycat demo:
 ```
 spdycat -v --no-tls -2 http://localhost:8080/users/0
 ```
@@ -1415,7 +1407,7 @@ Setup:
  * rm -rf github.com/ant0ine/go-json-rest/examples/
  * path/to/google_appengine/dev_appserver.py .
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/message
 ```
