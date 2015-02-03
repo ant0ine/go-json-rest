@@ -2,37 +2,39 @@ package rest
 
 import (
 	"github.com/ant0ine/go-json-rest/rest/test"
-	"net/http"
 	"testing"
 )
 
-func TestStatus(t *testing.T) {
+func TestStatusMiddleware(t *testing.T) {
+
+	api := NewApi()
 
 	// the middlewares
-	recorder := &recorderMiddleware{}
-	timer := &timerMiddleware{}
-	status := &statusMiddleware{}
+	status := &StatusMiddleware{}
+	api.Use(status)
+	api.Use(&TimerMiddleware{})
+	api.Use(&RecorderMiddleware{})
 
-	// the app
-	app := func(w ResponseWriter, r *Request) {
+	// an app that return the Status
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(status.GetStatus())
-	}
+	}))
 
 	// wrap all
-	handler := http.HandlerFunc(adapterFunc(WrapMiddlewares([]Middleware{status, timer, recorder}, app)))
+	handler := api.MakeHandler()
 
 	// one request
-	recorded := test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/1", nil))
+	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/1", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
 	// another request
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/2", nil))
+	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/2", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
+	// payload
 	payload := map[string]interface{}{}
-
 	err := recorded.DecodeJsonPayload(&payload)
 	if err != nil {
 		t.Fatal(err)

@@ -8,9 +8,10 @@ import (
 // ResourceHandler implements the http.Handler interface and acts a router for the defined Routes.
 // The defaults are intended to be developemnt friendly, for production you may want
 // to turn on gzip and disable the JSON indentation for instance.
+// ResourceHandler is now DEPRECATED in favor of the new Api object. See the migration guide.
 type ResourceHandler struct {
 	internalRouter   *router
-	statusMiddleware *statusMiddleware
+	statusMiddleware *StatusMiddleware
 	handlerFunc      http.HandlerFunc
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
@@ -85,6 +86,8 @@ type ResourceHandler struct {
 // if a request matches multiple Routes, the first one will be used.
 func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 
+	log.Print("ResourceHandler is now DEPRECATED in favor of the new Api object, see the migration guide")
+
 	// intantiate all the middlewares based on the settings.
 	middlewares := []Middleware{}
 
@@ -96,13 +99,13 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 	if !rh.DisableLogger {
 		if rh.EnableLogAsJson {
 			middlewares = append(middlewares,
-				&accessLogJsonMiddleware{
+				&AccessLogJsonMiddleware{
 					Logger: rh.Logger,
 				},
 			)
 		} else {
 			middlewares = append(middlewares,
-				&accessLogApacheMiddleware{
+				&AccessLogApacheMiddleware{
 					Logger: rh.Logger,
 					Format: rh.LoggerFormat,
 				},
@@ -113,35 +116,35 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 	// also depends on timer and recorder
 	if rh.EnableStatusService {
 		// keep track of this middleware for GetStatus()
-		rh.statusMiddleware = &statusMiddleware{}
+		rh.statusMiddleware = &StatusMiddleware{}
 		middlewares = append(middlewares, rh.statusMiddleware)
 	}
 
 	// after gzip in order to track to the content length and speed
 	middlewares = append(middlewares,
-		&timerMiddleware{},
-		&recorderMiddleware{},
+		&TimerMiddleware{},
+		&RecorderMiddleware{},
 	)
 
 	if rh.EnableGzip {
-		middlewares = append(middlewares, &gzipMiddleware{})
+		middlewares = append(middlewares, &GzipMiddleware{})
 	}
 
 	if !rh.DisableXPoweredBy {
 		middlewares = append(middlewares,
-			&poweredByMiddleware{
+			&PoweredByMiddleware{
 				XPoweredBy: rh.XPoweredBy,
 			},
 		)
 	}
 
 	if !rh.DisableJsonIndent {
-		middlewares = append(middlewares, &jsonIndentMiddleware{})
+		middlewares = append(middlewares, &JsonIndentMiddleware{})
 	}
 
 	// catch user errors
 	middlewares = append(middlewares,
-		&recoverMiddleware{
+		&RecoverMiddleware{
 			Logger:                   rh.ErrorLogger,
 			EnableLogAsJson:          rh.EnableLogAsJson,
 			EnableResponseStackTrace: rh.EnableResponseStackTrace,
@@ -155,7 +158,7 @@ func (rh *ResourceHandler) SetRoutes(routes ...*Route) error {
 	// verify the request content type
 	if !rh.EnableRelaxedContentType {
 		middlewares = append(middlewares,
-			&contentTypeCheckerMiddleware{},
+			&ContentTypeCheckerMiddleware{},
 		)
 	}
 

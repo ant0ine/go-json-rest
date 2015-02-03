@@ -7,12 +7,12 @@ import (
 	"net/http"
 )
 
-// jsonIndentMiddleware provides JSON encoding with indentation.
+// JsonIndentMiddleware provides JSON encoding with indentation.
 // It could be convenient to use it during development.
 // It works by "subclassing" the responseWriter provided by the wrapping middleware,
 // replacing the writer.EncodeJson and writer.WriteJson implementations,
 // and making the parent implementations ignored.
-type jsonIndentMiddleware struct {
+type JsonIndentMiddleware struct {
 
 	// prefix string, as in json.MarshalIndent
 	Prefix string
@@ -21,8 +21,8 @@ type jsonIndentMiddleware struct {
 	Indent string
 }
 
-// MiddlewareFunc makes jsonIndentMiddleware implement the Middleware interface.
-func (mw *jsonIndentMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
+// MiddlewareFunc makes JsonIndentMiddleware implement the Middleware interface.
+func (mw *JsonIndentMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 
 	if mw.Indent == "" {
 		mw.Indent = "  "

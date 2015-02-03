@@ -44,21 +44,30 @@ const (
 	CommonLogFormat = "%h %l %u %t \"%r\" %s %b"
 
 	// NCSA extended/combined log format.
-	CombinedLogFormat = "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\""
+	CombinedLogFormat = "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\""
 
 	// Default format, colored output and response time, convenient for development.
 	DefaultLogFormat = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
 )
 
-// accessLogApacheMiddleware produces the access log following a format inpired
-// by Apache mod_log_config. It depends on the timer, recorder and auth middlewares.
-type accessLogApacheMiddleware struct {
-	Logger       *log.Logger
-	Format       AccessLogFormat
+// AccessLogApacheMiddleware produces the access log following a format inspired by Apache
+// mod_log_config. It depends on TimerMiddleware and RecorderMiddleware that must be in the wrapped
+// middlewares. It also uses request.Env["REMOTE_USER"].(string) set by the auth middlewares.
+type AccessLogApacheMiddleware struct {
+
+	// Logger points to the logger object used by this middleware, it defaults to
+	// log.New(os.Stderr, "", 0).
+	Logger *log.Logger
+
+	// Format defines the format of the access log record. See AccessLogFormat for the details.
+	// It defaults to DefaultLogFormat.
+	Format AccessLogFormat
+
 	textTemplate *template.Template
 }
 
-func (mw *accessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+// MiddlewareFunc makes AccessLogApacheMiddleware implement the Middleware interface.
+func (mw *AccessLogApacheMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	// set the default Logger
 	if mw.Logger == nil {
@@ -104,7 +113,7 @@ var apacheAdapter = strings.NewReplacer(
 )
 
 // Convert the Apache access log format into a text/template
-func (mw *accessLogApacheMiddleware) convertFormat() {
+func (mw *AccessLogApacheMiddleware) convertFormat() {
 
 	tmplText := apacheAdapter.Replace(string(mw.Format))
 
@@ -142,7 +151,7 @@ func (mw *accessLogApacheMiddleware) convertFormat() {
 }
 
 // Execute the text template with the data derived from the request, and return a string.
-func (mw *accessLogApacheMiddleware) executeTextTemplate(util *accessLogUtil) string {
+func (mw *AccessLogApacheMiddleware) executeTextTemplate(util *accessLogUtil) string {
 	buf := bytes.NewBufferString("")
 	err := mw.textTemplate.Execute(buf, util)
 	if err != nil {

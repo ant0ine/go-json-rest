@@ -1,58 +1,39 @@
 package rest
 
 import (
-	"encoding/json"
+	"github.com/ant0ine/go-json-rest/rest/test"
 	"io/ioutil"
 	"log"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
 func TestRecoverMiddleware(t *testing.T) {
 
-	recov := &recoverMiddleware{
+	api := NewApi()
+
+	// the middleware to test
+	api.Use(&RecoverMiddleware{
 		Logger:                   log.New(ioutil.Discard, "", 0),
 		EnableLogAsJson:          false,
 		EnableResponseStackTrace: true,
-	}
+	})
 
-	app := func(w ResponseWriter, r *Request) {
+	// a simple app that fails
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
 		panic("test")
-	}
+	}))
 
-	handlerFunc := WrapMiddlewares([]Middleware{recov}, app)
+	// wrap all
+	handler := api.MakeHandler()
 
-	// fake request
-	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
-	r := &Request{
-		origRequest,
-		nil,
-		map[string]interface{}{},
-	}
-
-	// fake writer
-	recorder := httptest.NewRecorder()
-	w := &responseWriter{
-		recorder,
-		false,
-	}
-
-	// run
-	handlerFunc(w, r)
-
-	// status code
-	if recorder.Code != 500 {
-		t.Error("Expected a 500 response")
-	}
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(500)
+	recorded.ContentTypeIsJson()
 
 	// payload
-	content, err := ioutil.ReadAll(recorder.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
 	payload := map[string]string{}
-	err = json.Unmarshal(content, &payload)
+	err := recorded.DecodeJsonPayload(&payload)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,7 +7,7 @@
 
 *v3.0.0 is under active development, see the [design thread](https://github.com/ant0ine/go-json-rest/issues/110), and the [Pull Request](https://github.com/ant0ine/go-json-rest/pull/123/)*
 
-**Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
+**Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast and scalable request routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for functionalities like CORS, Auth, Gzip, Status ...
 
 
 ## Table of content
@@ -38,10 +38,9 @@
 	  - [Graceful Shutdown](#graceful-shutdown)
 	  - [SPDY](#spdy)
 	  - [Google App Engine](#gae)
-	  - [Basic Auth Custom](#basic-auth-custom)
-	  - [CORS Custom](#cors-custom)
 - [External Documentation](#external-documentation)
-- [Options](#options)
+- [Version 3 release notes](#version-3-release-notes)
+- [Migration guide from v2 to v3](#migration-guide-from-v2-to-v3)
 - [Version 2 release notes](#version-2-release-notes)
 - [Migration guide from v1 to v2](#migration-guide-from-v1-to-v2)
 - [Thanks](#thanks)
@@ -50,8 +49,9 @@
 ## Features
 
 - Many examples.
-- Fast and scalable URL routing. It implements the classic route description syntax using a scalable trie data structure.
-- Use Middlewares in order to implement and extend the functionalities. (Logging, Gzip, CORS, Auth, ...)
+- Fast and scalable URL routing. It implements the classic route description syntax using a Trie data structure.
+- Architecture based on a router(App) sitting on top of a stack of Middlewares.
+- The Middlewares implement functionalities like Logging, Gzip, CORS, Auth, Status, ...
 - Implemented as a `net/http` Handler. This standard interface allows combinations with other Handlers.
 - Test package to help writing tests for your API.
 - Monitoring statistics inspired by Memcached.
@@ -83,13 +83,13 @@ First examples to try, as an introduction to go-json-rest.
 
 Tradition!
 
-The curl demo:
+curl demo:
 ``` sh
-curl -i http://127.0.0.1:8080/message
+curl -i http://127.0.0.1:8080/
 ```
 
 
-Go code:
+code:
 ``` go
 package main
 
@@ -99,23 +99,13 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	Body string
-}
-
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(&Message{
-				Body: "Hello World!",
-			})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -124,10 +114,12 @@ func main() {
 
 Demonstrate simple POST GET and DELETE operations
 
-The curl demo:
+curl demo:
 ```
-curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/countries/FR
 curl -i http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
@@ -137,7 +129,7 @@ curl -i -X DELETE http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -149,11 +141,9 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-	}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"POST", "/countries", PostCountry},
 		&rest.Route{"GET", "/countries/:code", GetCountry},
@@ -162,7 +152,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -241,20 +232,20 @@ Demonstrate how to use Method Values.
 
 Method Values have been [introduced in Go 1.1](https://golang.org/doc/go1.1#method_values).
 
-Until then `rest.RouteObjectMethod` was provided, this method is now deprecated.
+This shows how to map a Route to a method of an instantiated object (i.e: receiver of the method)
 
-This shows how to map a Route to a method of an instantiated object (eg: receiver of the method)
-
-The curl demo:
+curl demo:
 ```
-curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
 curl -i http://127.0.0.1:8080/users/0
-curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+curl -i -X PUT -H 'Content-Type: application/json' \
+    -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
 curl -i -X DELETE http://127.0.0.1:8080/users/0
 curl -i http://127.0.0.1:8080/users
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -272,10 +263,9 @@ func main() {
 		Store: map[string]*User{},
 	}
 
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-	}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/users", users.GetAllUsers},
 		&rest.Route{"POST", "/users", users.PostUser},
 		&rest.Route{"GET", "/users/:id", users.GetUser},
@@ -285,7 +275,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type User struct {
@@ -377,13 +368,13 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 Demonstrate how to use the relaxed placeholder (notation #paramName).
 This placeholder matches everything until the first `/`, including `.`
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/lookup/google.com
 curl -i http://127.0.0.1:8080/lookup/notadomain
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -399,8 +390,9 @@ type Message struct {
 }
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
 			ip, err := net.LookupIP(req.PathParam("host"))
 			if err != nil {
@@ -413,7 +405,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -427,16 +420,16 @@ Common use cases, found in many applications.
 
 Combine Go-Json-Rest with other handlers.
 
-`rest.ResourceHandler` is a valid `http.Handler`, and can be combined with other handlers.
-In this example the ResourceHandler is used under the `/api/` prefix, while a FileServer is instantiated under the `/static/` prefix.
+`api.MakeHandler()` is a valid `http.Handler`, and can be combined with other handlers.
+In this example the api handler is used under the `/api/` prefix, while a FileServer is instantiated under the `/static/` prefix.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/api/message
 curl -i http://127.0.0.1:8080/static/main.go
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -447,8 +440,10 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
@@ -456,7 +451,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/api/", http.StripPrefix("/api", &handler))
+	api.SetApp(router)
+
+	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
 
 	http.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.Dir("."))))
 
@@ -472,16 +469,18 @@ Demonstrate basic CRUD operation using a store based on MySQL and GORM
 [GORM](https://github.com/jinzhu/gorm) is simple ORM library for Go.
 In this example the same struct is used both as the GORM model and as the JSON model.
 
-The curl demo:
+curl demo:
 ```
-curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
 curl -i http://127.0.0.1:8080/reminders/1
 curl -i http://127.0.0.1:8080/reminders
-curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+curl -i -X PUT -H 'Content-Type: application/json' \
+    -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
 curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -496,24 +495,24 @@ import (
 
 func main() {
 
-	api := Api{}
-	api.InitDB()
-	api.InitSchema()
+	i := Impl{}
+	i.InitDB()
+	i.InitSchema()
 
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/reminders", api.GetAllReminders},
-		&rest.Route{"POST", "/reminders", api.PostReminder},
-		&rest.Route{"GET", "/reminders/:id", api.GetReminder},
-		&rest.Route{"PUT", "/reminders/:id", api.PutReminder},
-		&rest.Route{"DELETE", "/reminders/:id", api.DeleteReminder},
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
+		&rest.Route{"GET", "/reminders", i.GetAllReminders},
+		&rest.Route{"POST", "/reminders", i.PostReminder},
+		&rest.Route{"GET", "/reminders/:id", i.GetReminder},
+		&rest.Route{"PUT", "/reminders/:id", i.PutReminder},
+		&rest.Route{"DELETE", "/reminders/:id", i.DeleteReminder},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Reminder struct {
@@ -524,57 +523,57 @@ type Reminder struct {
 	DeletedAt time.Time `json:"-"`
 }
 
-type Api struct {
+type Impl struct {
 	DB gorm.DB
 }
 
-func (api *Api) InitDB() {
+func (i *Impl) InitDB() {
 	var err error
-	api.DB, err = gorm.Open("mysql", "gorm:gorm@/gorm?charset=utf8&parseTime=True")
+	i.DB, err = gorm.Open("mysql", "gorm:gorm@/gorm?charset=utf8&parseTime=True")
 	if err != nil {
 		log.Fatalf("Got error when connect database, the error is '%v'", err)
 	}
-	api.DB.LogMode(true)
+	i.DB.LogMode(true)
 }
 
-func (api *Api) InitSchema() {
-	api.DB.AutoMigrate(&Reminder{})
+func (i *Impl) InitSchema() {
+	i.DB.AutoMigrate(&Reminder{})
 }
 
-func (api *Api) GetAllReminders(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) GetAllReminders(w rest.ResponseWriter, r *rest.Request) {
 	reminders := []Reminder{}
-	api.DB.Find(&reminders)
+	i.DB.Find(&reminders)
 	w.WriteJson(&reminders)
 }
 
-func (api *Api) GetReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) GetReminder(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	reminder := Reminder{}
-	if api.DB.First(&reminder, id).Error != nil {
+	if i.DB.First(&reminder, id).Error != nil {
 		rest.NotFound(w, r)
 		return
 	}
 	w.WriteJson(&reminder)
 }
 
-func (api *Api) PostReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) PostReminder(w rest.ResponseWriter, r *rest.Request) {
 	reminder := Reminder{}
 	if err := r.DecodeJsonPayload(&reminder); err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err := api.DB.Save(&reminder).Error; err != nil {
+	if err := i.DB.Save(&reminder).Error; err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteJson(&reminder)
 }
 
-func (api *Api) PutReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) PutReminder(w rest.ResponseWriter, r *rest.Request) {
 
 	id := r.PathParam("id")
 	reminder := Reminder{}
-	if api.DB.First(&reminder, id).Error != nil {
+	if i.DB.First(&reminder, id).Error != nil {
 		rest.NotFound(w, r)
 		return
 	}
@@ -587,21 +586,21 @@ func (api *Api) PutReminder(w rest.ResponseWriter, r *rest.Request) {
 
 	reminder.Message = updated.Message
 
-	if err := api.DB.Save(&reminder).Error; err != nil {
+	if err := i.DB.Save(&reminder).Error; err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteJson(&reminder)
 }
 
-func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
+func (i *Impl) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 	reminder := Reminder{}
-	if api.DB.First(&reminder, id).Error != nil {
+	if i.DB.First(&reminder, id).Error != nil {
 		rest.NotFound(w, r)
 		return
 	}
-	if err := api.DB.Delete(&reminder).Error; err != nil {
+	if err := i.DB.Delete(&reminder).Error; err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -614,13 +613,12 @@ func (api *Api) DeleteReminder(w rest.ResponseWriter, r *rest.Request) {
 
 Demonstrate how to setup CorsMiddleware around all the API endpoints.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/countries
 ```
 
-
-Go code:
+code:
 ``` go
 package main
 
@@ -631,29 +629,27 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.CorsMiddleware{
-				RejectNonCorsRequests: false,
-				OriginValidator: func(origin string, request *rest.Request) bool {
-					return origin == "http://my.other.host"
-				},
-				AllowedMethods: []string{"GET", "POST", "PUT"},
-				AllowedHeaders: []string{
-					"Accept", "Content-Type", "X-Custom-Header", "Origin"},
-				AccessControlAllowCredentials: true,
-				AccessControlMaxAge:           3600,
-			},
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.CorsMiddleware{
+		RejectNonCorsRequests: false,
+		OriginValidator: func(origin string, request *rest.Request) bool {
+			return origin == "http://my.other.host"
 		},
-	}
-	err := handler.SetRoutes(
+		AllowedMethods: []string{"GET", "POST", "PUT"},
+		AllowedHeaders: []string{
+			"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+		AccessControlAllowCredentials: true,
+		AccessControlMaxAge:           3600,
+	})
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -682,14 +678,13 @@ func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
 
 Demonstrate how to use the JSONP middleware.
 
-The curl demo:
+curl demo:
 ``` sh
-curl -i http://127.0.0.1:8080/message
-curl -i http://127.0.0.1:8080/message?cb=parseResponse
+curl -i http://127.0.0.1:8080/
+curl -i http://127.0.0.1:8080/?cb=parseResponse
 ```
 
-
-Go code:
+code:
 ``` go
 package main
 
@@ -700,22 +695,15 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.JsonpMiddleware{
-				CallbackNameKey: "cb",
-			},
-		},
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.JsonpMiddleware{
+		CallbackNameKey: "cb",
+	})
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -724,13 +712,13 @@ func main() {
 
 Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.
 
-The curl demo:
+curl demo:
 ```
-curl -i http://127.0.0.1:8080/countries
-curl -i -u admin:admin http://127.0.0.1:8080/countries
+curl -i http://127.0.0.1:8080/
+curl -i -u admin:admin http://127.0.0.1:8080/
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -741,47 +729,21 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&rest.AuthBasicMiddleware{
-				Realm: "test zone",
-				Authenticator: func(userId string, password string) bool {
-					if userId == "admin" && password == "admin" {
-						return true
-					}
-					return false
-				},
-			},
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.AuthBasicMiddleware{
+		Realm: "test zone",
+		Authenticator: func(userId string, password string) bool {
+			if userId == "admin" && password == "admin" {
+				return true
+			}
+			return false
 		},
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
+	})
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -793,8 +755,7 @@ Demonstrate how to setup a `/.status` endpoint
 Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
 This example shows how to enable the stats, and how to setup the `/.status` route.
 
-
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/.status
 curl -i http://127.0.0.1:8080/.status
@@ -821,7 +782,7 @@ Output example:
 }
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -832,20 +793,22 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{
-		EnableStatusService: true,
-	}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	statusMw := &rest.StatusMiddleware{}
+	api.Use(statusMw)
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/.status",
 			func(w rest.ResponseWriter, r *rest.Request) {
-				w.WriteJson(handler.GetStatus())
+				w.WriteJson(statusMw.GetStatus())
 			},
 		},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -856,7 +819,7 @@ Demonstrate how to setup a /.status endpoint protected with basic authentication
 
 This is a good use case of middleware applied to only one API endpoint.
 
-The Curl Demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/.status
@@ -864,7 +827,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 ...
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -875,9 +838,10 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{
-		EnableStatusService: true,
-	}
+	api := rest.NewApi()
+	statusMw := &rest.StatusMiddleware{}
+	api.Use(statusMw)
+	api.Use(rest.DefaultDevStack...)
 	auth := &rest.AuthBasicMiddleware{
 		Realm: "test zone",
 		Authenticator: func(userId string, password string) bool {
@@ -887,12 +851,12 @@ func main() {
 			return false
 		},
 	}
-	err := handler.SetRoutes(
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/countries", GetAllCountries},
 		&rest.Route{"GET", "/.status",
 			auth.MiddlewareFunc(
 				func(w rest.ResponseWriter, r *rest.Request) {
-					w.WriteJson(handler.GetStatus())
+					w.WriteJson(statusMw.GetStatus())
 				},
 			),
 		},
@@ -900,7 +864,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Country struct {
@@ -936,7 +901,7 @@ Demonstrate a streaming REST API, where the data is "flushed" to the client ASAP
 
 The stream format is a Line Delimited JSON.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/stream
 ```
@@ -953,7 +918,7 @@ Transfer-Encoding: chunked
 {"Name":"thing #3"}
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -966,18 +931,17 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{
-		EnableRelaxedContentType: true,
-		DisableJsonIndent:        true,
-	}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(&rest.AccessLogApacheMiddleware{})
+	api.Use(rest.DefaultCommonStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/stream", StreamThings},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 type Thing struct {
@@ -1012,7 +976,7 @@ to build JSON responses. In order to serve different kind of content,
 it is recommended to either:
 a) use another server and configure CORS
    (see the cors/ example)
-b) combine the rest.ResourceHandler with another http.Handler
+b) combine the api.MakeHandler() with another http.Handler
    (see api-and-static/ example)
 
 That been said, exceptionally, it can be convenient to return a
@@ -1020,12 +984,12 @@ different content type on a JSON endpoint. In this case, setting the
 Content-Type and using the type assertion to access the Write method
 is enough. As shown in this example.
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/message.txt
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1036,8 +1000,9 @@ import (
 )
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message.txt", func(w rest.ResponseWriter, req *rest.Request) {
 			w.Header().Set("Content-Type", "text/plain")
 			w.(http.ResponseWriter).Write([]byte("Hello World!"))
@@ -1046,7 +1011,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -1059,9 +1025,7 @@ That been said, here is an example of API versioning using [Semver](http://semve
 
 It defines a middleware that parses the version, checks a min and a max, and makes it available in the `request.Env`.
 
-(TODO, there is an obvious need for PostRoutingMiddlewares here.)
-
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/api/1.0.0/message
 curl -i http://127.0.0.1:8080/api/2.0.0/message
@@ -1071,8 +1035,7 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 
 ```
 
-
-Go code:
+code:
 ``` go
 package main
 
@@ -1104,17 +1067,29 @@ func (mw *SemVerMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 
 		version, err := semver.NewVersion(request.PathParam("version"))
 		if err != nil {
-			rest.Error(writer, "Invalid version: "+err.Error(), http.StatusBadRequest)
+			rest.Error(
+				writer,
+				"Invalid version: "+err.Error(),
+				http.StatusBadRequest,
+			)
 			return
 		}
 
 		if version.LessThan(*minVersion) {
-			rest.Error(writer, "Min supported version is "+minVersion.String(), http.StatusBadRequest)
+			rest.Error(
+				writer,
+				"Min supported version is "+minVersion.String(),
+				http.StatusBadRequest,
+			)
 			return
 		}
 
 		if maxVersion.LessThan(*version) {
-			rest.Error(writer, "Max supported version is "+maxVersion.String(), http.StatusBadRequest)
+			rest.Error(
+				writer,
+				"Max supported version is "+maxVersion.String(),
+				http.StatusBadRequest,
+			)
 			return
 		}
 
@@ -1124,20 +1099,25 @@ func (mw *SemVerMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 }
 
 func main() {
-	handler := rest.ResourceHandler{}
-	svmw := SemVerMiddleware{
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.Use(SemVerMiddleware{
 		MinVersion: "1.0.0",
 		MaxVersion: "3.0.0",
-	}
-	err := handler.SetRoutes(
+	})
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/#version/message", svmw.MiddlewareFunc(
 			func(w rest.ResponseWriter, req *rest.Request) {
 				version := req.Env["VERSION"].(*semver.Version)
 				if version.Major == 2 {
 					// http://en.wikipedia.org/wiki/Second-system_effect
-					w.WriteJson(map[string]string{"Body": "Hello broken World!"})
+					w.WriteJson(map[string]string{
+						"Body": "Hello broken World!",
+					})
 				} else {
-					w.WriteJson(map[string]string{"Body": "Hello World!"})
+					w.WriteJson(map[string]string{
+						"Body": "Hello World!",
+					})
 				}
 			},
 		)},
@@ -1145,7 +1125,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/api/", http.StripPrefix("/api", &handler))
+	api.SetApp(router)
+	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -1157,7 +1138,7 @@ Demonstrate how to use OuterMiddlewares to do additional logging and reporting.
 
 Here `request.Env["STATUS_CODE"]` and `request.Env["ELAPSED_TIME"]` that are available to outer middlewares are used with the [g2s](https://github.com/peterbourgon/g2s) statsd client to send these metrics to statsd.
 
-The curl demo:
+curl demo:
 ``` sh
 # start statsd server
 # monitor network
@@ -1168,7 +1149,7 @@ curl -i http://127.0.0.1:8080/doesnotexist
 
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1212,26 +1193,19 @@ func (mw *StatsdMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 }
 
 func main() {
-	handler := rest.ResourceHandler{
-		OuterMiddlewares: []rest.Middleware{
-			&StatsdMiddleware{
-				IpPort: "localhost:8125",
-			},
-		},
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+	api := rest.NewApi()
+	api.Use(&StatsdMiddleware{
+		IpPort: "localhost:8125",
+	})
+	api.Use(rest.DefaultDevStack...)
+	api.SetApp(AppSimple(func(w rest.ResponseWriter, req *rest.Request) {
 
-			// take more than 1ms so statsd can report it
-			time.Sleep(100 * time.Millisecond)
+		// take more than 1ms so statsd can report it
+		time.Sleep(100 * time.Millisecond)
 
-			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -1240,13 +1214,12 @@ func main() {
 
 NewRelic integration based on the GoRelic plugin: [github.com/yvasiyarov/gorelic](http://github.com/yvasiyarov/gorelic)
 
-The curl demo:
+curl demo:
 ``` sh
-curl -i http://127.0.0.1:8080/message
+curl -i http://127.0.0.1:8080/
 ```
 
-
-Go code:
+code:
 ``` go
 package main
 
@@ -1287,24 +1260,17 @@ func (mw *NewRelicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Hand
 }
 
 func main() {
-	handler := rest.ResourceHandler{
-		OuterMiddlewares: []rest.Middleware{
-			&NewRelicMiddleware{
-				License: "<REPLACE WITH THE LICENSE KEY>",
-				Name:    "<REPLACE WITH THE APP NAME>",
-				Verbose: true,
-			},
-		},
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
-			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	api.Use(&NewRelicMiddleware{
+		License: "<REPLACE WITH THE LICENSE KEY>",
+		Name:    "<REPLACE WITH THE APP NAME>",
+		Verbose: true,
+	})
+	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+		w.WriteJson(map[string]string{"Body": "Hello World!"})
+	}))
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
@@ -1316,13 +1282,12 @@ The HTTP response takes 10 seconds to be completed, printing a message on the wi
 10 seconds is also the timeout set for the graceful shutdown.
 You can play with these numbers to show that the server waits for the responses to complete.
 
-The curl demo:
+curl demo:
 ``` sh
 curl -i http://127.0.0.1:8080/message
 ```
 
-
-Go code:
+code:
 ``` go
 package main
 
@@ -1336,17 +1301,18 @@ import (
 )
 
 func main() {
-
-	handler := rest.ResourceHandler{}
-
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			for cpt := 1; cpt <= 10; cpt++ {
 
 				// wait 1 second
 				time.Sleep(time.Duration(1) * time.Second)
 
-				w.WriteJson(map[string]string{"Message": fmt.Sprintf("%d seconds", cpt)})
+				w.WriteJson(map[string]string{
+					"Message": fmt.Sprintf("%d seconds", cpt),
+				})
 				w.(http.ResponseWriter).Write([]byte("\n"))
 
 				// Flush the buffer to client
@@ -1357,12 +1323,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	api.SetApp(router)
 
 	server := &graceful.Server{
 		Timeout: 10 * time.Second,
 		Server: &http.Server{
 			Addr:    ":8080",
-			Handler: &handler,
+			Handler: api.MakeHandler(),
 		},
 	}
 
@@ -1378,12 +1345,12 @@ Demonstrate how to use SPDY with https://github.com/shykes/spdy-go
 For a command line client, install spdycat from:
 https://github.com/tatsuhiro-t/spdylay
 
-The spdycat demo:
+spdycat demo:
 ```
 spdycat -v --no-tls -2 http://localhost:8080/users/0
 ```
 
-Go code:
+code:
 ``` go
 package main
 
@@ -1407,14 +1374,16 @@ func GetUser(w rest.ResponseWriter, req *rest.Request) {
 }
 
 func main() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/users/:id", GetUser},
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Fatal(spdy.ListenAndServeTCP(":8080", &handler))
+	api.SetApp(router)
+	log.Fatal(spdy.ListenAndServeTCP(":8080", api.MakeHandler()))
 }
 
 ```
@@ -1437,12 +1406,12 @@ Setup:
  * rm -rf github.com/ant0ine/go-json-rest/examples/
  * path/to/google_appengine/dev_appserver.py .
 
-The curl demo:
+curl demo:
 ```
 curl -i http://127.0.0.1:8080/message
 ```
 
-Go code:
+code:
 ``` go
 package gaehelloworld
 
@@ -1453,8 +1422,9 @@ import (
 )
 
 func init() {
-	handler := rest.ResourceHandler{}
-	err := handler.SetRoutes(
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
 		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
 		}},
@@ -1462,255 +1432,8 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/", &handler)
-}
-
-```
-
-#### Basic Auth Custom
-
-Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.
-
-This is a very simple version supporting only one user.
-
-The curl demo:
-```
-curl -i http://127.0.0.1:8080/countries
-```
-
-Go code:
-``` go
-package main
-
-import (
-	"encoding/base64"
-	"errors"
-	"github.com/ant0ine/go-json-rest/rest"
-	"log"
-	"net/http"
-	"strings"
-)
-
-type MyAuthBasicMiddleware struct {
-	Realm    string
-	UserId   string
-	Password string
-}
-
-func (mw *MyAuthBasicMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
-	return func(writer rest.ResponseWriter, request *rest.Request) {
-
-		authHeader := request.Header.Get("Authorization")
-		if authHeader == "" {
-			mw.unauthorized(writer)
-			return
-		}
-
-		providedUserId, providedPassword, err := mw.decodeBasicAuthHeader(authHeader)
-
-		if err != nil {
-			rest.Error(writer, "Invalid authentication", http.StatusBadRequest)
-			return
-		}
-
-		if !(providedUserId == mw.UserId && providedPassword == mw.Password) {
-			mw.unauthorized(writer)
-			return
-		}
-
-		handler(writer, request)
-	}
-}
-
-func (mw *MyAuthBasicMiddleware) unauthorized(writer rest.ResponseWriter) {
-	writer.Header().Set("WWW-Authenticate", "Basic realm="+mw.Realm)
-	rest.Error(writer, "Not Authorized", http.StatusUnauthorized)
-}
-
-func (mw *MyAuthBasicMiddleware) decodeBasicAuthHeader(header string) (user string, password string, err error) {
-
-	parts := strings.SplitN(header, " ", 2)
-	if !(len(parts) == 2 && parts[0] == "Basic") {
-		return "", "", errors.New("Invalid authentication")
-	}
-
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", "", errors.New("Invalid base64")
-	}
-
-	creds := strings.SplitN(string(decoded), ":", 2)
-	if len(creds) != 2 {
-		return "", "", errors.New("Invalid authentication")
-	}
-
-	return creds[0], creds[1], nil
-}
-
-func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&MyAuthBasicMiddleware{
-				Realm:    "Administration",
-				UserId:   "admin",
-				Password: "admin",
-			},
-		},
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
-}
-
-```
-
-#### CORS Custom
-
-Demonstrate how to implement a custom CORS middleware, used to on all endpoints.
-
-The curl demo:
-```
-curl -i http://127.0.0.1:8080/countries
-```
-
-Go code:
-``` go
-package main
-
-import (
-	"github.com/ant0ine/go-json-rest/rest"
-	"log"
-	"net/http"
-)
-
-type MyCorsMiddleware struct{}
-
-func (mw *MyCorsMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
-	return func(writer rest.ResponseWriter, request *rest.Request) {
-
-		corsInfo := request.GetCorsInfo()
-
-		// Be nice with non CORS requests, continue
-		// Alternatively, you may also chose to only allow CORS requests, and return an error.
-		if !corsInfo.IsCors {
-			// continure, execute the wrapped middleware
-			handler(writer, request)
-			return
-		}
-
-		// Validate the Origin
-		// More sophisticated validations can be implemented, regexps, DB lookups, ...
-		if corsInfo.Origin != "http://my.other.host" {
-			rest.Error(writer, "Invalid Origin", http.StatusForbidden)
-			return
-		}
-
-		if corsInfo.IsPreflight {
-			// check the request methods
-			allowedMethods := map[string]bool{
-				"GET":  true,
-				"POST": true,
-				"PUT":  true,
-				// don't allow DELETE, for instance
-			}
-			if !allowedMethods[corsInfo.AccessControlRequestMethod] {
-				rest.Error(writer, "Invalid Preflight Request", http.StatusForbidden)
-				return
-			}
-			// check the request headers
-			allowedHeaders := map[string]bool{
-				"Accept":          true,
-				"Content-Type":    true,
-				"X-Custom-Header": true,
-			}
-			for _, requestedHeader := range corsInfo.AccessControlRequestHeaders {
-				if !allowedHeaders[requestedHeader] {
-					rest.Error(writer, "Invalid Preflight Request", http.StatusForbidden)
-					return
-				}
-			}
-
-			for allowedMethod, _ := range allowedMethods {
-				writer.Header().Add("Access-Control-Allow-Methods", allowedMethod)
-			}
-			for allowedHeader, _ := range allowedHeaders {
-				writer.Header().Add("Access-Control-Allow-Headers", allowedHeader)
-			}
-			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
-			writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			writer.Header().Set("Access-Control-Max-Age", "3600")
-			writer.WriteHeader(http.StatusOK)
-			return
-		} else {
-			writer.Header().Set("Access-Control-Expose-Headers", "X-Powered-By")
-			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
-			writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			// continure, execute the wrapped middleware
-			handler(writer, request)
-			return
-		}
-	}
-}
-
-func main() {
-
-	handler := rest.ResourceHandler{
-		PreRoutingMiddlewares: []rest.Middleware{
-			&MyCorsMiddleware{},
-		},
-	}
-	err := handler.SetRoutes(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(http.ListenAndServe(":8080", &handler))
-}
-
-type Country struct {
-	Code string
-	Name string
-}
-
-func GetAllCountries(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(
-		[]Country{
-			Country{
-				Code: "FR",
-				Name: "France",
-			},
-			Country{
-				Code: "US",
-				Name: "United States",
-			},
-		},
-	)
+	api.SetApp(router)
+	http.Handle("/", api.MakeHandler())
 }
 
 ```
@@ -1727,16 +1450,57 @@ Old v1 blog posts:
 - [(Blog Post) Better URL Routing ?] (http://blog.ant0ine.com/typepad/2013/02/better-url-routing-golang-1.html)
 
 
-## Options
+## Version 3 release notes
 
-Things to enable in production:
-- Gzip compression (default: disabled)
-- Custom Logger (default: Go default)
+This new version brings:
 
-Things to enable in development:
-- Json indentation (default: enabled)
-- Relaxed ContentType (default: disabled)
-- Error stack trace in the response body (default: disabled)
+* Public middlewares. (12 included in the package)
+* A new App interface. (the router being the provided App)
+* A new Api object that manages the middlewares and the App.
+* Optional and interchangeable App/router.
+
+Here is for instance the minimal "Hello World!":
+
+```go
+        api := rest.NewApi()
+		api.Use(rest.DefaultDevStack...)
+		api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+				w.WriteJson(map[string]string{"Body": "Hello World!"})
+		}))
+		http.ListenAndServe(":8080", api.MakeHandler())
+```
+
+[All examples have been updated to use the new API.](https://github.com/ant0ine/go-json-rest#examples)
+
+
+**V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.** As a consequence, all the middlewares are now public,
+and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
+of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
+See the design ideas and discussion [here](https://github.com/ant0ine/go-json-rest/issues/110)
+
+
+## Migration guide from v2 to v3
+
+V3 introduces an API change (see [Semver](http://semver.org/)). But it was possible to maintain backward compatibility, and so, ResourceHandler still works.
+ResourceHandler does the same thing as in V2, **but it is now considered as deprecated, and will be removed in a few months**. In the meantime, it logs a
+deprecation warning.
+
+### How to map the ResourceHandler options to the new stack of middlewares ?
+
+* `EnableGzip bool`: Just include GzipMiddleware in the stack of middlewares.
+* `DisableJsonIndent bool`: Just don't include JsonIndentMiddleware in the stack of middlewares.
+* `EnableStatusService bool`: Include StatusMiddleware in the stack and keep a reference to it to access GetStatus().
+* `EnableResponseStackTrace bool`: Same exact option but moved to RecoverMiddleware.
+* `EnableLogAsJson bool`: Include AccessLogJsonMiddleware, and possibly remove AccessLogApacheMiddleware.
+* `EnableRelaxedContentType bool`: Just don't include ContentTypeCheckerMiddleware.
+* `OuterMiddlewares []Middleware`: You are now building the full stack, OuterMiddlewares are the first in the list.
+* `PreRoutingMiddlewares []Middleware`: You are now building the full stack, OuterMiddlewares are the last in the list.
+* `Logger *log.Logger`: Same option but moved to AccessLogApacheMiddleware and AccessLogJsonMiddleware.
+* `LoggerFormat AccessLogFormat`: Same exact option but moved to AccessLogApacheMiddleware.
+* `DisableLogger bool`: Just don't include any access log middleware.
+* `ErrorLogger *log.Logger`: Same exact option but moved to RecoverMiddleware.
+* `XPoweredBy string`: Same exact option but moved to PoweredByMiddleware.
+* `DisableXPoweredBy bool`: Just don't include PoweredByMiddleware.
 
 
 ## Version 2 release notes

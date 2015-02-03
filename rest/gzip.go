@@ -8,12 +8,14 @@ import (
 	"strings"
 )
 
-// gzipMiddleware is responsible for compressing the payload with gzip
-// and setting the proper headers when supported by the client.
-type gzipMiddleware struct{}
+// GzipMiddleware is responsible for compressing the payload with gzip and setting the proper
+// headers when supported by the client. It must be wrapped by TimerMiddleware for the
+// compression time to be captured. And It must be wrapped by RecorderMiddleware for the
+// compressed BYTES_WRITTEN to be captured.
+type GzipMiddleware struct{}
 
-// MiddlewareFunc makes gzipMiddleware implement the Middleware interface.
-func (mw *gzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+// MiddlewareFunc makes GzipMiddleware implement the Middleware interface.
+func (mw *GzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 	return func(w ResponseWriter, r *Request) {
 		// gzip support enabled
 		canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")

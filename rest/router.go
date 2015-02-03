@@ -16,6 +16,19 @@ type router struct {
 	trie                   *trie.Trie
 }
 
+// MakeRouter returns the router app. Given a set of Routes, it dispatches the request to the
+// HandlerFunc of the first route that matches. The order of the Routes matters.
+func MakeRouter(routes ...*Route) (App, error) {
+	r := &router{
+		Routes: routes,
+	}
+	err := r.start()
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
+}
+
 // Handle the REST routing and run the user code.
 func (rt *router) AppFunc() HandlerFunc {
 	return func(writer ResponseWriter, request *Request) {

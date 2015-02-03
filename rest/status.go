@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-// statusMiddleware keeps track of various stats about the processed requests.
+// StatusMiddleware keeps track of various stats about the processed requests.
 // It depends on request.Env["STATUS_CODE"] and request.Env["ELAPSED_TIME"],
 // recorderMiddleware and timerMiddleware must be in the wrapped middlewares.
-type statusMiddleware struct {
+type StatusMiddleware struct {
 	lock              sync.RWMutex
 	start             time.Time
 	pid               int
@@ -18,8 +18,8 @@ type statusMiddleware struct {
 	totalResponseTime time.Time
 }
 
-// MiddlewareFunc makes statusMiddleware implement the Middleware interface.
-func (mw *statusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
+// MiddlewareFunc makes StatusMiddleware implement the Middleware interface.
+func (mw *StatusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 
 	mw.start = time.Now()
 	mw.pid = os.Getpid()
@@ -76,7 +76,9 @@ type Status struct {
 	AverageResponseTimeSec float64
 }
 
-func (mw *statusMiddleware) GetStatus() *Status {
+// GetStatus computes and returns a Status object based on the request informations accumulated
+// since the start of the process.
+func (mw *StatusMiddleware) GetStatus() *Status {
 
 	mw.lock.RLock()
 

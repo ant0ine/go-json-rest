@@ -3,8 +3,9 @@
 // http://ant0ine.github.io/go-json-rest/
 //
 // Go-Json-Rest is a thin layer on top of net/http that helps building RESTful JSON APIs easily.
-// It provides fast URL routing using a Trie based implementation, helpers to deal with JSON
-// requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...
+// It provides fast and scalable request routing using a Trie based implementation, helpers to deal
+// with JSON requests and responses, and middlewares for functionalities like CORS, Auth, Gzip,
+// Status, ...
 //
 // Example:
 //
@@ -12,6 +13,7 @@
 //
 //      import (
 //              "github.com/ant0ine/go-json-rest/rest"
+//              "log"
 //              "net/http"
 //      )
 //
@@ -29,18 +31,17 @@
 //      }
 //
 //      func main() {
-//              handler := rest.ResourceHandler{}
-//              handler.SetRoutes(
+//              api := rest.NewApi()
+//              api.Use(rest.DefaultDevStack...)
+//              router, err := rest.MakeRouter(
 //                      rest.Route{"GET", "/users/:id", GetUser},
 //              )
-//              http.ListenAndServe(":8080", &handler)
+//              if err != nil {
+//                      log.Fatal(err)
+//              }
+//              api.SetApp(router)
+//              log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 //      }
 //
-//
-// Note about the URL routing: Instead of using the usual
-// "evaluate all the routes and return the first regexp that matches" strategy,
-// it uses a Trie data structure to perform the routing. This is more efficient,
-// and scales better for a large number of routes.
-// It supports the :param and *splat placeholders in the route strings.
 //
 package rest

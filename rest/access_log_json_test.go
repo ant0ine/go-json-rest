@@ -3,40 +3,38 @@ package rest
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ant0ine/go-json-rest/rest/test"
 	"log"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
 func TestAccessLogJsonMiddleware(t *testing.T) {
 
-	// the middlewares
-	recorder := &recorderMiddleware{}
-	timer := &timerMiddleware{}
+	api := NewApi()
 
+	// the middlewares stack
 	buffer := bytes.NewBufferString("")
-	logger := &accessLogJsonMiddleware{
+	api.Use(&AccessLogJsonMiddleware{
 		Logger: log.New(buffer, "", 0),
-	}
+	})
+	api.Use(&TimerMiddleware{})
+	api.Use(&RecorderMiddleware{})
 
-	// the app
-	app := func(w ResponseWriter, r *Request) {
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	}))
 
 	// wrap all
-	handlerFunc := adapterFunc(WrapMiddlewares([]Middleware{logger, timer, recorder}, app))
+	handler := api.MakeHandler()
 
-	// fake request
-	r, _ := http.NewRequest("GET", "http://localhost/", nil)
-	r.RemoteAddr = "127.0.0.1:1234"
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	req.RemoteAddr = "127.0.0.1:1234"
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
 
-	// fake writer
-	w := httptest.NewRecorder()
-
-	handlerFunc(w, r)
-
+	// log tests
 	decoded := &AccessLogJsonRecord{}
 	err := json.Unmarshal(buffer.Bytes(), decoded)
 	if err != nil {

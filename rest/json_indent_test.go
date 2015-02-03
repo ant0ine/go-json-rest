@@ -1,42 +1,28 @@
 package rest
 
 import (
-	"net/http"
-	"net/http/httptest"
+	"github.com/ant0ine/go-json-rest/rest/test"
 	"testing"
 )
 
 func TestJsonIndentMiddleware(t *testing.T) {
 
-	jsonIndent := &jsonIndentMiddleware{}
+	api := NewApi()
 
-	app := func(w ResponseWriter, r *Request) {
+	// the middleware to test
+	api.Use(&JsonIndentMiddleware{})
+
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
 		w.WriteJson(map[string]string{"Id": "123"})
-	}
+	}))
 
-	handlerFunc := WrapMiddlewares([]Middleware{jsonIndent}, app)
+	// wrap all
+	handler := api.MakeHandler()
 
-	// fake request
-	origRequest, _ := http.NewRequest("GET", "http://localhost/", nil)
-	origRequest.RemoteAddr = "127.0.0.1:1234"
-	r := &Request{
-		origRequest,
-		nil,
-		map[string]interface{}{},
-	}
-
-	// fake writer
-
-	recorder := httptest.NewRecorder()
-	w := &responseWriter{
-		recorder,
-		false,
-	}
-
-	handlerFunc(w, r)
-
-	expected := "{\n  \"Id\": \"123\"\n}"
-	if recorder.Body.String() != expected {
-		t.Errorf("expected %s, got : %s", expected, recorder.Body)
-	}
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.BodyIs("{\n  \"Id\": \"123\"\n}")
 }
