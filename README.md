@@ -1451,31 +1451,31 @@ Old v1 blog posts:
 
 ## Version 3 release notes
 
-This new version brings:
+### What's New in v3
 
-* Public middlewares. (12 included in the package)
+* Public Middlewares. (12 included in the package)
 * A new App interface. (the router being the provided App)
-* A new Api object that manages the middlewares and the App.
+* A new Api object that manages the Middlewares and the App.
 * Optional and interchangeable App/router.
 
-Here is for instance the minimal "Hello World!":
+### Here is for instance the new minimal "Hello World!"
 
 ```go
-        api := rest.NewApi()
-		api.Use(rest.DefaultDevStack...)
-		api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
-				w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}))
-		http.ListenAndServe(":8080", api.MakeHandler())
+api := rest.NewApi()
+api.Use(rest.DefaultDevStack...)
+api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
+        w.WriteJson(map[string]string{"Body": "Hello World!"})
+}))
+http.ListenAndServe(":8080", api.MakeHandler())
 ```
 
-[All examples have been updated to use the new API.](https://github.com/ant0ine/go-json-rest#examples)
+*All 19 examples have been updated to use the new API. [See here](https://github.com/ant0ine/go-json-rest#examples)*
 
+### Deprecating the ResourceHandler
 
-**V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.** As a consequence, all the middlewares are now public,
-and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
-of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
-See the design ideas and discussion [here](https://github.com/ant0ine/go-json-rest/issues/110)
+V3 is about deprecating the ResourceHandler in favor of a new API that exposes the Middlewares. As a consequence, all the Middlewares are now public, and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top of the stack of Middlewares. Which means that the router is no longer required to use Go-Json-Rest.
+
+*Design ideas and discussion [See here](https://github.com/ant0ine/go-json-rest/issues/110)*
 
 
 ## Migration guide from v2 to v3
