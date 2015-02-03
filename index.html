@@ -38,7 +38,7 @@
 
 <p><a href="https://godoc.org/github.com/ant0ine/go-json-rest/rest"><img src="http://img.shields.io/badge/godoc-reference-blue.svg?style=flat" alt="godoc"></a> <a href="https://raw.githubusercontent.com/ant0ine/go-json-rest/master/LICENSE"><img src="http://img.shields.io/badge/license-MIT-red.svg?style=flat" alt="license"></a> <a href="https://travis-ci.org/ant0ine/go-json-rest"><img src="https://img.shields.io/travis/ant0ine/go-json-rest.svg?style=flat" alt="build"></a></p>
 
-<p><strong>Go-Json-Rest</strong> is a thin layer on top of <code>net/http</code> that helps building RESTful JSON APIs easily. It provides fast URL routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for additional functionalities like CORS, Auth, Gzip ...</p>
+<p><strong>Go-Json-Rest</strong> is a thin layer on top of <code>net/http</code> that helps building RESTful JSON APIs easily. It provides fast and scalable request routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for functionalities like CORS, Auth, Gzip, Status ...</p>
 
 <h2>
 <a id="table-of-content" class="anchor" href="#table-of-content" aria-hidden="true"><span class="octicon octicon-link"></span></a>Table of content</h2>
@@ -86,14 +86,13 @@
 <li><a href="#graceful-shutdown">Graceful Shutdown</a></li>
 <li><a href="#spdy">SPDY</a></li>
 <li><a href="#gae">Google App Engine</a></li>
-<li><a href="#basic-auth-custom">Basic Auth Custom</a></li>
-<li><a href="#cors-custom">CORS Custom</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a href="#external-documentation">External Documentation</a></li>
-<li><a href="#options">Options</a></li>
+<li><a href="#version-3-release-notes">Version 3 release notes</a></li>
+<li><a href="#migration-guide-from-v2-to-v3">Migration guide from v2 to v3</a></li>
 <li><a href="#version-2-release-notes">Version 2 release notes</a></li>
 <li><a href="#migration-guide-from-v1-to-v2">Migration guide from v1 to v2</a></li>
 <li><a href="#thanks">Thanks</a></li>
@@ -104,8 +103,9 @@
 
 <ul>
 <li>Many examples.</li>
-<li>Fast and scalable URL routing. It implements the classic route description syntax using a scalable trie data structure.</li>
-<li>Use Middlewares in order to implement and extend the functionalities. (Logging, Gzip, CORS, Auth, ...)</li>
+<li>Fast and scalable URL routing. It implements the classic route description syntax using a Trie data structure.</li>
+<li>Architecture based on a router(App) sitting on top of a stack of Middlewares.</li>
+<li>The Middlewares implement functionalities like Logging, Gzip, CORS, Auth, Status, ...</li>
 <li>Implemented as a <code>net/http</code> Handler. This standard interface allows combinations with other Handlers.</li>
 <li>Test package to help writing tests for your API.</li>
 <li>Monitoring statistics inspired by Memcached.</li>
@@ -141,11 +141,11 @@ where this library code is copied in your repository at a specific revision.
 
 <p>Tradition!</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/message</pre></div>
+<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/</pre></div>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -155,23 +155,13 @@ where this library code is copied in your repository at a specific revision.
     <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
-<span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Body</span> <span class="pl-st">string</span>
-}
-
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            w.<span class="pl-s3">WriteJson</span>(&amp;Message{
-                Body: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>,
-            })
-        }},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
+        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    }))
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -180,10 +170,12 @@ where this library code is copied in your repository at a specific revision.
 
 <p>Demonstrate simple POST GET and DELETE operations</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
-<pre><code>curl -i -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
-curl -i -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
+<pre><code>curl -i -H 'Content-Type: application/json' \
+    -d '{"Code":"FR","Name":"France"}' http://127.0.0.1:8080/countries
+curl -i -H 'Content-Type: application/json' \
+    -d '{"Code":"US","Name":"United States"}' http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/countries/FR
 curl -i http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
@@ -193,7 +185,7 @@ curl -i -X DELETE http://127.0.0.1:8080/countries/US
 curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -205,11 +197,9 @@ curl -i http://127.0.0.1:8080/countries
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        EnableRelaxedContentType: <span class="pl-c1">true</span>,
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, PostCountry},
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries/:code<span class="pl-pds">"</span></span>, GetCountry},
@@ -218,7 +208,8 @@ curl -i http://127.0.0.1:8080/countries
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 
 <span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
@@ -297,20 +288,20 @@ curl -i http://127.0.0.1:8080/countries
 
 <p>Method Values have been <a href="https://golang.org/doc/go1.1#method_values">introduced in Go 1.1</a>.</p>
 
-<p>Until then <code>rest.RouteObjectMethod</code> was provided, this method is now deprecated.</p>
+<p>This shows how to map a Route to a method of an instantiated object (i.e: receiver of the method)</p>
 
-<p>This shows how to map a Route to a method of an instantiated object (eg: receiver of the method)</p>
+<p>curl demo:</p>
 
-<p>The curl demo:</p>
-
-<pre><code>curl -i -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
+<pre><code>curl -i -H 'Content-Type: application/json' \
+    -d '{"Name":"Antoine"}' http://127.0.0.1:8080/users
 curl -i http://127.0.0.1:8080/users/0
-curl -i -X PUT -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
+curl -i -X PUT -H 'Content-Type: application/json' \
+    -d '{"Name":"Antoine Imbert"}' http://127.0.0.1:8080/users/0
 curl -i -X DELETE http://127.0.0.1:8080/users/0
 curl -i http://127.0.0.1:8080/users
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -328,10 +319,9 @@ curl -i http://127.0.0.1:8080/users
         Store: <span class="pl-s">map</span>[<span class="pl-st">string</span>]*User{},
     }
 
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        EnableRelaxedContentType: <span class="pl-c1">true</span>,
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, users.<span class="pl-vo">GetAllUsers</span>},
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, users.<span class="pl-vo">PostUser</span>},
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-vo">GetUser</span>},
@@ -341,7 +331,8 @@ curl -i http://127.0.0.1:8080/users
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 
 <span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-st">struct</span> {
@@ -433,13 +424,13 @@ curl -i http://127.0.0.1:8080/users
 <p>Demonstrate how to use the relaxed placeholder (notation #paramName).
 This placeholder matches everything until the first <code>/</code>, including <code>.</code></p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/lookup/google.com
 curl -i http://127.0.0.1:8080/lookup/notadomain
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -455,8 +446,9 @@ curl -i http://127.0.0.1:8080/lookup/notadomain
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/lookup/#host<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
             <span class="pl-vo">ip</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> net.<span class="pl-s3">LookupIP</span>(req.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>host<span class="pl-pds">"</span></span>))
             <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
@@ -469,7 +461,8 @@ curl -i http://127.0.0.1:8080/lookup/notadomain
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -483,16 +476,16 @@ curl -i http://127.0.0.1:8080/lookup/notadomain
 
 <p>Combine Go-Json-Rest with other handlers.</p>
 
-<p><code>rest.ResourceHandler</code> is a valid <code>http.Handler</code>, and can be combined with other handlers.
-In this example the ResourceHandler is used under the <code>/api/</code> prefix, while a FileServer is instantiated under the <code>/static/</code> prefix.</p>
+<p><code>api.MakeHandler()</code> is a valid <code>http.Handler</code>, and can be combined with other handlers.
+In this example the api handler is used under the <code>/api/</code> prefix, while a FileServer is instantiated under the <code>/static/</code> prefix.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/api/message
 curl -i http://127.0.0.1:8080/static/main.go
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -503,8 +496,10 @@ curl -i http://127.0.0.1:8080/static/main.go
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
             w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
         }},
@@ -512,7 +507,9 @@ curl -i http://127.0.0.1:8080/static/main.go
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+
+    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 
     http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/static/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/static<span class="pl-pds">"</span></span>, http.<span class="pl-s3">FileServer</span>(http.<span class="pl-s3">Dir</span>(<span class="pl-s1"><span class="pl-pds">"</span>.<span class="pl-pds">"</span></span>))))
 
@@ -528,16 +525,18 @@ curl -i http://127.0.0.1:8080/static/main.go
 <p><a href="https://github.com/jinzhu/gorm">GORM</a> is simple ORM library for Go.
 In this example the same struct is used both as the GORM model and as the JSON model.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
-<pre><code>curl -i -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
+<pre><code>curl -i -H 'Content-Type: application/json' \
+    -d '{"Message":"this is a test"}' http://127.0.0.1:8080/reminders
 curl -i http://127.0.0.1:8080/reminders/1
 curl -i http://127.0.0.1:8080/reminders
-curl -i -X PUT -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
+curl -i -X PUT -H 'Content-Type: application/json' \
+    -d '{"Message":"is updated"}' http://127.0.0.1:8080/reminders/1
 curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -552,24 +551,24 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
 
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> Api{}
-    api.<span class="pl-s3">InitDB</span>()
-    api.<span class="pl-s3">InitSchema</span>()
+    <span class="pl-vo">i</span> <span class="pl-k">:=</span> Impl{}
+    i.<span class="pl-s3">InitDB</span>()
+    i.<span class="pl-s3">InitSchema</span>()
 
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        EnableRelaxedContentType: <span class="pl-c1">true</span>,
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, api.<span class="pl-vo">GetAllReminders</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, api.<span class="pl-vo">PostReminder</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, api.<span class="pl-vo">GetReminder</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, api.<span class="pl-vo">PutReminder</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>DELETE<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, api.<span class="pl-vo">DeleteReminder</span>},
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
+        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, i.<span class="pl-vo">GetAllReminders</span>},
+        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, i.<span class="pl-vo">PostReminder</span>},
+        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-vo">GetReminder</span>},
+        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-vo">PutReminder</span>},
+        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>DELETE<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-vo">DeleteReminder</span>},
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 
 <span class="pl-k">type</span> <span class="pl-v">Reminder</span> <span class="pl-st">struct</span> {
@@ -580,57 +579,57 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
     <span class="pl-v">DeletedAt</span> time.<span class="pl-vo">Time</span> <span class="pl-s1"><span class="pl-pds">`</span>json:"-"<span class="pl-pds">`</span></span>
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Api</span> <span class="pl-st">struct</span> {
+<span class="pl-k">type</span> <span class="pl-v">Impl</span> <span class="pl-st">struct</span> {
     <span class="pl-v">DB</span> gorm.<span class="pl-vo">DB</span>
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">InitDB</span></span>() {
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">InitDB</span></span>() {
     <span class="pl-k">var</span> <span class="pl-vo">err</span> <span class="pl-st">error</span>
-    api.<span class="pl-vo">DB</span>, err = gorm.<span class="pl-s3">Open</span>(<span class="pl-s1"><span class="pl-pds">"</span>mysql<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>gorm:gorm@/gorm?charset=utf8&amp;parseTime=True<span class="pl-pds">"</span></span>)
+    i.<span class="pl-vo">DB</span>, err = gorm.<span class="pl-s3">Open</span>(<span class="pl-s1"><span class="pl-pds">"</span>mysql<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>gorm:gorm@/gorm?charset=utf8&amp;parseTime=True<span class="pl-pds">"</span></span>)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatalf</span>(<span class="pl-s1"><span class="pl-pds">"</span>Got error when connect database, the error is '<span class="pl-c1">%v</span>'<span class="pl-pds">"</span></span>, err)
     }
-    api.<span class="pl-vo">DB</span>.<span class="pl-s3">LogMode</span>(<span class="pl-c1">true</span>)
+    i.<span class="pl-vo">DB</span>.<span class="pl-s3">LogMode</span>(<span class="pl-c1">true</span>)
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">InitSchema</span></span>() {
-    api.<span class="pl-vo">DB</span>.<span class="pl-s3">AutoMigrate</span>(&amp;Reminder{})
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">InitSchema</span></span>() {
+    i.<span class="pl-vo">DB</span>.<span class="pl-s3">AutoMigrate</span>(&amp;Reminder{})
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">GetAllReminders</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">GetAllReminders</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
     <span class="pl-vo">reminders</span> <span class="pl-k">:=</span> []Reminder{}
-    api.<span class="pl-vo">DB</span>.<span class="pl-s3">Find</span>(&amp;reminders)
+    i.<span class="pl-vo">DB</span>.<span class="pl-s3">Find</span>(&amp;reminders)
     w.<span class="pl-s3">WriteJson</span>(&amp;reminders)
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">GetReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">GetReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
     <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
     <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> api.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
+    <span class="pl-k">if</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
     w.<span class="pl-s3">WriteJson</span>(&amp;reminder)
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">PostReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">PostReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
     <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
     <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> r.<span class="pl-s3">DecodeJsonPayload</span>(&amp;reminder); err != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> api.<span class="pl-vo">DB</span>.<span class="pl-s3">Save</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
+    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">Save</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
     w.<span class="pl-s3">WriteJson</span>(&amp;reminder)
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">PutReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">PutReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
 
     <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
     <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> api.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
+    <span class="pl-k">if</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
@@ -643,21 +642,21 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
     reminder.<span class="pl-vo">Message</span> = updated.<span class="pl-vo">Message</span>
 
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> api.<span class="pl-vo">DB</span>.<span class="pl-s3">Save</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
+    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">Save</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
     w.<span class="pl-s3">WriteJson</span>(&amp;reminder)
 }
 
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">api</span> *<span class="pl-v">Api</span>) <span class="pl-en">DeleteReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">DeleteReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
     <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
     <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> api.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
+    <span class="pl-k">if</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> api.<span class="pl-vo">DB</span>.<span class="pl-s3">Delete</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
+    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">Delete</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
         rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
@@ -670,12 +669,12 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 <p>Demonstrate how to setup CorsMiddleware around all the API endpoints.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/countries
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -686,29 +685,27 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        PreRoutingMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;rest.<span class="pl-vo">CorsMiddleware</span>{
-                RejectNonCorsRequests: <span class="pl-c1">false</span>,
-                OriginValidator: <span class="pl-s3">func</span>(origin <span class="pl-st">string</span>, request *rest.<span class="pl-vo">Request</span>) <span class="pl-st">bool</span> {
-                    <span class="pl-k">return</span> origin == <span class="pl-s1"><span class="pl-pds">"</span>http://my.other.host<span class="pl-pds">"</span></span>
-                },
-                AllowedMethods: []<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>},
-                AllowedHeaders: []<span class="pl-st">string</span>{
-                    <span class="pl-s1"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>X-Custom-Header<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Origin<span class="pl-pds">"</span></span>},
-                AccessControlAllowCredentials: <span class="pl-c1">true</span>,
-                AccessControlMaxAge:           <span class="pl-c1">3600</span>,
-            },
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">CorsMiddleware</span>{
+        RejectNonCorsRequests: <span class="pl-c1">false</span>,
+        OriginValidator: <span class="pl-s3">func</span>(origin <span class="pl-st">string</span>, request *rest.<span class="pl-vo">Request</span>) <span class="pl-st">bool</span> {
+            <span class="pl-k">return</span> origin == <span class="pl-s1"><span class="pl-pds">"</span>http://my.other.host<span class="pl-pds">"</span></span>
         },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+        AllowedMethods: []<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>},
+        AllowedHeaders: []<span class="pl-st">string</span>{
+            <span class="pl-s1"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>X-Custom-Header<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Origin<span class="pl-pds">"</span></span>},
+        AccessControlAllowCredentials: <span class="pl-c1">true</span>,
+        AccessControlMaxAge:           <span class="pl-c1">3600</span>,
+    })
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 
 <span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
@@ -737,12 +734,12 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 <p>Demonstrate how to use the JSONP middleware.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/message
-curl -i http://127.0.0.1:8080/message<span class="pl-k">?</span>cb=parseResponse</pre></div>
+<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/
+curl -i http://127.0.0.1:8080/<span class="pl-k">?</span>cb=parseResponse</pre></div>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -753,22 +750,15 @@ curl -i http://127.0.0.1:8080/message<span class="pl-k">?</span>cb=parseResponse
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        PreRoutingMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;rest.<span class="pl-vo">JsonpMiddleware</span>{
-                CallbackNameKey: <span class="pl-s1"><span class="pl-pds">"</span>cb<span class="pl-pds">"</span></span>,
-            },
-        },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
-        }},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">JsonpMiddleware</span>{
+        CallbackNameKey: <span class="pl-s1"><span class="pl-pds">"</span>cb<span class="pl-pds">"</span></span>,
+    })
+    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
+        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    }))
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -777,13 +767,13 @@ curl -i http://127.0.0.1:8080/message<span class="pl-k">?</span>cb=parseResponse
 
 <p>Demonstrate how to setup AuthBasicMiddleware as a pre-routing middleware.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
-<pre><code>curl -i http://127.0.0.1:8080/countries
-curl -i -u admin:admin http://127.0.0.1:8080/countries
+<pre><code>curl -i http://127.0.0.1:8080/
+curl -i -u admin:admin http://127.0.0.1:8080/
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -794,47 +784,21 @@ curl -i -u admin:admin http://127.0.0.1:8080/countries
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        PreRoutingMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;rest.<span class="pl-vo">AuthBasicMiddleware</span>{
-                Realm: <span class="pl-s1"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
-                Authenticator: <span class="pl-s3">func</span>(userId <span class="pl-st">string</span>, password <span class="pl-st">string</span>) <span class="pl-st">bool</span> {
-                    <span class="pl-k">if</span> userId == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> {
-                        <span class="pl-k">return</span> <span class="pl-c1">true</span>
-                    }
-                    <span class="pl-k">return</span> <span class="pl-c1">false</span>
-                },
-            },
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">AuthBasicMiddleware</span>{
+        Realm: <span class="pl-s1"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
+        Authenticator: <span class="pl-s3">func</span>(userId <span class="pl-st">string</span>, password <span class="pl-st">string</span>) <span class="pl-st">bool</span> {
+            <span class="pl-k">if</span> userId == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> {
+                <span class="pl-k">return</span> <span class="pl-c1">true</span>
+            }
+            <span class="pl-k">return</span> <span class="pl-c1">false</span>
         },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
-}
-
-<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Code</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">GetAllCountries</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    w.<span class="pl-s3">WriteJson</span>(
-        []Country{
-            Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
-            },
-            Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
-            },
-        },
-    )
+    })
+    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
+        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    }))
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -846,7 +810,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/countries
 <p>Inspired by memcached "stats", this optional feature can be enabled to help monitoring the service.
 This example shows how to enable the stats, and how to setup the <code>/.status</code> route.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/.status
 curl -i http://127.0.0.1:8080/.status
@@ -873,7 +837,7 @@ curl -i http://127.0.0.1:8080/.status
 }
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -884,20 +848,22 @@ curl -i http://127.0.0.1:8080/.status
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        EnableStatusService: <span class="pl-c1">true</span>,
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    <span class="pl-vo">statusMw</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-vo">StatusMiddleware</span>{}
+    api.<span class="pl-s3">Use</span>(statusMw)
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/.status<span class="pl-pds">"</span></span>,
             <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-                w.<span class="pl-s3">WriteJson</span>(handler.<span class="pl-s3">GetStatus</span>())
+                w.<span class="pl-s3">WriteJson</span>(statusMw.<span class="pl-s3">GetStatus</span>())
             },
         },
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -908,7 +874,7 @@ curl -i http://127.0.0.1:8080/.status
 
 <p>This is a good use case of middleware applied to only one API endpoint.</p>
 
-<p>The Curl Demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/countries
 curl -i http://127.0.0.1:8080/.status
@@ -916,7 +882,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 ...
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -927,9 +893,10 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        EnableStatusService: <span class="pl-c1">true</span>,
-    }
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    <span class="pl-vo">statusMw</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-vo">StatusMiddleware</span>{}
+    api.<span class="pl-s3">Use</span>(statusMw)
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
     <span class="pl-vo">auth</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-vo">AuthBasicMiddleware</span>{
         Realm: <span class="pl-s1"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
         Authenticator: <span class="pl-s3">func</span>(userId <span class="pl-st">string</span>, password <span class="pl-st">string</span>) <span class="pl-st">bool</span> {
@@ -939,12 +906,12 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
             <span class="pl-k">return</span> <span class="pl-c1">false</span>
         },
     }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/.status<span class="pl-pds">"</span></span>,
             auth.<span class="pl-s3">MiddlewareFunc</span>(
                 <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-                    w.<span class="pl-s3">WriteJson</span>(handler.<span class="pl-s3">GetStatus</span>())
+                    w.<span class="pl-s3">WriteJson</span>(statusMw.<span class="pl-s3">GetStatus</span>())
                 },
             ),
         },
@@ -952,7 +919,8 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 
 <span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
@@ -988,7 +956,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 
 <p>The stream format is a Line Delimited JSON.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/stream
 </code></pre>
@@ -1005,7 +973,7 @@ Transfer-Encoding: chunked
 {"Name":"thing #3"}
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1018,18 +986,17 @@ Transfer-Encoding: chunked
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        EnableRelaxedContentType: <span class="pl-c1">true</span>,
-        DisableJsonIndent:        <span class="pl-c1">true</span>,
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">AccessLogApacheMiddleware</span>{})
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultCommonStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/stream<span class="pl-pds">"</span></span>, StreamThings},
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 
 <span class="pl-k">type</span> <span class="pl-v">Thing</span> <span class="pl-st">struct</span> {
@@ -1064,7 +1031,7 @@ to build JSON responses. In order to serve different kind of content,
 it is recommended to either:
 a) use another server and configure CORS
    (see the cors/ example)
-b) combine the rest.ResourceHandler with another http.Handler
+b) combine the api.MakeHandler() with another http.Handler
    (see api-and-static/ example)</p>
 
 <p>That been said, exceptionally, it can be convenient to return a
@@ -1072,12 +1039,12 @@ different content type on a JSON endpoint. In this case, setting the
 Content-Type and using the type assertion to access the Write method
 is enough. As shown in this example.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/message.txt
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1088,8 +1055,9 @@ is enough. As shown in this example.</p>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message.txt<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
             w.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>text/plain<span class="pl-pds">"</span></span>)
             w.(http.<span class="pl-vo">ResponseWriter</span>).<span class="pl-s3">Write</span>([]<span class="pl-st">byte</span>(<span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>))
@@ -1098,7 +1066,8 @@ is enough. As shown in this example.</p>
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1111,9 +1080,7 @@ is enough. As shown in this example.</p>
 
 <p>It defines a middleware that parses the version, checks a min and a max, and makes it available in the <code>request.Env</code>.</p>
 
-<p>(TODO, there is an obvious need for PostRoutingMiddlewares here.)</p>
-
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/api/1.0.0/message
 curl -i http://127.0.0.1:8080/api/2.0.0/message
@@ -1122,7 +1089,7 @@ curl -i http://127.0.0.1:8080/api/0.0.1/message
 curl -i http://127.0.0.1:8080/api/4.0.1/message
 </pre></div>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1154,17 +1121,29 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 
         <span class="pl-vo">version</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> semver.<span class="pl-s3">NewVersion</span>(request.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>version<span class="pl-pds">"</span></span>))
         <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-            rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Invalid version: <span class="pl-pds">"</span></span>+err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusBadRequest</span>)
+            rest.<span class="pl-s3">Error</span>(
+                writer,
+                <span class="pl-s1"><span class="pl-pds">"</span>Invalid version: <span class="pl-pds">"</span></span>+err.<span class="pl-s3">Error</span>(),
+                http.<span class="pl-vo">StatusBadRequest</span>,
+            )
             <span class="pl-k">return</span>
         }
 
         <span class="pl-k">if</span> version.<span class="pl-s3">LessThan</span>(*minVersion) {
-            rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Min supported version is <span class="pl-pds">"</span></span>+minVersion.<span class="pl-s3">String</span>(), http.<span class="pl-vo">StatusBadRequest</span>)
+            rest.<span class="pl-s3">Error</span>(
+                writer,
+                <span class="pl-s1"><span class="pl-pds">"</span>Min supported version is <span class="pl-pds">"</span></span>+minVersion.<span class="pl-s3">String</span>(),
+                http.<span class="pl-vo">StatusBadRequest</span>,
+            )
             <span class="pl-k">return</span>
         }
 
         <span class="pl-k">if</span> maxVersion.<span class="pl-s3">LessThan</span>(*version) {
-            rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Max supported version is <span class="pl-pds">"</span></span>+maxVersion.<span class="pl-s3">String</span>(), http.<span class="pl-vo">StatusBadRequest</span>)
+            rest.<span class="pl-s3">Error</span>(
+                writer,
+                <span class="pl-s1"><span class="pl-pds">"</span>Max supported version is <span class="pl-pds">"</span></span>+maxVersion.<span class="pl-s3">String</span>(),
+                http.<span class="pl-vo">StatusBadRequest</span>,
+            )
             <span class="pl-k">return</span>
         }
 
@@ -1174,20 +1153,25 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">svmw</span> <span class="pl-k">:=</span> SemVerMiddleware{
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">Use</span>(SemVerMiddleware{
         MinVersion: <span class="pl-s1"><span class="pl-pds">"</span>1.0.0<span class="pl-pds">"</span></span>,
         MaxVersion: <span class="pl-s1"><span class="pl-pds">"</span>3.0.0<span class="pl-pds">"</span></span>,
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    })
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/#version/message<span class="pl-pds">"</span></span>, svmw.<span class="pl-s3">MiddlewareFunc</span>(
             <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
                 <span class="pl-vo">version</span> <span class="pl-k">:=</span> req.<span class="pl-vo">Env</span>[<span class="pl-s1"><span class="pl-pds">"</span>VERSION<span class="pl-pds">"</span></span>].(*semver.<span class="pl-vo">Version</span>)
                 <span class="pl-k">if</span> version.<span class="pl-vo">Major</span> == <span class="pl-c1">2</span> {
                     <span class="pl-c">// http://en.wikipedia.org/wiki/Second-system_effect</span>
-                    w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello broken World!<span class="pl-pds">"</span></span>})
+                    w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{
+                        <span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello broken World!<span class="pl-pds">"</span></span>,
+                    })
                 } <span class="pl-k">else</span> {
-                    w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+                    w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{
+                        <span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>,
+                    })
                 }
             },
         )},
@@ -1195,7 +1179,8 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
     log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, <span class="pl-c1">nil</span>))
 }
 </pre></div>
@@ -1207,7 +1192,7 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 
 <p>Here <code>request.Env["STATUS_CODE"]</code> and <code>request.Env["ELAPSED_TIME"]</code> that are available to outer middlewares are used with the <a href="https://github.com/peterbourgon/g2s">g2s</a> statsd client to send these metrics to statsd.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <div class="highlight highlight-sh"><pre><span class="pl-c"># start statsd server</span>
 <span class="pl-c"># monitor network</span>
@@ -1217,7 +1202,7 @@ curl -i http://127.0.0.1:8080/message
 curl -i http://127.0.0.1:8080/doesnotexist
 </pre></div>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1261,26 +1246,19 @@ curl -i http://127.0.0.1:8080/doesnotexist
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        OuterMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;StatsdMiddleware{
-                IpPort: <span class="pl-s1"><span class="pl-pds">"</span>localhost:8125<span class="pl-pds">"</span></span>,
-            },
-        },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(&amp;StatsdMiddleware{
+        IpPort: <span class="pl-s1"><span class="pl-pds">"</span>localhost:8125<span class="pl-pds">"</span></span>,
+    })
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">SetApp</span>(<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
 
-            <span class="pl-c">// take more than 1ms so statsd can report it</span>
-            time.<span class="pl-s3">Sleep</span>(<span class="pl-c1">100</span> * time.<span class="pl-vo">Millisecond</span>)
+        <span class="pl-c">// take more than 1ms so statsd can report it</span>
+        time.<span class="pl-s3">Sleep</span>(<span class="pl-c1">100</span> * time.<span class="pl-vo">Millisecond</span>)
 
-            w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
-        }},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    }))
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1289,11 +1267,11 @@ curl -i http://127.0.0.1:8080/doesnotexist
 
 <p>NewRelic integration based on the GoRelic plugin: <a href="http://github.com/yvasiyarov/gorelic">github.com/yvasiyarov/gorelic</a></p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/message</pre></div>
+<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/</pre></div>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1334,24 +1312,17 @@ curl -i http://127.0.0.1:8080/doesnotexist
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        OuterMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;NewRelicMiddleware{
-                License: <span class="pl-s1"><span class="pl-pds">"</span>&lt;REPLACE WITH THE LICENSE KEY&gt;<span class="pl-pds">"</span></span>,
-                Name:    <span class="pl-s1"><span class="pl-pds">"</span>&lt;REPLACE WITH THE APP NAME&gt;<span class="pl-pds">"</span></span>,
-                Verbose: <span class="pl-c1">true</span>,
-            },
-        },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
-        }},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    api.<span class="pl-s3">Use</span>(&amp;NewRelicMiddleware{
+        License: <span class="pl-s1"><span class="pl-pds">"</span>&lt;REPLACE WITH THE LICENSE KEY&gt;<span class="pl-pds">"</span></span>,
+        Name:    <span class="pl-s1"><span class="pl-pds">"</span>&lt;REPLACE WITH THE APP NAME&gt;<span class="pl-pds">"</span></span>,
+        Verbose: <span class="pl-c1">true</span>,
+    })
+    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
+        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    }))
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1363,11 +1334,11 @@ The HTTP response takes 10 seconds to be completed, printing a message on the wi
 10 seconds is also the timeout set for the graceful shutdown.
 You can play with these numbers to show that the server waits for the responses to complete.</p>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/message</pre></div>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1381,17 +1352,18 @@ You can play with these numbers to show that the server waits for the responses 
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
             <span class="pl-k">for</span> <span class="pl-vo">cpt</span> <span class="pl-k">:=</span> <span class="pl-c1">1</span>; cpt &lt;= <span class="pl-c1">10</span>; cpt++ {
 
                 <span class="pl-c">// wait 1 second</span>
                 time.<span class="pl-s3">Sleep</span>(time.<span class="pl-s3">Duration</span>(<span class="pl-c1">1</span>) * time.<span class="pl-vo">Second</span>)
 
-                w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Message<span class="pl-pds">"</span></span>: fmt.<span class="pl-s3">Sprintf</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-c1">%d</span> seconds<span class="pl-pds">"</span></span>, cpt)})
+                w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{
+                    <span class="pl-s1"><span class="pl-pds">"</span>Message<span class="pl-pds">"</span></span>: fmt.<span class="pl-s3">Sprintf</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-c1">%d</span> seconds<span class="pl-pds">"</span></span>, cpt),
+                })
                 w.(http.<span class="pl-vo">ResponseWriter</span>).<span class="pl-s3">Write</span>([]<span class="pl-st">byte</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>))
 
                 <span class="pl-c">// Flush the buffer to client</span>
@@ -1402,12 +1374,13 @@ You can play with these numbers to show that the server waits for the responses 
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
+    api.<span class="pl-s3">SetApp</span>(router)
 
     <span class="pl-vo">server</span> <span class="pl-k">:=</span> &amp;graceful.<span class="pl-vo">Server</span>{
         Timeout: <span class="pl-c1">10</span> * time.<span class="pl-vo">Second</span>,
         Server: &amp;http.<span class="pl-vo">Server</span>{
             Addr:    <span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>,
-            Handler: &amp;handler,
+            Handler: api.<span class="pl-s3">MakeHandler</span>(),
         },
     }
 
@@ -1423,12 +1396,12 @@ You can play with these numbers to show that the server waits for the responses 
 <p>For a command line client, install spdycat from:
 <a href="https://github.com/tatsuhiro-t/spdylay">https://github.com/tatsuhiro-t/spdylay</a></p>
 
-<p>The spdycat demo:</p>
+<p>spdycat demo:</p>
 
 <pre><code>spdycat -v --no-tls -2 http://localhost:8080/users/0
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
@@ -1452,14 +1425,16 @@ You can play with these numbers to show that the server waits for the responses 
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, GetUser},
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    log.<span class="pl-s3">Fatal</span>(spdy.<span class="pl-s3">ListenAndServeTCP</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
+    api.<span class="pl-s3">SetApp</span>(router)
+    log.<span class="pl-s3">Fatal</span>(spdy.<span class="pl-s3">ListenAndServeTCP</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1485,12 +1460,12 @@ and that the GAE SDK is also installed.</p>
 <li>path/to/google_appengine/dev_appserver.py .</li>
 </ul>
 
-<p>The curl demo:</p>
+<p>curl demo:</p>
 
 <pre><code>curl -i http://127.0.0.1:8080/message
 </code></pre>
 
-<p>Go code:</p>
+<p>code:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> gaehelloworld
 
@@ -1501,8 +1476,9 @@ and that the GAE SDK is also installed.</p>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">init</span>() {
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
         &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
             w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
         }},
@@ -1510,255 +1486,8 @@ and that the GAE SDK is also installed.</p>
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
         log.<span class="pl-s3">Fatal</span>(err)
     }
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>, &amp;handler)
-}
-</pre></div>
-
-<h4>
-<a id="basic-auth-custom" class="anchor" href="#basic-auth-custom" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic Auth Custom</h4>
-
-<p>Demonstrate how to implement a custom AuthBasic middleware, used to protect all endpoints.</p>
-
-<p>This is a very simple version supporting only one user.</p>
-
-<p>The curl demo:</p>
-
-<pre><code>curl -i http://127.0.0.1:8080/countries
-</code></pre>
-
-<p>Go code:</p>
-
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
-
-<span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>encoding/base64<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>errors<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>strings<span class="pl-pds">"</span></span>
-)
-
-<span class="pl-k">type</span> <span class="pl-v">MyAuthBasicMiddleware</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Realm</span>    <span class="pl-st">string</span>
-    <span class="pl-v">UserId</span>   <span class="pl-st">string</span>
-    <span class="pl-v">Password</span> <span class="pl-st">string</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">MyAuthBasicMiddleware</span>) <span class="pl-en">MiddlewareFunc</span></span>(<span class="pl-v">handler</span> <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span>) <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span> {
-    <span class="pl-k">return</span> <span class="pl-s3">func</span>(writer rest.<span class="pl-vo">ResponseWriter</span>, request *rest.<span class="pl-vo">Request</span>) {
-
-        <span class="pl-vo">authHeader</span> <span class="pl-k">:=</span> request.<span class="pl-vo">Header</span>.<span class="pl-s3">Get</span>(<span class="pl-s1"><span class="pl-pds">"</span>Authorization<span class="pl-pds">"</span></span>)
-        <span class="pl-k">if</span> authHeader == <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> {
-            mw.<span class="pl-s3">unauthorized</span>(writer)
-            <span class="pl-k">return</span>
-        }
-
-        <span class="pl-vo">providedUserId</span>, <span class="pl-vo">providedPassword</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> mw.<span class="pl-s3">decodeBasicAuthHeader</span>(authHeader)
-
-        <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-            rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Invalid authentication<span class="pl-pds">"</span></span>, http.<span class="pl-vo">StatusBadRequest</span>)
-            <span class="pl-k">return</span>
-        }
-
-        <span class="pl-k">if</span> !(providedUserId == mw.<span class="pl-vo">UserId</span> &amp;&amp; providedPassword == mw.<span class="pl-vo">Password</span>) {
-            mw.<span class="pl-s3">unauthorized</span>(writer)
-            <span class="pl-k">return</span>
-        }
-
-        <span class="pl-s3">handler</span>(writer, request)
-    }
-}
-
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">MyAuthBasicMiddleware</span>) <span class="pl-en">unauthorized</span></span>(<span class="pl-v">writer</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>) {
-    writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>WWW-Authenticate<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Basic realm=<span class="pl-pds">"</span></span>+mw.<span class="pl-vo">Realm</span>)
-    rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Not Authorized<span class="pl-pds">"</span></span>, http.<span class="pl-vo">StatusUnauthorized</span>)
-}
-
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">MyAuthBasicMiddleware</span>) <span class="pl-en">decodeBasicAuthHeader</span></span>(<span class="pl-v">header</span> <span class="pl-v">string</span>) (<span class="pl-v">user</span> <span class="pl-v">string</span>, <span class="pl-v">password</span> <span class="pl-v">string</span>, <span class="pl-v">err</span> <span class="pl-v">error</span>) {
-
-    <span class="pl-vo">parts</span> <span class="pl-k">:=</span> strings.<span class="pl-s3">SplitN</span>(header, <span class="pl-s1"><span class="pl-pds">"</span> <span class="pl-pds">"</span></span>, <span class="pl-c1">2</span>)
-    <span class="pl-k">if</span> !(<span class="pl-s3">len</span>(parts) == <span class="pl-c1">2</span> &amp;&amp; parts[<span class="pl-c1">0</span>] == <span class="pl-s1"><span class="pl-pds">"</span>Basic<span class="pl-pds">"</span></span>) {
-        <span class="pl-k">return</span> <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, errors.<span class="pl-s3">New</span>(<span class="pl-s1"><span class="pl-pds">"</span>Invalid authentication<span class="pl-pds">"</span></span>)
-    }
-
-    <span class="pl-vo">decoded</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> base64.<span class="pl-vo">StdEncoding</span>.<span class="pl-s3">DecodeString</span>(parts[<span class="pl-c1">1</span>])
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        <span class="pl-k">return</span> <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, errors.<span class="pl-s3">New</span>(<span class="pl-s1"><span class="pl-pds">"</span>Invalid base64<span class="pl-pds">"</span></span>)
-    }
-
-    <span class="pl-vo">creds</span> <span class="pl-k">:=</span> strings.<span class="pl-s3">SplitN</span>(<span class="pl-st">string</span>(decoded), <span class="pl-s1"><span class="pl-pds">"</span>:<span class="pl-pds">"</span></span>, <span class="pl-c1">2</span>)
-    <span class="pl-k">if</span> <span class="pl-s3">len</span>(creds) != <span class="pl-c1">2</span> {
-        <span class="pl-k">return</span> <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, errors.<span class="pl-s3">New</span>(<span class="pl-s1"><span class="pl-pds">"</span>Invalid authentication<span class="pl-pds">"</span></span>)
-    }
-
-    <span class="pl-k">return</span> creds[<span class="pl-c1">0</span>], creds[<span class="pl-c1">1</span>], <span class="pl-c1">nil</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        PreRoutingMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;MyAuthBasicMiddleware{
-                Realm:    <span class="pl-s1"><span class="pl-pds">"</span>Administration<span class="pl-pds">"</span></span>,
-                UserId:   <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span>,
-                Password: <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span>,
-            },
-        },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
-}
-
-<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Code</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">GetAllCountries</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    w.<span class="pl-s3">WriteJson</span>(
-        []Country{
-            Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
-            },
-            Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
-            },
-        },
-    )
-}
-</pre></div>
-
-<h4>
-<a id="cors-custom" class="anchor" href="#cors-custom" aria-hidden="true"><span class="octicon octicon-link"></span></a>CORS Custom</h4>
-
-<p>Demonstrate how to implement a custom CORS middleware, used to on all endpoints.</p>
-
-<p>The curl demo:</p>
-
-<pre><code>curl -i http://127.0.0.1:8080/countries
-</code></pre>
-
-<p>Go code:</p>
-
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
-
-<span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-)
-
-<span class="pl-k">type</span> <span class="pl-v">MyCorsMiddleware</span> <span class="pl-st">struct</span>{}
-
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">MyCorsMiddleware</span>) <span class="pl-en">MiddlewareFunc</span></span>(<span class="pl-v">handler</span> <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span>) <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span> {
-    <span class="pl-k">return</span> <span class="pl-s3">func</span>(writer rest.<span class="pl-vo">ResponseWriter</span>, request *rest.<span class="pl-vo">Request</span>) {
-
-        <span class="pl-vo">corsInfo</span> <span class="pl-k">:=</span> request.<span class="pl-s3">GetCorsInfo</span>()
-
-        <span class="pl-c">// Be nice with non CORS requests, continue</span>
-        <span class="pl-c">// Alternatively, you may also chose to only allow CORS requests, and return an error.</span>
-        <span class="pl-k">if</span> !corsInfo.<span class="pl-vo">IsCors</span> {
-            <span class="pl-c">// continure, execute the wrapped middleware</span>
-            <span class="pl-s3">handler</span>(writer, request)
-            <span class="pl-k">return</span>
-        }
-
-        <span class="pl-c">// Validate the Origin</span>
-        <span class="pl-c">// More sophisticated validations can be implemented, regexps, DB lookups, ...</span>
-        <span class="pl-k">if</span> corsInfo.<span class="pl-vo">Origin</span> != <span class="pl-s1"><span class="pl-pds">"</span>http://my.other.host<span class="pl-pds">"</span></span> {
-            rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Invalid Origin<span class="pl-pds">"</span></span>, http.<span class="pl-vo">StatusForbidden</span>)
-            <span class="pl-k">return</span>
-        }
-
-        <span class="pl-k">if</span> corsInfo.<span class="pl-vo">IsPreflight</span> {
-            <span class="pl-c">// check the request methods</span>
-            <span class="pl-vo">allowedMethods</span> <span class="pl-k">:=</span> <span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">bool</span>{
-                <span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>:  <span class="pl-c1">true</span>,
-                <span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
-                <span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>:  <span class="pl-c1">true</span>,
-                <span class="pl-c">// don't allow DELETE, for instance</span>
-            }
-            <span class="pl-k">if</span> !allowedMethods[corsInfo.<span class="pl-vo">AccessControlRequestMethod</span>] {
-                rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Invalid Preflight Request<span class="pl-pds">"</span></span>, http.<span class="pl-vo">StatusForbidden</span>)
-                <span class="pl-k">return</span>
-            }
-            <span class="pl-c">// check the request headers</span>
-            <span class="pl-vo">allowedHeaders</span> <span class="pl-k">:=</span> <span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">bool</span>{
-                <span class="pl-s1"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span>:          <span class="pl-c1">true</span>,
-                <span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>:    <span class="pl-c1">true</span>,
-                <span class="pl-s1"><span class="pl-pds">"</span>X-Custom-Header<span class="pl-pds">"</span></span>: <span class="pl-c1">true</span>,
-            }
-            <span class="pl-k">for</span> <span class="pl-vo">_</span>, <span class="pl-vo">requestedHeader</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> corsInfo.<span class="pl-vo">AccessControlRequestHeaders</span> {
-                <span class="pl-k">if</span> !allowedHeaders[requestedHeader] {
-                    rest.<span class="pl-s3">Error</span>(writer, <span class="pl-s1"><span class="pl-pds">"</span>Invalid Preflight Request<span class="pl-pds">"</span></span>, http.<span class="pl-vo">StatusForbidden</span>)
-                    <span class="pl-k">return</span>
-                }
-            }
-
-            <span class="pl-k">for</span> <span class="pl-vo">allowedMethod</span>, <span class="pl-vo">_</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> allowedMethods {
-                writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Add</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Allow-Methods<span class="pl-pds">"</span></span>, allowedMethod)
-            }
-            <span class="pl-k">for</span> <span class="pl-vo">allowedHeader</span>, <span class="pl-vo">_</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> allowedHeaders {
-                writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Add</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Allow-Headers<span class="pl-pds">"</span></span>, allowedHeader)
-            }
-            writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Allow-Origin<span class="pl-pds">"</span></span>, corsInfo.<span class="pl-vo">Origin</span>)
-            writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Allow-Credentials<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span>)
-            writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Max-Age<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>3600<span class="pl-pds">"</span></span>)
-            writer.<span class="pl-s3">WriteHeader</span>(http.<span class="pl-vo">StatusOK</span>)
-            <span class="pl-k">return</span>
-        } <span class="pl-k">else</span> {
-            writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Expose-Headers<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>X-Powered-By<span class="pl-pds">"</span></span>)
-            writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Allow-Origin<span class="pl-pds">"</span></span>, corsInfo.<span class="pl-vo">Origin</span>)
-            writer.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Access-Control-Allow-Credentials<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span>)
-            <span class="pl-c">// continure, execute the wrapped middleware</span>
-            <span class="pl-s3">handler</span>(writer, request)
-            <span class="pl-k">return</span>
-        }
-    }
-}
-
-<span class="pl-k">func</span> <span class="pl-en">main</span>() {
-
-    <span class="pl-vo">handler</span> <span class="pl-k">:=</span> rest.<span class="pl-vo">ResourceHandler</span>{
-        PreRoutingMiddlewares: []rest.<span class="pl-vo">Middleware</span>{
-            &amp;MyCorsMiddleware{},
-        },
-    }
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, &amp;handler))
-}
-
-<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Code</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">GetAllCountries</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    w.<span class="pl-s3">WriteJson</span>(
-        []Country{
-            Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
-            },
-            Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
-            },
-        },
-    )
+    api.<span class="pl-s3">SetApp</span>(router)
+    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>())
 }
 </pre></div>
 
@@ -1777,21 +1506,72 @@ and that the GAE SDK is also installed.</p>
 </ul>
 
 <h2>
-<a id="options" class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options</h2>
+<a id="version-3-release-notes" class="anchor" href="#version-3-release-notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Version 3 release notes</h2>
 
-<p>Things to enable in production:</p>
+<p>This new version brings:</p>
 
 <ul>
-<li>Gzip compression (default: disabled)</li>
-<li>Custom Logger (default: Go default)</li>
+<li>Public middlewares. (12 included in the package)</li>
+<li>A new App interface. (the router being the provided App)</li>
+<li>A new Api object that manages the middlewares and the App.</li>
+<li>Optional and interchangeable App/router.</li>
 </ul>
 
-<p>Things to enable in development:</p>
+<p>Here is for instance the minimal "Hello World!":</p>
+
+<div class="highlight highlight-go"><pre>        <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+        api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+        api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
+                w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+        }))
+        http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>())</pre></div>
+
+<p><a href="https://github.com/ant0ine/go-json-rest#examples">All examples have been updated to use the new API.</a></p>
+
+<p><strong>V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.</strong> As a consequence, all the middlewares are now public,
+and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
+of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
+See the design ideas and discussion <a href="https://github.com/ant0ine/go-json-rest/issues/110">here</a></p>
+
+<h2>
+<a id="migration-guide-from-v2-to-v3" class="anchor" href="#migration-guide-from-v2-to-v3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Migration guide from v2 to v3</h2>
+
+<p>V3 introduces an API change (see <a href="http://semver.org/">Semver</a>). But it was possible to maintain backward compatibility, and so, ResourceHandler still works.
+ResourceHandler does the same thing as in V2, <strong>but it is now considered as deprecated, and will be removed in a few months</strong>. In the meantime, it logs a
+deprecation warning.</p>
+
+<h3>
+<a id="how-to-map-the-resourcehandler-options-to-the-new-stack-of-middlewares-" class="anchor" href="#how-to-map-the-resourcehandler-options-to-the-new-stack-of-middlewares-" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to map the ResourceHandler options to the new stack of middlewares ?</h3>
 
 <ul>
-<li>Json indentation (default: enabled)</li>
-<li>Relaxed ContentType (default: disabled)</li>
-<li>Error stack trace in the response body (default: disabled)</li>
+<li>
+<code>EnableGzip bool</code>: Just include GzipMiddleware in the stack of middlewares.</li>
+<li>
+<code>DisableJsonIndent bool</code>: Just don't include JsonIndentMiddleware in the stack of middlewares.</li>
+<li>
+<code>EnableStatusService bool</code>: Include StatusMiddleware in the stack and keep a reference to it to access GetStatus().</li>
+<li>
+<code>EnableResponseStackTrace bool</code>: Same exact option but moved to RecoverMiddleware.</li>
+<li>
+<code>EnableLogAsJson bool</code>: Include AccessLogJsonMiddleware, and possibly remove AccessLogApacheMiddleware.</li>
+<li>
+<code>EnableRelaxedContentType bool</code>: Just don't include ContentTypeCheckerMiddleware.</li>
+<li>
+<code>OuterMiddlewares []Middleware</code>: You are now building the full stack, OuterMiddlewares are the first in the list.</li>
+<li>
+<code>PreRoutingMiddlewares []Middleware</code>: You are now building the full stack, OuterMiddlewares are the last in the list.</li>
+<li>
+<code>Logger *log.Logger</code>: Same option but moved to AccessLogApacheMiddleware and AccessLogJsonMiddleware.</li>
+<li>
+<code>LoggerFormat AccessLogFormat</code>: Same exact option but moved to AccessLogApacheMiddleware.</li>
+<li>
+<code>DisableLogger bool</code>: Just don't include any access log middleware.</li>
+<li>
+<code>ErrorLogger *log.Logger</code>: Same exact option but moved to RecoverMiddleware.</li>
+<li>
+<code>XPoweredBy string</code>: Same exact option but moved to PoweredByMiddleware.</li>
+<li>
+<code>DisableXPoweredBy bool</code>: Just don't include PoweredByMiddleware.</li>
 </ul>
 
 <h2>
@@ -1924,7 +1704,7 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 <li><a href="https://github.com/Quantisan">Paul Lam</a></li>
 </ul>
 
-<p>Copyright (c) 2013-2014 Antoine Imbert</p>
+<p>Copyright (c) 2013-2015 Antoine Imbert</p>
 
 <p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
       </section>
