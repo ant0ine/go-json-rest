@@ -17,9 +17,9 @@
 - [Examples](#examples)
   - [Basics](#basics)
 	  - [Hello World!](#hello-world)
+	  - [Lookup](#lookup)
 	  - [Countries](#countries)
 	  - [Users](#users)
-	  - [Lookup](#lookup)
   - [Applications](#applications)
 	  - [API and static files](#api-and-static-files)
 	  - [GORM](#gorm)
@@ -104,6 +104,54 @@ func main() {
 	api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
 		w.WriteJson(map[string]string{"Body": "Hello World!"})
 	}))
+	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
+}
+
+```
+
+#### Lookup
+
+Demonstrate how to use the relaxed placeholder (notation #paramName).
+This placeholder matches everything until the first `/`, including `.`
+
+curl demo:
+```
+curl -i http://127.0.0.1:8080/lookup/google.com
+curl -i http://127.0.0.1:8080/lookup/notadomain
+```
+
+code:
+``` go
+package main
+
+import (
+	"github.com/ant0ine/go-json-rest/rest"
+	"log"
+	"net"
+	"net/http"
+)
+
+type Message struct {
+	Body string
+}
+
+func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
+		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
+			ip, err := net.LookupIP(req.PathParam("host"))
+			if err != nil {
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.WriteJson(&ip)
+		}},
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	api.SetApp(router)
 	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
@@ -358,54 +406,6 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 	delete(u.Store, id)
 	u.Unlock()
 	w.WriteHeader(http.StatusOK)
-}
-
-```
-
-#### Lookup
-
-Demonstrate how to use the relaxed placeholder (notation #paramName).
-This placeholder matches everything until the first `/`, including `.`
-
-curl demo:
-```
-curl -i http://127.0.0.1:8080/lookup/google.com
-curl -i http://127.0.0.1:8080/lookup/notadomain
-```
-
-code:
-``` go
-package main
-
-import (
-	"github.com/ant0ine/go-json-rest/rest"
-	"log"
-	"net"
-	"net/http"
-)
-
-type Message struct {
-	Body string
-}
-
-func main() {
-	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
-	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
-			ip, err := net.LookupIP(req.PathParam("host"))
-			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			w.WriteJson(&ip)
-		}},
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	api.SetApp(router)
-	log.Fatal(http.ListenAndServe(":8080", api.MakeHandler()))
 }
 
 ```
