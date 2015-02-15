@@ -43,3 +43,36 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 		t.Errorf("Got: %s", buffer.String())
 	}
 }
+
+func TestAccessLogApacheMiddlewareMissingData(t *testing.T) {
+
+	api := NewApi()
+
+	// the uncomplete middlewares stack
+	buffer := bytes.NewBufferString("")
+	api.Use(&AccessLogApacheMiddleware{
+		Logger:       log.New(buffer, "", 0),
+		Format:       CommonLogFormat,
+		textTemplate: nil,
+	})
+
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		w.WriteJson(map[string]string{"Id": "123"})
+	}))
+
+	// wrap all
+	handler := api.MakeHandler()
+
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+
+	// not much to log when the Env data is missing, but this should still work
+	apacheCommon := regexp.MustCompile(` - -  "GET / HTTP/1.1" 0 -`)
+
+	if !apacheCommon.Match(buffer.Bytes()) {
+		t.Errorf("Got: %s", buffer.String())
+	}
+}

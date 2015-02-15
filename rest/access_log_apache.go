@@ -51,7 +51,7 @@ const (
 )
 
 // AccessLogApacheMiddleware produces the access log following a format inspired by Apache
-// mod_log_config. It depends on TimerMiddleware and RecorderMiddleware that must be in the wrapped
+// mod_log_config. It depends on TimerMiddleware and RecorderMiddleware that should be in the wrapped
 // middlewares. It also uses request.Env["REMOTE_USER"].(string) set by the auth middlewares.
 type AccessLogApacheMiddleware struct {
 
@@ -105,8 +105,8 @@ var apacheAdapter = strings.NewReplacer(
 	"%r", "{{.R.Method}} {{.R.URL.RequestURI}} {{.R.Proto}}",
 	"%s", "{{.StatusCode}}",
 	"%S", "\033[{{.StatusCode | statusCodeColor}}m{{.StatusCode}}",
-	"%t", "{{.StartTime.Format \"02/Jan/2006:15:04:05 -0700\"}}",
-	"%T", "{{.ResponseTime.Seconds | printf \"%.3f\"}}",
+	"%t", "{{if .StartTime}}{{.StartTime.Format \"02/Jan/2006:15:04:05 -0700\"}}{{end}}",
+	"%T", "{{if .ResponseTime}}{{.ResponseTime.Seconds | printf \"%.3f\"}}{{end}}",
 	"%u", "{{.RemoteUser | dashIfEmptyStr}}",
 	"%{User-Agent}i", "{{.R.UserAgent | dashIfEmptyStr}}",
 	"%{Referer}i", "{{.R.Referer | dashIfEmptyStr}}",
@@ -185,7 +185,10 @@ func (u *accessLogUtil) ApacheQueryString() string {
 
 // When the request entered the timer middleware.
 func (u *accessLogUtil) StartTime() *time.Time {
-	return u.R.Env["START_TIME"].(*time.Time)
+	if u.R.Env["START_TIME"] != nil {
+		return u.R.Env["START_TIME"].(*time.Time)
+	}
+	return nil
 }
 
 // If remoteAddr is set then return is without the port number, apache log style.
@@ -200,12 +203,18 @@ func (u *accessLogUtil) ApacheRemoteAddr() string {
 
 // As recorded by the recorder middleware.
 func (u *accessLogUtil) StatusCode() int {
-	return u.R.Env["STATUS_CODE"].(int)
+	if u.R.Env["STATUS_CODE"] != nil {
+		return u.R.Env["STATUS_CODE"].(int)
+	}
+	return 0
 }
 
 // As mesured by the timer middleware.
 func (u *accessLogUtil) ResponseTime() *time.Duration {
-	return u.R.Env["ELAPSED_TIME"].(*time.Duration)
+	if u.R.Env["ELAPSED_TIME"] != nil {
+		return u.R.Env["ELAPSED_TIME"].(*time.Duration)
+	}
+	return nil
 }
 
 // Process id.
@@ -215,5 +224,8 @@ func (u *accessLogUtil) Pid() int {
 
 // As recorded by the recorder middleware.
 func (u *accessLogUtil) BytesWritten() int64 {
-	return u.R.Env["BYTES_WRITTEN"].(int64)
+	if u.R.Env["BYTES_WRITTEN"] != nil {
+		return u.R.Env["BYTES_WRITTEN"].(int64)
+	}
+	return 0
 }
