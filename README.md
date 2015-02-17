@@ -14,6 +14,7 @@
 - [Features](#features)
 - [Install](#install)
 - [Vendoring](#vendoring)
+- [Middlewares](middlewares)
 - [Examples](#examples)
   - [Basics](#basics)
 	  - [Hello World!](#hello-world)
@@ -68,6 +69,30 @@ This package is "go-gettable", just do:
 The recommended way of using this library in your project is to use the **"vendoring"** method,
 where this library code is copied in your repository at a specific revision.
 [This page](http://nathany.com/go-packages/) is a good summary of package management in Go.
+
+
+## Middlewares
+
+Core Middlewares:
+
+| AccessLogApache | Access log inspired by Apache mod_log_config |
+| AccessLogJson | Access log with records as JSON |
+| AuthBasic | Basic HTTP auth |
+| ContentTypeChecker | Verify the request content type |
+| Cors | CORS server side implementation |
+| Gzip | Compress the responses |
+| JsonIndent | Easy to read JSON |
+| Jsonp | Response as JSONP |
+| PoweredBy | Manage the X-Powered-By response header |
+| Recorder | Record the status code and content length in the Env |
+| Status | Memecached inspired stats about the requests |
+| Timer | Keep track of the elapsed time in the Env |
+
+Third Party Middlewares:
+
+| [Statsd](https://github.com/ant0ine/go-json-rest-middleware-statsd) | Send stats to a statsd server |
+
+*If you have a Go-Json-Rest compatible middleware, feel free to submit a PR to add it in this list, and in the examples.*
 
 
 ## Examples
