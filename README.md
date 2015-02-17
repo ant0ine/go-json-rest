@@ -95,6 +95,7 @@ Third Party Middlewares:
 | Name | Description |
 |------|-------------|
 | **[Statsd](https://github.com/ant0ine/go-json-rest-middleware-statsd)** | Send stats to a statsd server |
+| **[JWT](https://github.com/StephanDollberg/go-json-rest-middleware-jwt)** | Provides authentication via Json Web Tokens |
 
 *If you have a Go-Json-Rest compatible middleware, feel free to submit a PR to add it in this list, and in the examples.*
 
