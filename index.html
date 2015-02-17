@@ -47,6 +47,7 @@
 <li><a href="#features">Features</a></li>
 <li><a href="#install">Install</a></li>
 <li><a href="#vendoring">Vendoring</a></li>
+<li><a href="#middlewares">Middlewares</a></li>
 <li>
 <a href="#examples">Examples</a>
 
@@ -56,9 +57,9 @@
 
 <ul>
 <li><a href="#hello-world">Hello World!</a></li>
+<li><a href="#lookup">Lookup</a></li>
 <li><a href="#countries">Countries</a></li>
 <li><a href="#users">Users</a></li>
-<li><a href="#lookup">Lookup</a></li>
 </ul>
 </li>
 <li>
@@ -127,6 +128,89 @@ where this library code is copied in your repository at a specific revision.
 <a href="http://nathany.com/go-packages/">This page</a> is a good summary of package management in Go.</p>
 
 <h2>
+<a id="middlewares" class="anchor" href="#middlewares" aria-hidden="true"><span class="octicon octicon-link"></span></a>Middlewares</h2>
+
+<p>Core Middlewares:</p>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AccessLogApache</strong></td>
+<td>Access log inspired by Apache mod_log_config</td>
+</tr>
+<tr>
+<td><strong>AccessLogJson</strong></td>
+<td>Access log with records as JSON</td>
+</tr>
+<tr>
+<td><strong>AuthBasic</strong></td>
+<td>Basic HTTP auth</td>
+</tr>
+<tr>
+<td><strong>ContentTypeChecker</strong></td>
+<td>Verify the request content type</td>
+</tr>
+<tr>
+<td><strong>Cors</strong></td>
+<td>CORS server side implementation</td>
+</tr>
+<tr>
+<td><strong>Gzip</strong></td>
+<td>Compress the responses</td>
+</tr>
+<tr>
+<td><strong>JsonIndent</strong></td>
+<td>Easy to read JSON</td>
+</tr>
+<tr>
+<td><strong>Jsonp</strong></td>
+<td>Response as JSONP</td>
+</tr>
+<tr>
+<td><strong>PoweredBy</strong></td>
+<td>Manage the X-Powered-By response header</td>
+</tr>
+<tr>
+<td><strong>Recorder</strong></td>
+<td>Record the status code and content length in the Env</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Memecached inspired stats about the requests</td>
+</tr>
+<tr>
+<td><strong>Timer</strong></td>
+<td>Keep track of the elapsed time in the Env</td>
+</tr>
+</tbody>
+</table>
+
+<p>Third Party Middlewares:</p>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><a href="https://github.com/ant0ine/go-json-rest-middleware-statsd">Statsd</a></strong></td>
+<td>Send stats to a statsd server</td>
+</tr>
+</tbody>
+</table>
+
+<p><em>If you have a Go-Json-Rest compatible middleware, feel free to submit a PR to add it in this list, and in the examples.</em></p>
+
+<h2>
 <a id="examples" class="anchor" href="#examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Examples</h2>
 
 <p>All the following examples can be found in dedicated examples repository: <a href="https://github.com/ant0ine/go-json-rest-examples">https://github.com/ant0ine/go-json-rest-examples</a></p>
@@ -161,6 +245,54 @@ where this library code is copied in your repository at a specific revision.
     api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
         w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
+    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+}
+</pre></div>
+
+<h4>
+<a id="lookup" class="anchor" href="#lookup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Lookup</h4>
+
+<p>Demonstrate how to use the relaxed placeholder (notation <code>#paramName</code>).
+This placeholder matches everything until the first <code>/</code>, including <code>.</code></p>
+
+<p>curl demo:</p>
+
+<pre><code>curl -i http://127.0.0.1:8080/lookup/google.com
+curl -i http://127.0.0.1:8080/lookup/notadomain
+</code></pre>
+
+<p>code:</p>
+
+<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s1"><span class="pl-pds">"</span>net<span class="pl-pds">"</span></span>
+    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+)
+
+<span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-st">struct</span> {
+    <span class="pl-v">Body</span> <span class="pl-st">string</span>
+}
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
+        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/lookup/#host<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
+            <span class="pl-vo">ip</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> net.<span class="pl-s3">LookupIP</span>(req.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>host<span class="pl-pds">"</span></span>))
+            <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+                rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+                <span class="pl-k">return</span>
+            }
+            w.<span class="pl-s3">WriteJson</span>(&amp;ip)
+        }},
+    )
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        log.<span class="pl-s3">Fatal</span>(err)
+    }
+    api.<span class="pl-s3">SetApp</span>(router)
     log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
@@ -415,54 +547,6 @@ curl -i http://127.0.0.1:8080/users
     <span class="pl-s3">delete</span>(u.<span class="pl-vo">Store</span>, id)
     u.<span class="pl-s3">Unlock</span>()
     w.<span class="pl-s3">WriteHeader</span>(http.<span class="pl-vo">StatusOK</span>)
-}
-</pre></div>
-
-<h4>
-<a id="lookup" class="anchor" href="#lookup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Lookup</h4>
-
-<p>Demonstrate how to use the relaxed placeholder (notation #paramName).
-This placeholder matches everything until the first <code>/</code>, including <code>.</code></p>
-
-<p>curl demo:</p>
-
-<pre><code>curl -i http://127.0.0.1:8080/lookup/google.com
-curl -i http://127.0.0.1:8080/lookup/notadomain
-</code></pre>
-
-<p>code:</p>
-
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
-
-<span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-)
-
-<span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Body</span> <span class="pl-st">string</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/lookup/#host<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            <span class="pl-vo">ip</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> net.<span class="pl-s3">LookupIP</span>(req.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>host<span class="pl-pds">"</span></span>))
-            <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-                rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
-                <span class="pl-k">return</span>
-            }
-            w.<span class="pl-s3">WriteJson</span>(&amp;ip)
-        }},
-    )
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
-    }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1188,9 +1272,8 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 <h4>
 <a id="statsd" class="anchor" href="#statsd" aria-hidden="true"><span class="octicon octicon-link"></span></a>Statsd</h4>
 
-<p>Demonstrate how to use OuterMiddlewares to do additional logging and reporting.</p>
-
-<p>Here <code>request.Env["STATUS_CODE"]</code> and <code>request.Env["ELAPSED_TIME"]</code> that are available to outer middlewares are used with the <a href="https://github.com/peterbourgon/g2s">g2s</a> statsd client to send these metrics to statsd.</p>
+<p>Demonstrate how to use the <a href="https://github.com/ant0ine/go-json-rest-middleware-statsd">Statsd Middleware</a> to collect statistics about the requests/reponses.
+This middleware is based on the <a href="https://github.com/peterbourgon/g2s">g2s</a> statsd client.</p>
 
 <p>curl demo:</p>
 
@@ -1207,51 +1290,18 @@ curl -i http://127.0.0.1:8080/doesnotexist
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
+    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest-middleware-statsd<span class="pl-pds">"</span></span>
     <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/peterbourgon/g2s<span class="pl-pds">"</span></span>
     <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
     <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>strconv<span class="pl-pds">"</span></span>
     <span class="pl-s1"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
 )
 
-<span class="pl-k">type</span> <span class="pl-v">StatsdMiddleware</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">IpPort</span> <span class="pl-st">string</span>
-    <span class="pl-v">Prefix</span> <span class="pl-st">string</span>
-}
-
-<span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">StatsdMiddleware</span>) <span class="pl-en">MiddlewareFunc</span></span>(<span class="pl-v">handler</span> <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span>) <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span> {
-
-    <span class="pl-vo">statsd</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> g2s.<span class="pl-s3">Dial</span>(<span class="pl-s1"><span class="pl-pds">"</span>udp<span class="pl-pds">"</span></span>, mw.<span class="pl-vo">IpPort</span>)
-    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        <span class="pl-s3">panic</span>(err)
-    }
-
-    <span class="pl-vo">keyBase</span> <span class="pl-k">:=</span> <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
-    <span class="pl-k">if</span> mw.<span class="pl-vo">Prefix</span> != <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> {
-        keyBase += mw.<span class="pl-vo">Prefix</span> + <span class="pl-s1"><span class="pl-pds">"</span>.<span class="pl-pds">"</span></span>
-    }
-    keyBase += <span class="pl-s1"><span class="pl-pds">"</span>response.<span class="pl-pds">"</span></span>
-
-    <span class="pl-k">return</span> <span class="pl-s3">func</span>(writer rest.<span class="pl-vo">ResponseWriter</span>, request *rest.<span class="pl-vo">Request</span>) {
-
-        <span class="pl-s3">handler</span>(writer, request)
-
-        <span class="pl-vo">statusCode</span> <span class="pl-k">:=</span> request.<span class="pl-vo">Env</span>[<span class="pl-s1"><span class="pl-pds">"</span>STATUS_CODE<span class="pl-pds">"</span></span>].(<span class="pl-st">int</span>)
-        statsd.<span class="pl-s3">Counter</span>(<span class="pl-c1">1.0</span>, keyBase+<span class="pl-s1"><span class="pl-pds">"</span>status_code.<span class="pl-pds">"</span></span>+strconv.<span class="pl-s3">Itoa</span>(statusCode), <span class="pl-c1">1</span>)
-
-        <span class="pl-vo">elapsedTime</span> <span class="pl-k">:=</span> request.<span class="pl-vo">Env</span>[<span class="pl-s1"><span class="pl-pds">"</span>ELAPSED_TIME<span class="pl-pds">"</span></span>].(*time.<span class="pl-vo">Duration</span>)
-        statsd.<span class="pl-s3">Timing</span>(<span class="pl-c1">1.0</span>, keyBase+<span class="pl-s1"><span class="pl-pds">"</span>elapsed_time<span class="pl-pds">"</span></span>, *elapsedTime)
-    }
-}
-
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
     <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(&amp;StatsdMiddleware{
-        IpPort: <span class="pl-s1"><span class="pl-pds">"</span>localhost:8125<span class="pl-pds">"</span></span>,
-    })
+    api.<span class="pl-s3">Use</span>(&amp;statsd.<span class="pl-vo">StatsdMiddleware</span>{})
     api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">SetApp</span>(<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
+    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
 
         <span class="pl-c">// take more than 1ms so statsd can report it</span>
         time.<span class="pl-s3">Sleep</span>(<span class="pl-c1">100</span> * time.<span class="pl-vo">Millisecond</span>)
@@ -1508,30 +1558,34 @@ and that the GAE SDK is also installed.</p>
 <h2>
 <a id="version-3-release-notes" class="anchor" href="#version-3-release-notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Version 3 release notes</h2>
 
-<p>This new version brings:</p>
+<h3>
+<a id="whats-new-in-v3" class="anchor" href="#whats-new-in-v3" aria-hidden="true"><span class="octicon octicon-link"></span></a>What's New in v3</h3>
 
 <ul>
-<li>Public middlewares. (12 included in the package)</li>
+<li>Public Middlewares. (12 included in the package)</li>
 <li>A new App interface. (the router being the provided App)</li>
-<li>A new Api object that manages the middlewares and the App.</li>
+<li>A new Api object that manages the Middlewares and the App.</li>
 <li>Optional and interchangeable App/router.</li>
 </ul>
 
-<p>Here is for instance the minimal "Hello World!":</p>
+<h3>
+<a id="here-is-for-instance-the-new-minimal-hello-world" class="anchor" href="#here-is-for-instance-the-new-minimal-hello-world" aria-hidden="true"><span class="octicon octicon-link"></span></a>Here is for instance the new minimal "Hello World!"</h3>
 
-<div class="highlight highlight-go"><pre>        <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-        api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-        api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-                w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
-        }))
-        http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>())</pre></div>
+<div class="highlight highlight-go"><pre><span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
+api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
+        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+}))
+http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>())</pre></div>
 
-<p><a href="https://github.com/ant0ine/go-json-rest#examples">All examples have been updated to use the new API.</a></p>
+<p><em>All 19 examples have been updated to use the new API. <a href="https://github.com/ant0ine/go-json-rest#examples">See here</a></em></p>
 
-<p><strong>V3 is about deprecating the ResourceHandler in favor of a new API that exposes the middlewares.</strong> As a consequence, all the middlewares are now public,
-and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top
-of the stack of middlewares. Which means that the router is no longer required to use go-json-rest.
-See the design ideas and discussion <a href="https://github.com/ant0ine/go-json-rest/issues/110">here</a></p>
+<h3>
+<a id="deprecating-the-resourcehandler" class="anchor" href="#deprecating-the-resourcehandler" aria-hidden="true"><span class="octicon octicon-link"></span></a>Deprecating the ResourceHandler</h3>
+
+<p>V3 is about deprecating the ResourceHandler in favor of a new API that exposes the Middlewares. As a consequence, all the Middlewares are now public, and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top of the stack of Middlewares. Which means that the router is no longer required to use Go-Json-Rest.</p>
+
+<p><em>Design ideas and discussion <a href="https://github.com/ant0ine/go-json-rest/issues/110">See here</a></em></p>
 
 <h2>
 <a id="migration-guide-from-v2-to-v3" class="anchor" href="#migration-guide-from-v2-to-v3" aria-hidden="true"><span class="octicon octicon-link"></span></a>Migration guide from v2 to v3</h2>
