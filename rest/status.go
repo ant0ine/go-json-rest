@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -31,7 +32,16 @@ func (mw *StatusMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		// call the handler
 		h(w, r)
 
+		if r.Env["STATUS_CODE"] == nil {
+			log.Fatal("StatusMiddleware: Env[\"STATUS_CODE\"] is nil, " +
+				"RecorderMiddleware may not be in the wrapped Middlewares.")
+		}
 		statusCode := r.Env["STATUS_CODE"].(int)
+
+		if r.Env["ELAPSED_TIME"] == nil {
+			log.Fatal("StatusMiddleware: Env[\"ELAPSED_TIME\"] is nil, " +
+				"TimerMiddleware may not be in the wrapped Middlewares.")
+		}
 		responseTime := r.Env["ELAPSED_TIME"].(*time.Duration)
 
 		mw.lock.Lock()
