@@ -84,13 +84,13 @@ Core Middlewares:
 | **ContentTypeChecker** | Verify the request content type |
 | **Cors** | CORS server side implementation |
 | **Gzip** | Compress the responses |
+| **If** | Conditionally execute a Middleware at runtime |
 | **JsonIndent** | Easy to read JSON |
 | **Jsonp** | Response as JSONP |
 | **PoweredBy** | Manage the X-Powered-By response header |
 | **Recorder** | Record the status code and content length in the Env |
 | **Status** | Memecached inspired stats about the requests |
 | **Timer** | Keep track of the elapsed time in the Env |
-| **If** | Conditionally execute a Middleware at runtime |
 
 Third Party Middlewares:
 
