@@ -72,3 +72,29 @@ func TestGzipDisabled(t *testing.T) {
 	recorded.HeaderIs("Content-Encoding", "")
 	recorded.HeaderIs("Vary", "")
 }
+
+func TestGzipDisabledSimply(t *testing.T) {
+
+	api := NewApi()
+
+	// router app with success and error paths
+	router, err := MakeRouterSimply(
+		Get{"/ok",
+			func(w ResponseWriter, r *Request) {
+				w.WriteJson(map[string]string{"Id": "123"})
+			},
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	api.SetApp(router)
+	handler := api.MakeHandler()
+
+	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/ok", nil))
+	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+	recorded.HeaderIs("Content-Encoding", "")
+	recorded.HeaderIs("Vary", "")
+}
