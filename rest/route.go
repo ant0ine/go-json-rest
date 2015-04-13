@@ -35,3 +35,39 @@ func (route *Route) MakePath(pathParams map[string]string) string {
 	}
 	return path
 }
+
+// Get is a shortcut method that instantiates a GET route. Equivalent to &Route{"GET", pathExp, handlerFunc}
+func Get(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "GET",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
+// Post is a shortcut method that instantiates a POST route. Equivalent to &Route{"POST", pathExp, handlerFunc}
+func Post(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "POST",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
+// Put is a shortcut method that instantiates a PUT route. Equivalent to &Route{"PUT", pathExp, handlerFunc}
+func Put(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "PUT",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
+// Delete is a shortcut method that instantiates a DELETE route. Equivalent to &Route{"DELETE", pathExp, handlerFunc}
+func Delete(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "DELETE",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}

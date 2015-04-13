@@ -48,3 +48,26 @@ func TestReverseRouteResolution(t *testing.T) {
 		t.Errorf("expected %s, got %s", expected, got)
 	}
 }
+
+func TestShortcutMethods(t *testing.T) {
+
+	r := Get("/", nil)
+	if r.HttpMethod != "GET" {
+		t.Errorf("expected GET, got %s", r.HttpMethod)
+	}
+
+	r = Post("/", nil)
+	if r.HttpMethod != "POST" {
+		t.Errorf("expected POST, got %s", r.HttpMethod)
+	}
+
+	r = Put("/", nil)
+	if r.HttpMethod != "PUT" {
+		t.Errorf("expected PUT, got %s", r.HttpMethod)
+	}
+
+	r = Delete("/", nil)
+	if r.HttpMethod != "DELETE" {
+		t.Errorf("expected DELETE, got %s", r.HttpMethod)
+	}
+}
