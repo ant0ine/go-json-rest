@@ -4,7 +4,8 @@ import (
 	"strings"
 )
 
-// Route defines a route. It's used with SetRoutes.
+// Route defines a route as consumed by the router. It can be instantiated directly, or using one
+// of the shortcut methods: rest.Get, rest.Post, rest.Put, and rest.Delete.
 type Route struct {
 
 	// Any HTTP method. It will be used as uppercase to avoid common mistakes.
@@ -36,7 +37,8 @@ func (route *Route) MakePath(pathParams map[string]string) string {
 	return path
 }
 
-// Get is a shortcut method that instantiates a GET route. Equivalent to &Route{"GET", pathExp, handlerFunc}
+// Get is a shortcut method that instantiates a GET route. See the Route object the parameters definitions.
+// Equivalent to &Route{"GET", pathExp, handlerFunc}
 func Get(pathExp string, handlerFunc HandlerFunc) *Route {
 	return &Route{
 		HttpMethod: "GET",
@@ -45,7 +47,8 @@ func Get(pathExp string, handlerFunc HandlerFunc) *Route {
 	}
 }
 
-// Post is a shortcut method that instantiates a POST route. Equivalent to &Route{"POST", pathExp, handlerFunc}
+// Post is a shortcut method that instantiates a POST route. See the Route object the parameters definitions.
+// Equivalent to &Route{"POST", pathExp, handlerFunc}
 func Post(pathExp string, handlerFunc HandlerFunc) *Route {
 	return &Route{
 		HttpMethod: "POST",
@@ -54,7 +57,8 @@ func Post(pathExp string, handlerFunc HandlerFunc) *Route {
 	}
 }
 
-// Put is a shortcut method that instantiates a PUT route. Equivalent to &Route{"PUT", pathExp, handlerFunc}
+// Put is a shortcut method that instantiates a PUT route.  See the Route object the parameters definitions.
+// Equivalent to &Route{"PUT", pathExp, handlerFunc}
 func Put(pathExp string, handlerFunc HandlerFunc) *Route {
 	return &Route{
 		HttpMethod: "PUT",
