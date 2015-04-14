@@ -15,11 +15,9 @@
 //	func TestSimpleRequest(t *testing.T) {
 //		handler := ResourceHandler{}
 //		handler.SetRoutes(
-//			&Route{"GET", "/r",
-//				func(w ResponseWriter, r *Request) {
-//					w.WriteJson(map[string]string{"Id": "123"})
-//				},
-//			},
+//			Get("/r", func(w ResponseWriter, r *Request) {
+//				w.WriteJson(map[string]string{"Id": "123"})
+//			}),
 //		)
 //		recorded := test.RunRequest(t, &handler,
 //			test.MakeSimpleRequest("GET", "http://1.2.3.4/r", nil))

@@ -14,16 +14,12 @@ func TestJsonpMiddleware(t *testing.T) {
 
 	// router app with success and error paths
 	router, err := MakeRouter(
-		&Route{"GET", "/ok",
-			func(w ResponseWriter, r *Request) {
-				w.WriteJson(map[string]string{"Id": "123"})
-			},
-		},
-		&Route{"GET", "/error",
-			func(w ResponseWriter, r *Request) {
-				Error(w, "jsonp error", 500)
-			},
-		},
+		Get("/ok", func(w ResponseWriter, r *Request) {
+			w.WriteJson(map[string]string{"Id": "123"})
+		}),
+		Get("/error", func(w ResponseWriter, r *Request) {
+			Error(w, "jsonp error", 500)
+		}),
 	)
 	if err != nil {
 		t.Fatal(err)
