@@ -1,37 +1,25 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Go-json-rest : A quick and easy way to setup a RESTful JSON API">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Go-json-rest</title>
+    <meta charset="UTF-8">
+    <title>Go-json-rest by ant0ine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">Go-json-rest</h1>
+      <h2 class="project-tagline">A quick and easy way to setup a RESTful JSON API</h2>
+      <a href="https://github.com/ant0ine/go-json-rest" class="btn">View on GitHub</a>
+      <a href="https://github.com/ant0ine/go-json-rest/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/ant0ine/go-json-rest/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/ant0ine/go-json-rest">View on GitHub</a>
-
-          <h1 id="project_title">Go-json-rest</h1>
-          <h2 id="project_tagline">A quick and easy way to setup a RESTful JSON API</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/ant0ine/go-json-rest/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/ant0ine/go-json-rest/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+    <section class="main-content">
+      <h1>
 <a id="go-json-rest" class="anchor" href="#go-json-rest" aria-hidden="true"><span class="octicon octicon-link"></span></a>Go-Json-Rest</h1>
 
 <p><em>A quick and easy way to setup a RESTful JSON API</em></p>
@@ -79,6 +67,7 @@
 <a href="#advanced">Advanced</a>
 
 <ul>
+<li><a href="#jwt">JWT</a></li>
 <li><a href="#streaming">Streaming</a></li>
 <li><a href="#non-json-payload">Non JSON payload</a></li>
 <li><a href="#api-versioning">API Versioning</a></li>
@@ -165,6 +154,10 @@ where this library code is copied in your repository at a specific revision.
 <td>Compress the responses</td>
 </tr>
 <tr>
+<td><strong>If</strong></td>
+<td>Conditionally execute a Middleware at runtime</td>
+</tr>
+<tr>
 <td><strong>JsonIndent</strong></td>
 <td>Easy to read JSON</td>
 </tr>
@@ -205,6 +198,10 @@ where this library code is copied in your repository at a specific revision.
 <td><strong><a href="https://github.com/ant0ine/go-json-rest-middleware-statsd">Statsd</a></strong></td>
 <td>Send stats to a statsd server</td>
 </tr>
+<tr>
+<td><strong><a href="https://github.com/StephanDollberg/go-json-rest-middleware-jwt">JWT</a></strong></td>
+<td>Provides authentication via Json Web Tokens</td>
+</tr>
 </tbody>
 </table>
 
@@ -234,18 +231,18 @@ where this library code is copied in your repository at a specific revision.
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -266,34 +263,34 @@ curl -i http://127.0.0.1:8080/lookup/notadomain
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
-<span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Body</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Body</span> <span class="pl-k">string</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/lookup/#host<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            <span class="pl-vo">ip</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> net.<span class="pl-s3">LookupIP</span>(req.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>host<span class="pl-pds">"</span></span>))
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/lookup/#host<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
+            <span class="pl-smi">ip</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> net.<span class="pl-c1">LookupIP</span>(req.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>host<span class="pl-pds">"</span></span>))
             <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-                rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+                rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
                 <span class="pl-k">return</span>
             }
-            w.<span class="pl-s3">WriteJson</span>(&amp;ip)
-        }},
+            w.<span class="pl-c1">WriteJson</span>(&amp;ip)
+        }),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -322,94 +319,94 @@ curl -i http://127.0.0.1:8080/countries
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>sync<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>sync<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, PostCountry},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries/:code<span class="pl-pds">"</span></span>, GetCountry},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>DELETE<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries/:code<span class="pl-pds">"</span></span>, DeleteCountry},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries),
+        rest.<span class="pl-c1">Post</span>(<span class="pl-s"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, PostCountry),
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/countries/:code<span class="pl-pds">"</span></span>, GetCountry),
+        rest.<span class="pl-c1">Delete</span>(<span class="pl-s"><span class="pl-pds">"</span>/countries/:code<span class="pl-pds">"</span></span>, DeleteCountry),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Code</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Code</span> <span class="pl-k">string</span>
+    <span class="pl-v">Name</span> <span class="pl-k">string</span>
 }
 
-<span class="pl-k">var</span> <span class="pl-vo">store</span> = <span class="pl-s">map</span>[<span class="pl-st">string</span>]*Country{}
+<span class="pl-k">var</span> <span class="pl-smi">store</span> = <span class="pl-k">map</span>[<span class="pl-k">string</span>]*Country{}
 
-<span class="pl-k">var</span> <span class="pl-vo">lock</span> = sync.<span class="pl-vo">RWMutex</span>{}
+<span class="pl-k">var</span> <span class="pl-smi">lock</span> = sync.<span class="pl-smi">RWMutex</span>{}
 
 <span class="pl-k">func</span> <span class="pl-en">GetCountry</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">code</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>code<span class="pl-pds">"</span></span>)
+    <span class="pl-smi">code</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>code<span class="pl-pds">"</span></span>)
 
-    lock.<span class="pl-s3">RLock</span>()
-    <span class="pl-k">var</span> <span class="pl-vo">country</span> *Country
+    lock.<span class="pl-c1">RLock</span>()
+    <span class="pl-k">var</span> <span class="pl-smi">country</span> *Country
     <span class="pl-k">if</span> store[code] != <span class="pl-c1">nil</span> {
         country = &amp;Country{}
         *country = *store[code]
     }
-    lock.<span class="pl-s3">RUnlock</span>()
+    lock.<span class="pl-c1">RUnlock</span>()
 
     <span class="pl-k">if</span> country == <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">NotFound</span>(w, r)
+        rest.<span class="pl-c1">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
-    w.<span class="pl-s3">WriteJson</span>(country)
+    w.<span class="pl-c1">WriteJson</span>(country)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">GetAllCountries</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    lock.<span class="pl-s3">RLock</span>()
-    <span class="pl-vo">countries</span> <span class="pl-k">:=</span> <span class="pl-s3">make</span>([]Country, <span class="pl-s3">len</span>(store))
-    <span class="pl-vo">i</span> <span class="pl-k">:=</span> <span class="pl-c1">0</span>
-    <span class="pl-k">for</span> <span class="pl-vo">_</span>, <span class="pl-vo">country</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> store {
+    lock.<span class="pl-c1">RLock</span>()
+    <span class="pl-smi">countries</span> <span class="pl-k">:=</span> <span class="pl-c1">make</span>([]Country, <span class="pl-c1">len</span>(store))
+    <span class="pl-smi">i</span> <span class="pl-k">:=</span> <span class="pl-c1">0</span>
+    <span class="pl-k">for</span> <span class="pl-smi">_</span>, <span class="pl-smi">country</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> store {
         countries[i] = *country
         i++
     }
-    lock.<span class="pl-s3">RUnlock</span>()
-    w.<span class="pl-s3">WriteJson</span>(&amp;countries)
+    lock.<span class="pl-c1">RUnlock</span>()
+    w.<span class="pl-c1">WriteJson</span>(&amp;countries)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">PostCountry</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">country</span> <span class="pl-k">:=</span> Country{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> r.<span class="pl-s3">DecodeJsonPayload</span>(&amp;country)
+    <span class="pl-smi">country</span> <span class="pl-k">:=</span> Country{}
+    <span class="pl-smi">err</span> <span class="pl-k">:=</span> r.<span class="pl-c1">DecodeJsonPayload</span>(&amp;country)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    <span class="pl-k">if</span> country.<span class="pl-vo">Code</span> == <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> {
-        rest.<span class="pl-s3">Error</span>(w, <span class="pl-s1"><span class="pl-pds">"</span>country code required<span class="pl-pds">"</span></span>, <span class="pl-c1">400</span>)
+    <span class="pl-k">if</span> country.<span class="pl-smi">Code</span> == <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> {
+        rest.<span class="pl-c1">Error</span>(w, <span class="pl-s"><span class="pl-pds">"</span>country code required<span class="pl-pds">"</span></span>, <span class="pl-c1">400</span>)
         <span class="pl-k">return</span>
     }
-    <span class="pl-k">if</span> country.<span class="pl-vo">Name</span> == <span class="pl-s1"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> {
-        rest.<span class="pl-s3">Error</span>(w, <span class="pl-s1"><span class="pl-pds">"</span>country name required<span class="pl-pds">"</span></span>, <span class="pl-c1">400</span>)
+    <span class="pl-k">if</span> country.<span class="pl-smi">Name</span> == <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span> {
+        rest.<span class="pl-c1">Error</span>(w, <span class="pl-s"><span class="pl-pds">"</span>country name required<span class="pl-pds">"</span></span>, <span class="pl-c1">400</span>)
         <span class="pl-k">return</span>
     }
-    lock.<span class="pl-s3">Lock</span>()
-    store[country.<span class="pl-vo">Code</span>] = &amp;country
-    lock.<span class="pl-s3">Unlock</span>()
-    w.<span class="pl-s3">WriteJson</span>(&amp;country)
+    lock.<span class="pl-c1">Lock</span>()
+    store[country.<span class="pl-smi">Code</span>] = &amp;country
+    lock.<span class="pl-c1">Unlock</span>()
+    w.<span class="pl-c1">WriteJson</span>(&amp;country)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">DeleteCountry</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">code</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>code<span class="pl-pds">"</span></span>)
-    lock.<span class="pl-s3">Lock</span>()
-    <span class="pl-s3">delete</span>(store, code)
-    lock.<span class="pl-s3">Unlock</span>()
-    w.<span class="pl-s3">WriteHeader</span>(http.<span class="pl-vo">StatusOK</span>)
+    <span class="pl-smi">code</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>code<span class="pl-pds">"</span></span>)
+    lock.<span class="pl-c1">Lock</span>()
+    <span class="pl-c1">delete</span>(store, code)
+    lock.<span class="pl-c1">Unlock</span>()
+    w.<span class="pl-c1">WriteHeader</span>(http.<span class="pl-smi">StatusOK</span>)
 }
 </pre></div>
 
@@ -438,115 +435,115 @@ curl -i http://127.0.0.1:8080/users
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>sync<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>sync<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
 
-    <span class="pl-vo">users</span> <span class="pl-k">:=</span> Users{
-        Store: <span class="pl-s">map</span>[<span class="pl-st">string</span>]*User{},
+    <span class="pl-smi">users</span> <span class="pl-k">:=</span> Users{
+        Store: <span class="pl-k">map</span>[<span class="pl-k">string</span>]*User{},
     }
 
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, users.<span class="pl-vo">GetAllUsers</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, users.<span class="pl-vo">PostUser</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-vo">GetUser</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-vo">PutUser</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>DELETE<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-vo">DeleteUser</span>},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, users.<span class="pl-smi">GetAllUsers</span>),
+        rest.<span class="pl-c1">Post</span>(<span class="pl-s"><span class="pl-pds">"</span>/users<span class="pl-pds">"</span></span>, users.<span class="pl-smi">PostUser</span>),
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-smi">GetUser</span>),
+        rest.<span class="pl-c1">Put</span>(<span class="pl-s"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-smi">PutUser</span>),
+        rest.<span class="pl-c1">Delete</span>(<span class="pl-s"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, users.<span class="pl-smi">DeleteUser</span>),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 
-<span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Id</span>   <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Id</span>   <span class="pl-k">string</span>
+    <span class="pl-v">Name</span> <span class="pl-k">string</span>
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Users</span> <span class="pl-st">struct</span> {
-    sync.<span class="pl-vo">RWMutex</span>
-    <span class="pl-v">Store</span> <span class="pl-s">map</span>[<span class="pl-st">string</span>]*User
+<span class="pl-k">type</span> <span class="pl-v">Users</span> <span class="pl-k">struct</span> {
+    sync.<span class="pl-smi">RWMutex</span>
+    <span class="pl-v">Store</span> <span class="pl-k">map</span>[<span class="pl-k">string</span>]*User
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">u</span> *<span class="pl-v">Users</span>) <span class="pl-en">GetAllUsers</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    u.<span class="pl-s3">RLock</span>()
-    <span class="pl-vo">users</span> <span class="pl-k">:=</span> <span class="pl-s3">make</span>([]User, <span class="pl-s3">len</span>(u.<span class="pl-vo">Store</span>))
-    <span class="pl-vo">i</span> <span class="pl-k">:=</span> <span class="pl-c1">0</span>
-    <span class="pl-k">for</span> <span class="pl-vo">_</span>, <span class="pl-vo">user</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> u.<span class="pl-vo">Store</span> {
+    u.<span class="pl-c1">RLock</span>()
+    <span class="pl-smi">users</span> <span class="pl-k">:=</span> <span class="pl-c1">make</span>([]User, <span class="pl-c1">len</span>(u.<span class="pl-smi">Store</span>))
+    <span class="pl-smi">i</span> <span class="pl-k">:=</span> <span class="pl-c1">0</span>
+    <span class="pl-k">for</span> <span class="pl-smi">_</span>, <span class="pl-smi">user</span> <span class="pl-k">:=</span> <span class="pl-k">range</span> u.<span class="pl-smi">Store</span> {
         users[i] = *user
         i++
     }
-    u.<span class="pl-s3">RUnlock</span>()
-    w.<span class="pl-s3">WriteJson</span>(&amp;users)
+    u.<span class="pl-c1">RUnlock</span>()
+    w.<span class="pl-c1">WriteJson</span>(&amp;users)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">u</span> *<span class="pl-v">Users</span>) <span class="pl-en">GetUser</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
-    u.<span class="pl-s3">RLock</span>()
-    <span class="pl-k">var</span> <span class="pl-vo">user</span> *User
-    <span class="pl-k">if</span> u.<span class="pl-vo">Store</span>[id] != <span class="pl-c1">nil</span> {
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
+    u.<span class="pl-c1">RLock</span>()
+    <span class="pl-k">var</span> <span class="pl-smi">user</span> *User
+    <span class="pl-k">if</span> u.<span class="pl-smi">Store</span>[id] != <span class="pl-c1">nil</span> {
         user = &amp;User{}
-        *user = *u.<span class="pl-vo">Store</span>[id]
+        *user = *u.<span class="pl-smi">Store</span>[id]
     }
-    u.<span class="pl-s3">RUnlock</span>()
+    u.<span class="pl-c1">RUnlock</span>()
     <span class="pl-k">if</span> user == <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">NotFound</span>(w, r)
+        rest.<span class="pl-c1">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
-    w.<span class="pl-s3">WriteJson</span>(user)
+    w.<span class="pl-c1">WriteJson</span>(user)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">u</span> *<span class="pl-v">Users</span>) <span class="pl-en">PostUser</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">user</span> <span class="pl-k">:=</span> User{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> r.<span class="pl-s3">DecodeJsonPayload</span>(&amp;user)
+    <span class="pl-smi">user</span> <span class="pl-k">:=</span> User{}
+    <span class="pl-smi">err</span> <span class="pl-k">:=</span> r.<span class="pl-c1">DecodeJsonPayload</span>(&amp;user)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    u.<span class="pl-s3">Lock</span>()
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> fmt.<span class="pl-s3">Sprintf</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-c1">%d</span><span class="pl-pds">"</span></span>, <span class="pl-s3">len</span>(u.<span class="pl-vo">Store</span>)) <span class="pl-c">// stupid</span>
-    user.<span class="pl-vo">Id</span> = id
-    u.<span class="pl-vo">Store</span>[id] = &amp;user
-    u.<span class="pl-s3">Unlock</span>()
-    w.<span class="pl-s3">WriteJson</span>(&amp;user)
+    u.<span class="pl-c1">Lock</span>()
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> fmt.<span class="pl-c1">Sprintf</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-c1">%d</span><span class="pl-pds">"</span></span>, <span class="pl-c1">len</span>(u.<span class="pl-smi">Store</span>)) <span class="pl-c">// stupid</span>
+    user.<span class="pl-smi">Id</span> = id
+    u.<span class="pl-smi">Store</span>[id] = &amp;user
+    u.<span class="pl-c1">Unlock</span>()
+    w.<span class="pl-c1">WriteJson</span>(&amp;user)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">u</span> *<span class="pl-v">Users</span>) <span class="pl-en">PutUser</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
-    u.<span class="pl-s3">Lock</span>()
-    <span class="pl-k">if</span> u.<span class="pl-vo">Store</span>[id] == <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">NotFound</span>(w, r)
-        u.<span class="pl-s3">Unlock</span>()
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
+    u.<span class="pl-c1">Lock</span>()
+    <span class="pl-k">if</span> u.<span class="pl-smi">Store</span>[id] == <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">NotFound</span>(w, r)
+        u.<span class="pl-c1">Unlock</span>()
         <span class="pl-k">return</span>
     }
-    <span class="pl-vo">user</span> <span class="pl-k">:=</span> User{}
-    <span class="pl-vo">err</span> <span class="pl-k">:=</span> r.<span class="pl-s3">DecodeJsonPayload</span>(&amp;user)
+    <span class="pl-smi">user</span> <span class="pl-k">:=</span> User{}
+    <span class="pl-smi">err</span> <span class="pl-k">:=</span> r.<span class="pl-c1">DecodeJsonPayload</span>(&amp;user)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
-        u.<span class="pl-s3">Unlock</span>()
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
+        u.<span class="pl-c1">Unlock</span>()
         <span class="pl-k">return</span>
     }
-    user.<span class="pl-vo">Id</span> = id
-    u.<span class="pl-vo">Store</span>[id] = &amp;user
-    u.<span class="pl-s3">Unlock</span>()
-    w.<span class="pl-s3">WriteJson</span>(&amp;user)
+    user.<span class="pl-smi">Id</span> = id
+    u.<span class="pl-smi">Store</span>[id] = &amp;user
+    u.<span class="pl-c1">Unlock</span>()
+    w.<span class="pl-c1">WriteJson</span>(&amp;user)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">u</span> *<span class="pl-v">Users</span>) <span class="pl-en">DeleteUser</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
-    u.<span class="pl-s3">Lock</span>()
-    <span class="pl-s3">delete</span>(u.<span class="pl-vo">Store</span>, id)
-    u.<span class="pl-s3">Unlock</span>()
-    w.<span class="pl-s3">WriteHeader</span>(http.<span class="pl-vo">StatusOK</span>)
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
+    u.<span class="pl-c1">Lock</span>()
+    <span class="pl-c1">delete</span>(u.<span class="pl-smi">Store</span>, id)
+    u.<span class="pl-c1">Unlock</span>()
+    w.<span class="pl-c1">WriteHeader</span>(http.<span class="pl-smi">StatusOK</span>)
 }
 </pre></div>
 
@@ -574,30 +571,30 @@ curl -i http://127.0.0.1:8080/static/main.go
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
 
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
-        }},
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
+            w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+        }),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
+    api.<span class="pl-c1">SetApp</span>(router)
 
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    http.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-c1">StripPrefix</span>(<span class="pl-s"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/static/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/static<span class="pl-pds">"</span></span>, http.<span class="pl-s3">FileServer</span>(http.<span class="pl-s3">Dir</span>(<span class="pl-s1"><span class="pl-pds">"</span>.<span class="pl-pds">"</span></span>))))
+    http.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>/static/<span class="pl-pds">"</span></span>, http.<span class="pl-c1">StripPrefix</span>(<span class="pl-s"><span class="pl-pds">"</span>/static<span class="pl-pds">"</span></span>, http.<span class="pl-c1">FileServer</span>(http.<span class="pl-c1">Dir</span>(<span class="pl-s"><span class="pl-pds">"</span>.<span class="pl-pds">"</span></span>))))
 
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, <span class="pl-c1">nil</span>))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, <span class="pl-c1">nil</span>))
 }
 </pre></div>
 
@@ -625,126 +622,126 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    _ <span class="pl-s1"><span class="pl-pds">"</span>github.com/go-sql-driver/mysql<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/jinzhu/gorm<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    _ <span class="pl-s"><span class="pl-pds">"</span>github.com/go-sql-driver/mysql<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/jinzhu/gorm<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
 
-    <span class="pl-vo">i</span> <span class="pl-k">:=</span> Impl{}
-    i.<span class="pl-s3">InitDB</span>()
-    i.<span class="pl-s3">InitSchema</span>()
+    <span class="pl-smi">i</span> <span class="pl-k">:=</span> Impl{}
+    i.<span class="pl-c1">InitDB</span>()
+    i.<span class="pl-c1">InitSchema</span>()
 
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, i.<span class="pl-vo">GetAllReminders</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, i.<span class="pl-vo">PostReminder</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-vo">GetReminder</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-vo">PutReminder</span>},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>DELETE<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-vo">DeleteReminder</span>},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, i.<span class="pl-smi">GetAllReminders</span>),
+        rest.<span class="pl-c1">Post</span>(<span class="pl-s"><span class="pl-pds">"</span>/reminders<span class="pl-pds">"</span></span>, i.<span class="pl-smi">PostReminder</span>),
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-smi">GetReminder</span>),
+        rest.<span class="pl-c1">Put</span>(<span class="pl-s"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-smi">PutReminder</span>),
+        rest.<span class="pl-c1">Delete</span>(<span class="pl-s"><span class="pl-pds">"</span>/reminders/:id<span class="pl-pds">"</span></span>, i.<span class="pl-smi">DeleteReminder</span>),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Reminder</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Id</span>        <span class="pl-st">int64</span>     <span class="pl-s1"><span class="pl-pds">`</span>json:"id"<span class="pl-pds">`</span></span>
-    <span class="pl-v">Message</span>   <span class="pl-st">string</span>    <span class="pl-s1"><span class="pl-pds">`</span>sql:"size:1024" json:"message"<span class="pl-pds">`</span></span>
-    <span class="pl-v">CreatedAt</span> time.<span class="pl-vo">Time</span> <span class="pl-s1"><span class="pl-pds">`</span>json:"createdAt"<span class="pl-pds">`</span></span>
-    <span class="pl-v">UpdatedAt</span> time.<span class="pl-vo">Time</span> <span class="pl-s1"><span class="pl-pds">`</span>json:"updatedAt"<span class="pl-pds">`</span></span>
-    <span class="pl-v">DeletedAt</span> time.<span class="pl-vo">Time</span> <span class="pl-s1"><span class="pl-pds">`</span>json:"-"<span class="pl-pds">`</span></span>
+<span class="pl-k">type</span> <span class="pl-v">Reminder</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Id</span>        <span class="pl-k">int64</span>     <span class="pl-s"><span class="pl-pds">`</span>json:"id"<span class="pl-pds">`</span></span>
+    <span class="pl-v">Message</span>   <span class="pl-k">string</span>    <span class="pl-s"><span class="pl-pds">`</span>sql:"size:1024" json:"message"<span class="pl-pds">`</span></span>
+    <span class="pl-v">CreatedAt</span> time.<span class="pl-smi">Time</span> <span class="pl-s"><span class="pl-pds">`</span>json:"createdAt"<span class="pl-pds">`</span></span>
+    <span class="pl-v">UpdatedAt</span> time.<span class="pl-smi">Time</span> <span class="pl-s"><span class="pl-pds">`</span>json:"updatedAt"<span class="pl-pds">`</span></span>
+    <span class="pl-v">DeletedAt</span> time.<span class="pl-smi">Time</span> <span class="pl-s"><span class="pl-pds">`</span>json:"-"<span class="pl-pds">`</span></span>
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Impl</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">DB</span> gorm.<span class="pl-vo">DB</span>
+<span class="pl-k">type</span> <span class="pl-v">Impl</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">DB</span> gorm.<span class="pl-smi">DB</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">InitDB</span></span>() {
-    <span class="pl-k">var</span> <span class="pl-vo">err</span> <span class="pl-st">error</span>
-    i.<span class="pl-vo">DB</span>, err = gorm.<span class="pl-s3">Open</span>(<span class="pl-s1"><span class="pl-pds">"</span>mysql<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>gorm:gorm@/gorm?charset=utf8&amp;parseTime=True<span class="pl-pds">"</span></span>)
+    <span class="pl-k">var</span> <span class="pl-smi">err</span> <span class="pl-k">error</span>
+    i.<span class="pl-smi">DB</span>, err = gorm.<span class="pl-c1">Open</span>(<span class="pl-s"><span class="pl-pds">"</span>mysql<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>gorm:gorm@/gorm?charset=utf8&amp;parseTime=True<span class="pl-pds">"</span></span>)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatalf</span>(<span class="pl-s1"><span class="pl-pds">"</span>Got error when connect database, the error is '<span class="pl-c1">%v</span>'<span class="pl-pds">"</span></span>, err)
+        log.<span class="pl-c1">Fatalf</span>(<span class="pl-s"><span class="pl-pds">"</span>Got error when connect database, the error is '<span class="pl-c1">%v</span>'<span class="pl-pds">"</span></span>, err)
     }
-    i.<span class="pl-vo">DB</span>.<span class="pl-s3">LogMode</span>(<span class="pl-c1">true</span>)
+    i.<span class="pl-smi">DB</span>.<span class="pl-c1">LogMode</span>(<span class="pl-c1">true</span>)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">InitSchema</span></span>() {
-    i.<span class="pl-vo">DB</span>.<span class="pl-s3">AutoMigrate</span>(&amp;Reminder{})
+    i.<span class="pl-smi">DB</span>.<span class="pl-c1">AutoMigrate</span>(&amp;Reminder{})
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">GetAllReminders</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">reminders</span> <span class="pl-k">:=</span> []Reminder{}
-    i.<span class="pl-vo">DB</span>.<span class="pl-s3">Find</span>(&amp;reminders)
-    w.<span class="pl-s3">WriteJson</span>(&amp;reminders)
+    <span class="pl-smi">reminders</span> <span class="pl-k">:=</span> []Reminder{}
+    i.<span class="pl-smi">DB</span>.<span class="pl-c1">Find</span>(&amp;reminders)
+    w.<span class="pl-c1">WriteJson</span>(&amp;reminders)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">GetReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
-    <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">NotFound</span>(w, r)
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
+    <span class="pl-smi">reminder</span> <span class="pl-k">:=</span> Reminder{}
+    <span class="pl-k">if</span> i.<span class="pl-smi">DB</span>.<span class="pl-c1">First</span>(&amp;reminder, id).<span class="pl-smi">Error</span> != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
-    w.<span class="pl-s3">WriteJson</span>(&amp;reminder)
+    w.<span class="pl-c1">WriteJson</span>(&amp;reminder)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">PostReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> r.<span class="pl-s3">DecodeJsonPayload</span>(&amp;reminder); err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+    <span class="pl-smi">reminder</span> <span class="pl-k">:=</span> Reminder{}
+    <span class="pl-k">if</span> <span class="pl-smi">err</span> <span class="pl-k">:=</span> r.<span class="pl-c1">DecodeJsonPayload</span>(&amp;reminder); err != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">Save</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+    <span class="pl-k">if</span> <span class="pl-smi">err</span> <span class="pl-k">:=</span> i.<span class="pl-smi">DB</span>.<span class="pl-c1">Save</span>(&amp;reminder).<span class="pl-smi">Error</span>; err != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    w.<span class="pl-s3">WriteJson</span>(&amp;reminder)
+    w.<span class="pl-c1">WriteJson</span>(&amp;reminder)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">PutReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
 
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
-    <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">NotFound</span>(w, r)
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
+    <span class="pl-smi">reminder</span> <span class="pl-k">:=</span> Reminder{}
+    <span class="pl-k">if</span> i.<span class="pl-smi">DB</span>.<span class="pl-c1">First</span>(&amp;reminder, id).<span class="pl-smi">Error</span> != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
 
-    <span class="pl-vo">updated</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> r.<span class="pl-s3">DecodeJsonPayload</span>(&amp;updated); err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+    <span class="pl-smi">updated</span> <span class="pl-k">:=</span> Reminder{}
+    <span class="pl-k">if</span> <span class="pl-smi">err</span> <span class="pl-k">:=</span> r.<span class="pl-c1">DecodeJsonPayload</span>(&amp;updated); err != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
 
-    reminder.<span class="pl-vo">Message</span> = updated.<span class="pl-vo">Message</span>
+    reminder.<span class="pl-smi">Message</span> = updated.<span class="pl-smi">Message</span>
 
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">Save</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+    <span class="pl-k">if</span> <span class="pl-smi">err</span> <span class="pl-k">:=</span> i.<span class="pl-smi">DB</span>.<span class="pl-c1">Save</span>(&amp;reminder).<span class="pl-smi">Error</span>; err != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    w.<span class="pl-s3">WriteJson</span>(&amp;reminder)
+    w.<span class="pl-c1">WriteJson</span>(&amp;reminder)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">i</span> *<span class="pl-v">Impl</span>) <span class="pl-en">DeleteReminder</span></span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">id</span> <span class="pl-k">:=</span> r.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
-    <span class="pl-vo">reminder</span> <span class="pl-k">:=</span> Reminder{}
-    <span class="pl-k">if</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">First</span>(&amp;reminder, id).<span class="pl-vo">Error</span> != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">NotFound</span>(w, r)
+    <span class="pl-smi">id</span> <span class="pl-k">:=</span> r.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>)
+    <span class="pl-smi">reminder</span> <span class="pl-k">:=</span> Reminder{}
+    <span class="pl-k">if</span> i.<span class="pl-smi">DB</span>.<span class="pl-c1">First</span>(&amp;reminder, id).<span class="pl-smi">Error</span> != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">NotFound</span>(w, r)
         <span class="pl-k">return</span>
     }
-    <span class="pl-k">if</span> <span class="pl-vo">err</span> <span class="pl-k">:=</span> i.<span class="pl-vo">DB</span>.<span class="pl-s3">Delete</span>(&amp;reminder).<span class="pl-vo">Error</span>; err != <span class="pl-c1">nil</span> {
-        rest.<span class="pl-s3">Error</span>(w, err.<span class="pl-s3">Error</span>(), http.<span class="pl-vo">StatusInternalServerError</span>)
+    <span class="pl-k">if</span> <span class="pl-smi">err</span> <span class="pl-k">:=</span> i.<span class="pl-smi">DB</span>.<span class="pl-c1">Delete</span>(&amp;reminder).<span class="pl-smi">Error</span>; err != <span class="pl-c1">nil</span> {
+        rest.<span class="pl-c1">Error</span>(w, err.<span class="pl-c1">Error</span>(), http.<span class="pl-smi">StatusInternalServerError</span>)
         <span class="pl-k">return</span>
     }
-    w.<span class="pl-s3">WriteHeader</span>(http.<span class="pl-vo">StatusOK</span>)
+    w.<span class="pl-c1">WriteHeader</span>(http.<span class="pl-smi">StatusOK</span>)
 }
 </pre></div>
 
@@ -763,50 +760,50 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">CorsMiddleware</span>{
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">Use</span>(&amp;rest.<span class="pl-smi">CorsMiddleware</span>{
         RejectNonCorsRequests: <span class="pl-c1">false</span>,
-        OriginValidator: <span class="pl-s3">func</span>(origin <span class="pl-st">string</span>, request *rest.<span class="pl-vo">Request</span>) <span class="pl-st">bool</span> {
-            <span class="pl-k">return</span> origin == <span class="pl-s1"><span class="pl-pds">"</span>http://my.other.host<span class="pl-pds">"</span></span>
+        OriginValidator: <span class="pl-c1">func</span>(origin <span class="pl-k">string</span>, request *rest.<span class="pl-smi">Request</span>) <span class="pl-k">bool</span> {
+            <span class="pl-k">return</span> origin == <span class="pl-s"><span class="pl-pds">"</span>http://my.other.host<span class="pl-pds">"</span></span>
         },
-        AllowedMethods: []<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>},
-        AllowedHeaders: []<span class="pl-st">string</span>{
-            <span class="pl-s1"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>X-Custom-Header<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>Origin<span class="pl-pds">"</span></span>},
+        AllowedMethods: []<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>POST<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>PUT<span class="pl-pds">"</span></span>},
+        AllowedHeaders: []<span class="pl-k">string</span>{
+            <span class="pl-s"><span class="pl-pds">"</span>Accept<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>X-Custom-Header<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>Origin<span class="pl-pds">"</span></span>},
         AccessControlAllowCredentials: <span class="pl-c1">true</span>,
         AccessControlMaxAge:           <span class="pl-c1">3600</span>,
     })
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Code</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Code</span> <span class="pl-k">string</span>
+    <span class="pl-v">Name</span> <span class="pl-k">string</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">GetAllCountries</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    w.<span class="pl-s3">WriteJson</span>(
+    w.<span class="pl-c1">WriteJson</span>(
         []Country{
             Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
+                Code: <span class="pl-s"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
+                Name: <span class="pl-s"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
             },
             Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
+                Code: <span class="pl-s"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
+                Name: <span class="pl-s"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
             },
         },
     )
@@ -828,21 +825,21 @@ curl -i http://127.0.0.1:8080/<span class="pl-k">?</span>cb=parseResponse</pre><
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">JsonpMiddleware</span>{
-        CallbackNameKey: <span class="pl-s1"><span class="pl-pds">"</span>cb<span class="pl-pds">"</span></span>,
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">Use</span>(&amp;rest.<span class="pl-smi">JsonpMiddleware</span>{
+        CallbackNameKey: <span class="pl-s"><span class="pl-pds">"</span>cb<span class="pl-pds">"</span></span>,
     })
-    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -862,27 +859,27 @@ curl -i -u admin:admin http://127.0.0.1:8080/
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">AuthBasicMiddleware</span>{
-        Realm: <span class="pl-s1"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
-        Authenticator: <span class="pl-s3">func</span>(userId <span class="pl-st">string</span>, password <span class="pl-st">string</span>) <span class="pl-st">bool</span> {
-            <span class="pl-k">if</span> userId == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> {
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">Use</span>(&amp;rest.<span class="pl-smi">AuthBasicMiddleware</span>{
+        Realm: <span class="pl-s"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
+        Authenticator: <span class="pl-c1">func</span>(userId <span class="pl-k">string</span>, password <span class="pl-k">string</span>) <span class="pl-k">bool</span> {
+            <span class="pl-k">if</span> userId == <span class="pl-s"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> {
                 <span class="pl-k">return</span> <span class="pl-c1">true</span>
             }
             <span class="pl-k">return</span> <span class="pl-c1">false</span>
         },
     })
-    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -926,28 +923,26 @@ curl -i http://127.0.0.1:8080/.status
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    <span class="pl-vo">statusMw</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-vo">StatusMiddleware</span>{}
-    api.<span class="pl-s3">Use</span>(statusMw)
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/.status<span class="pl-pds">"</span></span>,
-            <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-                w.<span class="pl-s3">WriteJson</span>(statusMw.<span class="pl-s3">GetStatus</span>())
-            },
-        },
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    <span class="pl-smi">statusMw</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-smi">StatusMiddleware</span>{}
+    api.<span class="pl-c1">Use</span>(statusMw)
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/.status<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+            w.<span class="pl-c1">WriteJson</span>(statusMw.<span class="pl-c1">GetStatus</span>())
+        }),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -971,57 +966,55 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    <span class="pl-vo">statusMw</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-vo">StatusMiddleware</span>{}
-    api.<span class="pl-s3">Use</span>(statusMw)
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">auth</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-vo">AuthBasicMiddleware</span>{
-        Realm: <span class="pl-s1"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
-        Authenticator: <span class="pl-s3">func</span>(userId <span class="pl-st">string</span>, password <span class="pl-st">string</span>) <span class="pl-st">bool</span> {
-            <span class="pl-k">if</span> userId == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s1"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> {
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    <span class="pl-smi">statusMw</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-smi">StatusMiddleware</span>{}
+    api.<span class="pl-c1">Use</span>(statusMw)
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">auth</span> <span class="pl-k">:=</span> &amp;rest.<span class="pl-smi">AuthBasicMiddleware</span>{
+        Realm: <span class="pl-s"><span class="pl-pds">"</span>test zone<span class="pl-pds">"</span></span>,
+        Authenticator: <span class="pl-c1">func</span>(userId <span class="pl-k">string</span>, password <span class="pl-k">string</span>) <span class="pl-k">bool</span> {
+            <span class="pl-k">if</span> userId == <span class="pl-s"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> {
                 <span class="pl-k">return</span> <span class="pl-c1">true</span>
             }
             <span class="pl-k">return</span> <span class="pl-c1">false</span>
         },
     }
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries},
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/.status<span class="pl-pds">"</span></span>,
-            auth.<span class="pl-s3">MiddlewareFunc</span>(
-                <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-                    w.<span class="pl-s3">WriteJson</span>(statusMw.<span class="pl-s3">GetStatus</span>())
-                },
-            ),
-        },
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/countries<span class="pl-pds">"</span></span>, GetAllCountries),
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/.status<span class="pl-pds">"</span></span>, auth.<span class="pl-c1">MiddlewareFunc</span>(
+            <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+                w.<span class="pl-c1">WriteJson</span>(statusMw.<span class="pl-c1">GetStatus</span>())
+            },
+        )),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Code</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">Country</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Code</span> <span class="pl-k">string</span>
+    <span class="pl-v">Name</span> <span class="pl-k">string</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">GetAllCountries</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    w.<span class="pl-s3">WriteJson</span>(
+    w.<span class="pl-c1">WriteJson</span>(
         []Country{
             Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
+                Code: <span class="pl-s"><span class="pl-pds">"</span>FR<span class="pl-pds">"</span></span>,
+                Name: <span class="pl-s"><span class="pl-pds">"</span>France<span class="pl-pds">"</span></span>,
             },
             Country{
-                Code: <span class="pl-s1"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
-                Name: <span class="pl-s1"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
+                Code: <span class="pl-s"><span class="pl-pds">"</span>US<span class="pl-pds">"</span></span>,
+                Name: <span class="pl-s"><span class="pl-pds">"</span>United States<span class="pl-pds">"</span></span>,
             },
         },
     )
@@ -1031,7 +1024,67 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 <h3>
 <a id="advanced" class="anchor" href="#advanced" aria-hidden="true"><span class="octicon octicon-link"></span></a>Advanced</h3>
 
-<p>Less common use cases.</p>
+<p>More advanced use cases.</p>
+
+<h4>
+<a id="jwt" class="anchor" href="#jwt" aria-hidden="true"><span class="octicon octicon-link"></span></a>JWT</h4>
+
+<p>Demonstrates how to use the <a href="https://github.com/StephanDollberg/go-json-rest-middleware-jwt">Json Web Token Auth Middleware</a> to authenticate via a JWT token.</p>
+
+<p>curl demo:</p>
+
+<div class="highlight highlight-sh"><pre>curl -d <span class="pl-s"><span class="pl-pds">'</span>{"username": "admin", "password": "admin"}<span class="pl-pds">'</span></span> -H <span class="pl-s"><span class="pl-pds">"</span>Content-Type:application/json<span class="pl-pds">"</span></span> http://localhost:8080/api/login
+curl -H <span class="pl-s"><span class="pl-pds">"</span>Authorization:Bearer TOKEN_RETURNED_FROM_ABOVE<span class="pl-pds">"</span></span> http://localhost:8080/api/auth_test
+curl -H <span class="pl-s"><span class="pl-pds">"</span>Authorization:Bearer TOKEN_RETURNED_FROM_ABOVE<span class="pl-pds">"</span></span> http://localhost:8080/api/refresh_token</pre></div>
+
+<p>code:</p>
+
+<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
+
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/StephanDollberg/go-json-rest-middleware-jwt<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+)
+
+<span class="pl-k">func</span> <span class="pl-en">handle_auth</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+    w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>authed<span class="pl-pds">"</span></span>: r.<span class="pl-smi">Env</span>[<span class="pl-s"><span class="pl-pds">"</span>REMOTE_USER<span class="pl-pds">"</span></span>].(<span class="pl-k">string</span>)})
+}
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    <span class="pl-smi">jwt_middleware</span> <span class="pl-k">:=</span> &amp;jwt.<span class="pl-smi">JWTMiddleware</span>{
+        Key:        []<span class="pl-k">byte</span>(<span class="pl-s"><span class="pl-pds">"</span>secret key<span class="pl-pds">"</span></span>),
+        Realm:      <span class="pl-s"><span class="pl-pds">"</span>jwt auth<span class="pl-pds">"</span></span>,
+        Timeout:    time.<span class="pl-smi">Hour</span>,
+        MaxRefresh: time.<span class="pl-smi">Hour</span> * <span class="pl-c1">24</span>,
+        Authenticator: <span class="pl-c1">func</span>(userId <span class="pl-k">string</span>, password <span class="pl-k">string</span>) <span class="pl-k">bool</span> {
+            <span class="pl-k">return</span> userId == <span class="pl-s"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span> &amp;&amp; password == <span class="pl-s"><span class="pl-pds">"</span>admin<span class="pl-pds">"</span></span>
+        }}
+
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-c">// we use the IfMiddleware to remove certain paths from needing authentication</span>
+    api.<span class="pl-c1">Use</span>(&amp;rest.<span class="pl-smi">IfMiddleware</span>{
+        Condition: <span class="pl-c1">func</span>(request *rest.<span class="pl-smi">Request</span>) <span class="pl-k">bool</span> {
+            <span class="pl-k">return</span> request.<span class="pl-smi">URL</span>.<span class="pl-smi">Path</span> != <span class="pl-s"><span class="pl-pds">"</span>/login<span class="pl-pds">"</span></span>
+        },
+        IfTrue: jwt_middleware,
+    })
+    <span class="pl-smi">api_router</span>, <span class="pl-smi">_</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Post</span>(<span class="pl-s"><span class="pl-pds">"</span>/login<span class="pl-pds">"</span></span>, jwt_middleware.<span class="pl-smi">LoginHandler</span>),
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/auth_test<span class="pl-pds">"</span></span>, handle_auth),
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/refresh_token<span class="pl-pds">"</span></span>, jwt_middleware.<span class="pl-smi">RefreshHandler</span>),
+    )
+    api.<span class="pl-c1">SetApp</span>(api_router)
+
+    http.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-c1">StripPrefix</span>(<span class="pl-s"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
+
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, <span class="pl-c1">nil</span>))
+}
+</pre></div>
 
 <h4>
 <a id="streaming" class="anchor" href="#streaming" aria-hidden="true"><span class="octicon octicon-link"></span></a>Streaming</h4>
@@ -1062,45 +1115,45 @@ Transfer-Encoding: chunked
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(&amp;rest.<span class="pl-vo">AccessLogApacheMiddleware</span>{})
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultCommonStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/stream<span class="pl-pds">"</span></span>, StreamThings},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(&amp;rest.<span class="pl-smi">AccessLogApacheMiddleware</span>{})
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultCommonStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/stream<span class="pl-pds">"</span></span>, StreamThings),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 
-<span class="pl-k">type</span> <span class="pl-v">Thing</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">Thing</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Name</span> <span class="pl-k">string</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">StreamThings</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">r</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">cpt</span> <span class="pl-k">:=</span> <span class="pl-c1">0</span>
+    <span class="pl-smi">cpt</span> <span class="pl-k">:=</span> <span class="pl-c1">0</span>
     <span class="pl-k">for</span> {
         cpt++
-        w.<span class="pl-s3">WriteJson</span>(
+        w.<span class="pl-c1">WriteJson</span>(
             &amp;Thing{
-                Name: fmt.<span class="pl-s3">Sprintf</span>(<span class="pl-s1"><span class="pl-pds">"</span>thing #<span class="pl-c1">%d</span><span class="pl-pds">"</span></span>, cpt),
+                Name: fmt.<span class="pl-c1">Sprintf</span>(<span class="pl-s"><span class="pl-pds">"</span>thing #<span class="pl-c1">%d</span><span class="pl-pds">"</span></span>, cpt),
             },
         )
-        w.(http.<span class="pl-vo">ResponseWriter</span>).<span class="pl-s3">Write</span>([]<span class="pl-st">byte</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>))
+        w.(http.<span class="pl-smi">ResponseWriter</span>).<span class="pl-c1">Write</span>([]<span class="pl-k">byte</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>))
         <span class="pl-c">// Flush the buffer to client</span>
-        w.(http.<span class="pl-vo">Flusher</span>).<span class="pl-s3">Flush</span>()
+        w.(http.<span class="pl-smi">Flusher</span>).<span class="pl-c1">Flush</span>()
         <span class="pl-c">// wait 3 seconds</span>
-        time.<span class="pl-s3">Sleep</span>(time.<span class="pl-s3">Duration</span>(<span class="pl-c1">3</span>) * time.<span class="pl-vo">Second</span>)
+        time.<span class="pl-c1">Sleep</span>(time.<span class="pl-c1">Duration</span>(<span class="pl-c1">3</span>) * time.<span class="pl-smi">Second</span>)
     }
 }
 </pre></div>
@@ -1133,25 +1186,25 @@ is enough. As shown in this example.</p>
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message.txt<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            w.<span class="pl-s3">Header</span>().<span class="pl-s3">Set</span>(<span class="pl-s1"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>text/plain<span class="pl-pds">"</span></span>)
-            w.(http.<span class="pl-vo">ResponseWriter</span>).<span class="pl-s3">Write</span>([]<span class="pl-st">byte</span>(<span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>))
-        }},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/message.txt<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
+            w.<span class="pl-c1">Header</span>().<span class="pl-c1">Set</span>(<span class="pl-s"><span class="pl-pds">"</span>Content-Type<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>text/plain<span class="pl-pds">"</span></span>)
+            w.(http.<span class="pl-smi">ResponseWriter</span>).<span class="pl-c1">Write</span>([]<span class="pl-k">byte</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>))
+        }),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1178,94 +1231,94 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/coreos/go-semver/semver<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/coreos/go-semver/semver<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
-<span class="pl-k">type</span> <span class="pl-v">SemVerMiddleware</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">MinVersion</span> <span class="pl-st">string</span>
-    <span class="pl-v">MaxVersion</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">SemVerMiddleware</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">MinVersion</span> <span class="pl-k">string</span>
+    <span class="pl-v">MaxVersion</span> <span class="pl-k">string</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">SemVerMiddleware</span>) <span class="pl-en">MiddlewareFunc</span></span>(<span class="pl-v">handler</span> <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span>) <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span> {
 
-    <span class="pl-vo">minVersion</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> semver.<span class="pl-s3">NewVersion</span>(mw.<span class="pl-vo">MinVersion</span>)
+    <span class="pl-smi">minVersion</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> semver.<span class="pl-c1">NewVersion</span>(mw.<span class="pl-smi">MinVersion</span>)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        <span class="pl-s3">panic</span>(err)
+        <span class="pl-c1">panic</span>(err)
     }
 
-    <span class="pl-vo">maxVersion</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> semver.<span class="pl-s3">NewVersion</span>(mw.<span class="pl-vo">MaxVersion</span>)
+    <span class="pl-smi">maxVersion</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> semver.<span class="pl-c1">NewVersion</span>(mw.<span class="pl-smi">MaxVersion</span>)
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        <span class="pl-s3">panic</span>(err)
+        <span class="pl-c1">panic</span>(err)
     }
 
-    <span class="pl-k">return</span> <span class="pl-s3">func</span>(writer rest.<span class="pl-vo">ResponseWriter</span>, request *rest.<span class="pl-vo">Request</span>) {
+    <span class="pl-k">return</span> <span class="pl-c1">func</span>(writer rest.<span class="pl-smi">ResponseWriter</span>, request *rest.<span class="pl-smi">Request</span>) {
 
-        <span class="pl-vo">version</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> semver.<span class="pl-s3">NewVersion</span>(request.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>version<span class="pl-pds">"</span></span>))
+        <span class="pl-smi">version</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> semver.<span class="pl-c1">NewVersion</span>(request.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>version<span class="pl-pds">"</span></span>))
         <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-            rest.<span class="pl-s3">Error</span>(
+            rest.<span class="pl-c1">Error</span>(
                 writer,
-                <span class="pl-s1"><span class="pl-pds">"</span>Invalid version: <span class="pl-pds">"</span></span>+err.<span class="pl-s3">Error</span>(),
-                http.<span class="pl-vo">StatusBadRequest</span>,
+                <span class="pl-s"><span class="pl-pds">"</span>Invalid version: <span class="pl-pds">"</span></span>+err.<span class="pl-c1">Error</span>(),
+                http.<span class="pl-smi">StatusBadRequest</span>,
             )
             <span class="pl-k">return</span>
         }
 
-        <span class="pl-k">if</span> version.<span class="pl-s3">LessThan</span>(*minVersion) {
-            rest.<span class="pl-s3">Error</span>(
+        <span class="pl-k">if</span> version.<span class="pl-c1">LessThan</span>(*minVersion) {
+            rest.<span class="pl-c1">Error</span>(
                 writer,
-                <span class="pl-s1"><span class="pl-pds">"</span>Min supported version is <span class="pl-pds">"</span></span>+minVersion.<span class="pl-s3">String</span>(),
-                http.<span class="pl-vo">StatusBadRequest</span>,
+                <span class="pl-s"><span class="pl-pds">"</span>Min supported version is <span class="pl-pds">"</span></span>+minVersion.<span class="pl-c1">String</span>(),
+                http.<span class="pl-smi">StatusBadRequest</span>,
             )
             <span class="pl-k">return</span>
         }
 
-        <span class="pl-k">if</span> maxVersion.<span class="pl-s3">LessThan</span>(*version) {
-            rest.<span class="pl-s3">Error</span>(
+        <span class="pl-k">if</span> maxVersion.<span class="pl-c1">LessThan</span>(*version) {
+            rest.<span class="pl-c1">Error</span>(
                 writer,
-                <span class="pl-s1"><span class="pl-pds">"</span>Max supported version is <span class="pl-pds">"</span></span>+maxVersion.<span class="pl-s3">String</span>(),
-                http.<span class="pl-vo">StatusBadRequest</span>,
+                <span class="pl-s"><span class="pl-pds">"</span>Max supported version is <span class="pl-pds">"</span></span>+maxVersion.<span class="pl-c1">String</span>(),
+                http.<span class="pl-smi">StatusBadRequest</span>,
             )
             <span class="pl-k">return</span>
         }
 
-        request.<span class="pl-vo">Env</span>[<span class="pl-s1"><span class="pl-pds">"</span>VERSION<span class="pl-pds">"</span></span>] = version
-        <span class="pl-s3">handler</span>(writer, request)
+        request.<span class="pl-smi">Env</span>[<span class="pl-s"><span class="pl-pds">"</span>VERSION<span class="pl-pds">"</span></span>] = version
+        <span class="pl-c1">handler</span>(writer, request)
     }
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">Use</span>(SemVerMiddleware{
-        MinVersion: <span class="pl-s1"><span class="pl-pds">"</span>1.0.0<span class="pl-pds">"</span></span>,
-        MaxVersion: <span class="pl-s1"><span class="pl-pds">"</span>3.0.0<span class="pl-pds">"</span></span>,
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">Use</span>(SemVerMiddleware{
+        MinVersion: <span class="pl-s"><span class="pl-pds">"</span>1.0.0<span class="pl-pds">"</span></span>,
+        MaxVersion: <span class="pl-s"><span class="pl-pds">"</span>3.0.0<span class="pl-pds">"</span></span>,
     })
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/#version/message<span class="pl-pds">"</span></span>, svmw.<span class="pl-s3">MiddlewareFunc</span>(
-            <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-                <span class="pl-vo">version</span> <span class="pl-k">:=</span> req.<span class="pl-vo">Env</span>[<span class="pl-s1"><span class="pl-pds">"</span>VERSION<span class="pl-pds">"</span></span>].(*semver.<span class="pl-vo">Version</span>)
-                <span class="pl-k">if</span> version.<span class="pl-vo">Major</span> == <span class="pl-c1">2</span> {
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/#version/message<span class="pl-pds">"</span></span>, svmw.<span class="pl-c1">MiddlewareFunc</span>(
+            <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
+                <span class="pl-smi">version</span> <span class="pl-k">:=</span> req.<span class="pl-smi">Env</span>[<span class="pl-s"><span class="pl-pds">"</span>VERSION<span class="pl-pds">"</span></span>].(*semver.<span class="pl-smi">Version</span>)
+                <span class="pl-k">if</span> version.<span class="pl-smi">Major</span> == <span class="pl-c1">2</span> {
                     <span class="pl-c">// http://en.wikipedia.org/wiki/Second-system_effect</span>
-                    w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{
-                        <span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello broken World!<span class="pl-pds">"</span></span>,
+                    w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{
+                        <span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello broken World!<span class="pl-pds">"</span></span>,
                     })
                 } <span class="pl-k">else</span> {
-                    w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{
-                        <span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>,
+                    w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{
+                        <span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>,
                     })
                 }
             },
-        )},
+        )),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-s3">StripPrefix</span>(<span class="pl-s1"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, <span class="pl-c1">nil</span>))
+    api.<span class="pl-c1">SetApp</span>(router)
+    http.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>/api/<span class="pl-pds">"</span></span>, http.<span class="pl-c1">StripPrefix</span>(<span class="pl-s"><span class="pl-pds">"</span>/api<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, <span class="pl-c1">nil</span>))
 }
 </pre></div>
 
@@ -1290,25 +1343,25 @@ curl -i http://127.0.0.1:8080/doesnotexist
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest-middleware-statsd<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest-middleware-statsd<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(&amp;statsd.<span class="pl-vo">StatsdMiddleware</span>{})
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(&amp;statsd.<span class="pl-smi">StatsdMiddleware</span>{})
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
 
         <span class="pl-c">// take more than 1ms so statsd can report it</span>
-        time.<span class="pl-s3">Sleep</span>(<span class="pl-c1">100</span> * time.<span class="pl-vo">Millisecond</span>)
+        time.<span class="pl-c1">Sleep</span>(<span class="pl-c1">100</span> * time.<span class="pl-smi">Millisecond</span>)
 
-        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1326,53 +1379,53 @@ curl -i http://127.0.0.1:8080/doesnotexist
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/yvasiyarov/go-metrics<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/yvasiyarov/gorelic<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/yvasiyarov/go-metrics<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/yvasiyarov/gorelic<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
 )
 
-<span class="pl-k">type</span> <span class="pl-v">NewRelicMiddleware</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">License</span> <span class="pl-st">string</span>
-    <span class="pl-v">Name</span>    <span class="pl-st">string</span>
-    <span class="pl-v">Verbose</span> <span class="pl-st">bool</span>
-    agent   *gorelic.<span class="pl-vo">Agent</span>
+<span class="pl-k">type</span> <span class="pl-v">NewRelicMiddleware</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">License</span> <span class="pl-k">string</span>
+    <span class="pl-v">Name</span>    <span class="pl-k">string</span>
+    <span class="pl-v">Verbose</span> <span class="pl-k">bool</span>
+    agent   *gorelic.<span class="pl-smi">Agent</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">(<span class="pl-v">mw</span> *<span class="pl-v">NewRelicMiddleware</span>) <span class="pl-en">MiddlewareFunc</span></span>(<span class="pl-v">handler</span> <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span>) <span class="pl-v">rest</span>.<span class="pl-v">HandlerFunc</span> {
 
-    mw.<span class="pl-vo">agent</span> = gorelic.<span class="pl-s3">NewAgent</span>()
-    mw.<span class="pl-vo">agent</span>.<span class="pl-vo">NewrelicLicense</span> = mw.<span class="pl-vo">License</span>
-    mw.<span class="pl-vo">agent</span>.<span class="pl-vo">HTTPTimer</span> = metrics.<span class="pl-s3">NewTimer</span>()
-    mw.<span class="pl-vo">agent</span>.<span class="pl-vo">Verbose</span> = mw.<span class="pl-vo">Verbose</span>
-    mw.<span class="pl-vo">agent</span>.<span class="pl-vo">NewrelicName</span> = mw.<span class="pl-vo">Name</span>
-    mw.<span class="pl-vo">agent</span>.<span class="pl-vo">CollectHTTPStat</span> = <span class="pl-c1">true</span>
-    mw.<span class="pl-vo">agent</span>.<span class="pl-s3">Run</span>()
+    mw.<span class="pl-smi">agent</span> = gorelic.<span class="pl-c1">NewAgent</span>()
+    mw.<span class="pl-smi">agent</span>.<span class="pl-smi">NewrelicLicense</span> = mw.<span class="pl-smi">License</span>
+    mw.<span class="pl-smi">agent</span>.<span class="pl-smi">HTTPTimer</span> = metrics.<span class="pl-c1">NewTimer</span>()
+    mw.<span class="pl-smi">agent</span>.<span class="pl-smi">Verbose</span> = mw.<span class="pl-smi">Verbose</span>
+    mw.<span class="pl-smi">agent</span>.<span class="pl-smi">NewrelicName</span> = mw.<span class="pl-smi">Name</span>
+    mw.<span class="pl-smi">agent</span>.<span class="pl-smi">CollectHTTPStat</span> = <span class="pl-c1">true</span>
+    mw.<span class="pl-smi">agent</span>.<span class="pl-c1">Run</span>()
 
-    <span class="pl-k">return</span> <span class="pl-s3">func</span>(writer rest.<span class="pl-vo">ResponseWriter</span>, request *rest.<span class="pl-vo">Request</span>) {
+    <span class="pl-k">return</span> <span class="pl-c1">func</span>(writer rest.<span class="pl-smi">ResponseWriter</span>, request *rest.<span class="pl-smi">Request</span>) {
 
-        <span class="pl-s3">handler</span>(writer, request)
+        <span class="pl-c1">handler</span>(writer, request)
 
         <span class="pl-c">// the timer middleware keeps track of the time</span>
-        <span class="pl-vo">startTime</span> <span class="pl-k">:=</span> request.<span class="pl-vo">Env</span>[<span class="pl-s1"><span class="pl-pds">"</span>START_TIME<span class="pl-pds">"</span></span>].(*time.<span class="pl-vo">Time</span>)
-        mw.<span class="pl-vo">agent</span>.<span class="pl-vo">HTTPTimer</span>.<span class="pl-s3">UpdateSince</span>(*startTime)
+        <span class="pl-smi">startTime</span> <span class="pl-k">:=</span> request.<span class="pl-smi">Env</span>[<span class="pl-s"><span class="pl-pds">"</span>START_TIME<span class="pl-pds">"</span></span>].(*time.<span class="pl-smi">Time</span>)
+        mw.<span class="pl-smi">agent</span>.<span class="pl-smi">HTTPTimer</span>.<span class="pl-c1">UpdateSince</span>(*startTime)
     }
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    api.<span class="pl-s3">Use</span>(&amp;NewRelicMiddleware{
-        License: <span class="pl-s1"><span class="pl-pds">"</span>&lt;REPLACE WITH THE LICENSE KEY&gt;<span class="pl-pds">"</span></span>,
-        Name:    <span class="pl-s1"><span class="pl-pds">"</span>&lt;REPLACE WITH THE APP NAME&gt;<span class="pl-pds">"</span></span>,
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">Use</span>(&amp;NewRelicMiddleware{
+        License: <span class="pl-s"><span class="pl-pds">"</span>&lt;REPLACE WITH THE LICENSE KEY&gt;<span class="pl-pds">"</span></span>,
+        Name:    <span class="pl-s"><span class="pl-pds">"</span>&lt;REPLACE WITH THE APP NAME&gt;<span class="pl-pds">"</span></span>,
         Verbose: <span class="pl-c1">true</span>,
     })
-    api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
-    log.<span class="pl-s3">Fatal</span>(http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1393,48 +1446,48 @@ You can play with these numbers to show that the server waits for the responses 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/stretchr/graceful<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/stretchr/graceful<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>time<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            <span class="pl-k">for</span> <span class="pl-vo">cpt</span> <span class="pl-k">:=</span> <span class="pl-c1">1</span>; cpt &lt;= <span class="pl-c1">10</span>; cpt++ {
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
+            <span class="pl-k">for</span> <span class="pl-smi">cpt</span> <span class="pl-k">:=</span> <span class="pl-c1">1</span>; cpt &lt;= <span class="pl-c1">10</span>; cpt++ {
 
                 <span class="pl-c">// wait 1 second</span>
-                time.<span class="pl-s3">Sleep</span>(time.<span class="pl-s3">Duration</span>(<span class="pl-c1">1</span>) * time.<span class="pl-vo">Second</span>)
+                time.<span class="pl-c1">Sleep</span>(time.<span class="pl-c1">Duration</span>(<span class="pl-c1">1</span>) * time.<span class="pl-smi">Second</span>)
 
-                w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{
-                    <span class="pl-s1"><span class="pl-pds">"</span>Message<span class="pl-pds">"</span></span>: fmt.<span class="pl-s3">Sprintf</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-c1">%d</span> seconds<span class="pl-pds">"</span></span>, cpt),
+                w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{
+                    <span class="pl-s"><span class="pl-pds">"</span>Message<span class="pl-pds">"</span></span>: fmt.<span class="pl-c1">Sprintf</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-c1">%d</span> seconds<span class="pl-pds">"</span></span>, cpt),
                 })
-                w.(http.<span class="pl-vo">ResponseWriter</span>).<span class="pl-s3">Write</span>([]<span class="pl-st">byte</span>(<span class="pl-s1"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>))
+                w.(http.<span class="pl-smi">ResponseWriter</span>).<span class="pl-c1">Write</span>([]<span class="pl-k">byte</span>(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>))
 
                 <span class="pl-c">// Flush the buffer to client</span>
-                w.(http.<span class="pl-vo">Flusher</span>).<span class="pl-s3">Flush</span>()
+                w.(http.<span class="pl-smi">Flusher</span>).<span class="pl-c1">Flush</span>()
             }
-        }},
+        }),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
+    api.<span class="pl-c1">SetApp</span>(router)
 
-    <span class="pl-vo">server</span> <span class="pl-k">:=</span> &amp;graceful.<span class="pl-vo">Server</span>{
-        Timeout: <span class="pl-c1">10</span> * time.<span class="pl-vo">Second</span>,
-        Server: &amp;http.<span class="pl-vo">Server</span>{
-            Addr:    <span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>,
-            Handler: api.<span class="pl-s3">MakeHandler</span>(),
+    <span class="pl-smi">server</span> <span class="pl-k">:=</span> &amp;graceful.<span class="pl-smi">Server</span>{
+        Timeout: <span class="pl-c1">10</span> * time.<span class="pl-smi">Second</span>,
+        Server: &amp;http.<span class="pl-smi">Server</span>{
+            Addr:    <span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>,
+            Handler: api.<span class="pl-c1">MakeHandler</span>(),
         },
     }
 
-    log.<span class="pl-s3">Fatal</span>(server.<span class="pl-s3">ListenAndServe</span>())
+    log.<span class="pl-c1">Fatal</span>(server.<span class="pl-c1">ListenAndServe</span>())
 }
 </pre></div>
 
@@ -1456,35 +1509,35 @@ You can play with these numbers to show that the server waits for the responses 
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/shykes/spdy-go<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/shykes/spdy-go<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
 )
 
-<span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-st">struct</span> {
-    <span class="pl-v">Id</span>   <span class="pl-st">string</span>
-    <span class="pl-v">Name</span> <span class="pl-st">string</span>
+<span class="pl-k">type</span> <span class="pl-v">User</span> <span class="pl-k">struct</span> {
+    <span class="pl-v">Id</span>   <span class="pl-k">string</span>
+    <span class="pl-v">Name</span> <span class="pl-k">string</span>
 }
 
 <span class="pl-k">func</span> <span class="pl-en">GetUser</span>(<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">req</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
-    <span class="pl-vo">user</span> <span class="pl-k">:=</span> User{
-        Id:   req.<span class="pl-s3">PathParam</span>(<span class="pl-s1"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>),
-        Name: <span class="pl-s1"><span class="pl-pds">"</span>Antoine<span class="pl-pds">"</span></span>,
+    <span class="pl-smi">user</span> <span class="pl-k">:=</span> User{
+        Id:   req.<span class="pl-c1">PathParam</span>(<span class="pl-s"><span class="pl-pds">"</span>id<span class="pl-pds">"</span></span>),
+        Name: <span class="pl-s"><span class="pl-pds">"</span>Antoine<span class="pl-pds">"</span></span>,
     }
-    w.<span class="pl-s3">WriteJson</span>(&amp;user)
+    w.<span class="pl-c1">WriteJson</span>(&amp;user)
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, GetUser},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/users/:id<span class="pl-pds">"</span></span>, GetUser),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    log.<span class="pl-s3">Fatal</span>(spdy.<span class="pl-s3">ListenAndServeTCP</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>()))
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(spdy.<span class="pl-c1">ListenAndServeTCP</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
 
@@ -1520,24 +1573,24 @@ and that the GAE SDK is also installed.</p>
 <div class="highlight highlight-go"><pre><span class="pl-k">package</span> gaehelloworld
 
 <span class="pl-k">import</span> (
-    <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
-    <span class="pl-s1"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
 
 <span class="pl-k">func</span> <span class="pl-en">init</span>() {
-    <span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-    api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-    <span class="pl-vo">router</span>, <span class="pl-vo">err</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">MakeRouter</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{<span class="pl-s1"><span class="pl-pds">"</span>GET<span class="pl-pds">"</span></span>, <span class="pl-s1"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-s3">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, req *rest.<span class="pl-vo">Request</span>) {
-            w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
-        }},
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        &amp;rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/message<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
+            w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+        }),
     )
     <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
-        log.<span class="pl-s3">Fatal</span>(err)
+        log.<span class="pl-c1">Fatal</span>(err)
     }
-    api.<span class="pl-s3">SetApp</span>(router)
-    http.<span class="pl-s3">Handle</span>(<span class="pl-s1"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>())
+    api.<span class="pl-c1">SetApp</span>(router)
+    http.<span class="pl-c1">Handle</span>(<span class="pl-s"><span class="pl-pds">"</span>/<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>())
 }
 </pre></div>
 
@@ -1571,12 +1624,12 @@ and that the GAE SDK is also installed.</p>
 <h3>
 <a id="here-is-for-instance-the-new-minimal-hello-world" class="anchor" href="#here-is-for-instance-the-new-minimal-hello-world" aria-hidden="true"><span class="octicon octicon-link"></span></a>Here is for instance the new minimal "Hello World!"</h3>
 
-<div class="highlight highlight-go"><pre><span class="pl-vo">api</span> <span class="pl-k">:=</span> rest.<span class="pl-s3">NewApi</span>()
-api.<span class="pl-s3">Use</span>(rest.<span class="pl-vo">DefaultDevStack</span>...)
-api.<span class="pl-s3">SetApp</span>(rest.<span class="pl-s3">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-vo">ResponseWriter</span>, r *rest.<span class="pl-vo">Request</span>) {
-        w.<span class="pl-s3">WriteJson</span>(<span class="pl-s">map</span>[<span class="pl-st">string</span>]<span class="pl-st">string</span>{<span class="pl-s1"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s1"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+<div class="highlight highlight-go"><pre><span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
 }))
-http.<span class="pl-s3">ListenAndServe</span>(<span class="pl-s1"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-s3">MakeHandler</span>())</pre></div>
+http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>())</pre></div>
 
 <p><em>All 19 examples have been updated to use the new API. <a href="https://github.com/ant0ine/go-json-rest#examples">See here</a></em></p>
 
@@ -1655,13 +1708,13 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 <p>This:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">import</span> (
-        <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest<span class="pl-pds">"</span></span>
+        <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest<span class="pl-pds">"</span></span>
 )</pre></div>
 
 <p>has to be changed to this:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">import</span> (
-        <span class="pl-s1"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+        <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
 )</pre></div>
 
 <h4>
@@ -1689,16 +1742,16 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 
 <p>This:</p>
 
-<div class="highlight highlight-go"><pre>handler.<span class="pl-s3">SetRoutes</span>(
-        rest.<span class="pl-vo">Route</span>{
+<div class="highlight highlight-go"><pre>handler.<span class="pl-c1">SetRoutes</span>(
+        rest.<span class="pl-smi">Route</span>{
               <span class="pl-c">// ...</span>
         },
 )</pre></div>
 
 <p>has to be changed to this:</p>
 
-<div class="highlight highlight-go"><pre>handler.<span class="pl-s3">SetRoutes</span>(
-        &amp;rest.<span class="pl-vo">Route</span>{
+<div class="highlight highlight-go"><pre>handler.<span class="pl-c1">SetRoutes</span>(
+        &amp;rest.<span class="pl-smi">Route</span>{
               <span class="pl-c">// ...</span>
         },
 )</pre></div>
@@ -1709,7 +1762,7 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 <p>A middleware is an object satisfying this interface:</p>
 
 <div class="highlight highlight-go"><pre><span class="pl-k">type</span> <span class="pl-v">Middleware</span> <span class="pl-k">interface</span> {
-    <span class="pl-s3">MiddlewareFunc</span>(handler <span class="pl-v">HandlerFunc</span>) <span class="pl-v">HandlerFunc</span>
+    <span class="pl-c1">MiddlewareFunc</span>(handler <span class="pl-v">HandlerFunc</span>) <span class="pl-v">HandlerFunc</span>
 }</pre></div>
 
 <p>Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
@@ -1723,11 +1776,11 @@ Regarding these features, a rest.ResponseWriter now behaves exactly as the http.
 
 <p>This:</p>
 
-<div class="highlight highlight-go"><pre>writer.<span class="pl-s3">Flush</span>()</pre></div>
+<div class="highlight highlight-go"><pre>writer.<span class="pl-c1">Flush</span>()</pre></div>
 
 <p>has to be changed to this:</p>
 
-<div class="highlight highlight-go"><pre>writer.(http.<span class="pl-vo">Flusher</span>).<span class="pl-s3">Flush</span>()</pre></div>
+<div class="highlight highlight-go"><pre>writer.(http.<span class="pl-smi">Flusher</span>).<span class="pl-c1">Flush</span>()</pre></div>
 
 <h4>
 <a id="the-status-endpoint-is-not-created-automatically-anymore" class="anchor" href="#the-status-endpoint-is-not-created-automatically-anymore" aria-hidden="true"><span class="octicon octicon-link"></span></a>The /.status endpoint is not created automatically anymore</h4>
@@ -1761,18 +1814,16 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 <p>Copyright (c) 2013-2015 Antoine Imbert</p>
 
 <p><a href="https://github.com/ant0ine/go-json-rest/blob/master/LICENSE">MIT License</a></p>
-      </section>
-    </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Go-json-rest maintained by <a href="https://github.com/ant0ine">ant0ine</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/ant0ine/go-json-rest">Go-json-rest</a> is maintained by <a href="https://github.com/ant0ine">ant0ine</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-              <script type="text/javascript">
+    </section>
+
+            <script type="text/javascript">
             var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
             document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
           </script>
@@ -1783,6 +1834,6 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
             } catch(err) {}
           </script>
 
-
   </body>
 </html>
+
