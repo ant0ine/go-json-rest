@@ -171,14 +171,14 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
+		rest.Get("/lookup/#host", func(w rest.ResponseWriter, req *rest.Request) {
 			ip, err := net.LookupIP(req.PathParam("host"))
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			w.WriteJson(&ip)
-		}},
+		}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -223,10 +223,10 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-		&rest.Route{"POST", "/countries", PostCountry},
-		&rest.Route{"GET", "/countries/:code", GetCountry},
-		&rest.Route{"DELETE", "/countries/:code", DeleteCountry},
+		rest.Get("/countries", GetAllCountries),
+		rest.Post("/countries", PostCountry),
+		rest.Get("/countries/:code", GetCountry),
+		rest.Delete("/countries/:code", DeleteCountry),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -345,11 +345,11 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/users", users.GetAllUsers},
-		&rest.Route{"POST", "/users", users.PostUser},
-		&rest.Route{"GET", "/users/:id", users.GetUser},
-		&rest.Route{"PUT", "/users/:id", users.PutUser},
-		&rest.Route{"DELETE", "/users/:id", users.DeleteUser},
+		rest.Get("/users", users.GetAllUsers),
+		rest.Post("/users", users.PostUser),
+		rest.Get("/users/:id", users.GetUser),
+		rest.Put("/users/:id", users.PutUser),
+		rest.Delete("/users/:id", users.DeleteUser),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -475,9 +475,9 @@ func main() {
 	api.Use(rest.DefaultDevStack...)
 
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+		rest.Get("/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
+		}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -533,11 +533,11 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/reminders", i.GetAllReminders},
-		&rest.Route{"POST", "/reminders", i.PostReminder},
-		&rest.Route{"GET", "/reminders/:id", i.GetReminder},
-		&rest.Route{"PUT", "/reminders/:id", i.PutReminder},
-		&rest.Route{"DELETE", "/reminders/:id", i.DeleteReminder},
+		rest.Get("/reminders", i.GetAllReminders),
+		rest.Post("/reminders", i.PostReminder),
+		rest.Get("/reminders/:id", i.GetReminder),
+		rest.Put("/reminders/:id", i.PutReminder),
+		rest.Delete("/reminders/:id", i.DeleteReminder),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -674,7 +674,7 @@ func main() {
 		AccessControlMaxAge:           3600,
 	})
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/countries", GetAllCountries},
+		rest.Get("/countries", GetAllCountries),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -829,11 +829,9 @@ func main() {
 	api.Use(statusMw)
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/.status",
-			func(w rest.ResponseWriter, r *rest.Request) {
-				w.WriteJson(statusMw.GetStatus())
-			},
-		},
+		rest.Get("/.status", func(w rest.ResponseWriter, r *rest.Request) {
+			w.WriteJson(statusMw.GetStatus())
+		}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -883,14 +881,12 @@ func main() {
 		},
 	}
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/countries", GetAllCountries},
-		&rest.Route{"GET", "/.status",
-			auth.MiddlewareFunc(
-				func(w rest.ResponseWriter, r *rest.Request) {
-					w.WriteJson(statusMw.GetStatus())
-				},
-			),
-		},
+		rest.Get("/countries", GetAllCountries),
+		rest.Get("/.status", auth.MiddlewareFunc(
+			func(w rest.ResponseWriter, r *rest.Request) {
+				w.WriteJson(statusMw.GetStatus())
+			},
+		)),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -974,9 +970,10 @@ func main() {
 		IfTrue: jwt_middleware,
 	})
 	api_router, _ := rest.MakeRouter(
-		&rest.Route{"POST", "/login", jwt_middleware.LoginHandler},
-		&rest.Route{"GET", "/auth_test", handle_auth},
-		&rest.Route{"GET", "/refresh_token", jwt_middleware.RefreshHandler})
+		rest.Post("/login", jwt_middleware.LoginHandler),
+		rest.Get("/auth_test", handle_auth),
+		rest.Get("/refresh_token", jwt_middleware.RefreshHandler),
+	)
 	api.SetApp(api_router)
 
 	http.Handle("/api/", http.StripPrefix("/api", api.MakeHandler()))
@@ -1026,7 +1023,7 @@ func main() {
 	api.Use(&rest.AccessLogApacheMiddleware{})
 	api.Use(rest.DefaultCommonStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/stream", StreamThings},
+		rest.Get("/stream", StreamThings),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -1094,10 +1091,10 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message.txt", func(w rest.ResponseWriter, req *rest.Request) {
+		rest.Get("/message.txt", func(w rest.ResponseWriter, req *rest.Request) {
 			w.Header().Set("Content-Type", "text/plain")
 			w.(http.ResponseWriter).Write([]byte("Hello World!"))
-		}},
+		}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -1197,7 +1194,7 @@ func main() {
 		MaxVersion: "3.0.0",
 	})
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/#version/message", svmw.MiddlewareFunc(
+		rest.Get("/#version/message", svmw.MiddlewareFunc(
 			func(w rest.ResponseWriter, req *rest.Request) {
 				version := req.Env["VERSION"].(*semver.Version)
 				if version.Major == 2 {
@@ -1211,7 +1208,7 @@ func main() {
 					})
 				}
 			},
-		)},
+		)),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -1361,7 +1358,7 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+		rest.Get("/message", func(w rest.ResponseWriter, req *rest.Request) {
 			for cpt := 1; cpt <= 10; cpt++ {
 
 				// wait 1 second
@@ -1375,7 +1372,7 @@ func main() {
 				// Flush the buffer to client
 				w.(http.Flusher).Flush()
 			}
-		}},
+		}),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -1434,7 +1431,7 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/users/:id", GetUser},
+		rest.Get("/users/:id", GetUser),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -1482,9 +1479,9 @@ func init() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		&rest.Route{"GET", "/message", func(w rest.ResponseWriter, req *rest.Request) {
+		&rest.Get("/message", func(w rest.ResponseWriter, req *rest.Request) {
 			w.WriteJson(map[string]string{"Body": "Hello World!"})
-		}},
+		}),
 	)
 	if err != nil {
 		log.Fatal(err)
