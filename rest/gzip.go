@@ -12,7 +12,9 @@ import (
 // headers when supported by the client. It must be wrapped by TimerMiddleware for the
 // compression time to be captured. And It must be wrapped by RecorderMiddleware for the
 // compressed BYTES_WRITTEN to be captured.
-type GzipMiddleware struct{}
+type GzipMiddleware struct {
+	MinLength int64
+}
 
 // MiddlewareFunc makes GzipMiddleware implement the Middleware interface.
 func (mw *GzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
@@ -20,7 +22,7 @@ func (mw *GzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		// gzip support enabled
 		canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 		// client accepts gzip ?
-		writer := &gzipResponseWriter{w, false, canGzip, nil}
+		writer := &gzipResponseWriter{w, false, canGzip, mw.MinLength, nil}
 		// call the handler with the wrapped writer
 		h(writer, r)
 	}
@@ -38,6 +40,7 @@ type gzipResponseWriter struct {
 	ResponseWriter
 	wroteHeader bool
 	canGzip     bool
+	minLength   int64
 	gzipWriter  *gzip.Writer
 }
 
@@ -102,7 +105,7 @@ func (w *gzipResponseWriter) Write(b []byte) (int, error) {
 
 	writer := w.ResponseWriter.(http.ResponseWriter)
 
-	if w.canGzip {
+	if w.canGzip && int64(len(b)) >= w.minLength {
 		// Write can be called multiple times for a given response.
 		// (see the streaming example:
 		// https://github.com/ant0ine/go-json-rest-examples/tree/master/streaming)
