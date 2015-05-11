@@ -70,8 +70,10 @@ func (w *jsonpResponseWriter) WriteJson(v interface{}) error {
 	if err != nil {
 		return err
 	}
-	// TODO add "/**/" ?
-	w.Write([]byte(w.callbackName + "("))
+	// JSONP security fix (http://miki.it/blog/2014/7/8/abusing-jsonp-with-rosetta-flash/)
+	w.Header().Set("Content-Disposition", "filename=f.txt")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Write([]byte("/**/" + w.callbackName + "("))
 	w.Write(b)
 	w.Write([]byte(")"))
 	return nil
