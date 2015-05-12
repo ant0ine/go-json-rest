@@ -1750,6 +1750,7 @@ Overall, they provide the same features, but with two methods instead of three, 
 - [Ask Bjørn Hansen](https://github.com/abh)
 - [Paul Lam](https://github.com/Quantisan)
 - [Thanabodee Charoenpiriyakij](https://github.com/wingyplus)
+- [Sebastien Estienne](https://github.com/sebest)
 
 
 Copyright (c) 2013-2015 Antoine Imbert
