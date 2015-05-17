@@ -8,8 +8,8 @@ import (
 )
 
 // A ResponseWriter interface dedicated to JSON HTTP response.
-// Note that the object instantiated by the ResourceHandler that implements this interface,
-// also happens to implement http.ResponseWriter, http.Flusher and http.CloseNotifier.
+// Note, the responseWriter object instantiated by the framework also implements many other interfaces
+// accessible by type assertion: http.ResponseWriter, http.Flusher, http.CloseNotifier, http.Hijacker.
 type ResponseWriter interface {
 
 	// Identical to the http.ResponseWriter interface
