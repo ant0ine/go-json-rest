@@ -2,10 +2,16 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+)
+
+var (
+	// ErrJSONPayloadEmpty is returned when the JSON payload is empty.
+	ErrJSONPayloadEmpty = errors.New("JSON payload is empty")
 )
 
 // Request inherits from http.Request, and provides additional methods.
@@ -30,6 +36,9 @@ func (r *Request) DecodeJsonPayload(v interface{}) error {
 	r.Body.Close()
 	if err != nil {
 		return err
+	}
+	if len(content) == 0 {
+		return ErrJSONPayloadEmpty
 	}
 	err = json.Unmarshal(content, v)
 	if err != nil {
