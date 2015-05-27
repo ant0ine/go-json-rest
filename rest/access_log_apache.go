@@ -40,13 +40,13 @@ import (
 type AccessLogFormat string
 
 const (
-	// Common Log Format (CLF).
+	// CommonLogFormat is the Common Log Format (CLF).
 	CommonLogFormat = "%h %l %u %t \"%r\" %s %b"
 
-	// NCSA extended/combined log format.
+	// CombinedLogFormat is the NCSA extended/combined log format.
 	CombinedLogFormat = "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\""
 
-	// Default format, colored output and response time, convenient for development.
+	// DefaultLogFormat is the default format, colored output and response time, convenient for development.
 	DefaultLogFormat = "%t %S\033[0m \033[36;1m%Dμs\033[0m \"%r\" \033[1;30m%u \"%{User-Agent}i\"\033[0m"
 )
 
