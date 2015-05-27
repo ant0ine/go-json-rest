@@ -3,6 +3,7 @@ package rest
 import (
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -15,6 +16,14 @@ func defaultRequest(method string, urlStr string, body io.Reader, t *testing.T) 
 		origReq,
 		nil,
 		map[string]interface{}{},
+	}
+}
+
+func TestRequestEmptyJson(t *testing.T) {
+	req := defaultRequest("POST", "http://localhost", strings.NewReader(""), t)
+	err := req.DecodeJsonPayload(nil)
+	if err != ErrJsonPayloadEmpty {
+		t.Error("Expected ErrJsonPayloadEmpty")
 	}
 }
 

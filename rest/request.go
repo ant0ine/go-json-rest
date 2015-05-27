@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// ErrJSONPayloadEmpty is returned when the JSON payload is empty.
-	ErrJSONPayloadEmpty = errors.New("JSON payload is empty")
+	// ErrJsonPayloadEmpty is returned when the JSON payload is empty.
+	ErrJsonPayloadEmpty = errors.New("JSON payload is empty")
 )
 
 // Request inherits from http.Request, and provides additional methods.
@@ -38,7 +38,7 @@ func (r *Request) DecodeJsonPayload(v interface{}) error {
 		return err
 	}
 	if len(content) == 0 {
-		return ErrJSONPayloadEmpty
+		return ErrJsonPayloadEmpty
 	}
 	err = json.Unmarshal(content, v)
 	if err != nil {
