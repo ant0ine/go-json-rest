@@ -1188,12 +1188,13 @@ func (mw *SemVerMiddleware) MiddlewareFunc(handler rest.HandlerFunc) rest.Handle
 }
 
 func main() {
-	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
-	api.Use(SemVerMiddleware{
+
+	svmw := SemVerMiddleware{
 		MinVersion: "1.0.0",
 		MaxVersion: "3.0.0",
-	})
+	}
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Get("/#version/message", svmw.MiddlewareFunc(
 			func(w rest.ResponseWriter, req *rest.Request) {
