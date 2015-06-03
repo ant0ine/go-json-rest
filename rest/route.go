@@ -5,7 +5,7 @@ import (
 )
 
 // Route defines a route as consumed by the router. It can be instantiated directly, or using one
-// of the shortcut methods: rest.Get, rest.Post, rest.Put, and rest.Delete.
+// of the shortcut methods: rest.Get, rest.Post, rest.Put, rest.Patch and rest.Delete.
 type Route struct {
 
 	// Any HTTP method. It will be used as uppercase to avoid common mistakes.
@@ -62,6 +62,16 @@ func Post(pathExp string, handlerFunc HandlerFunc) *Route {
 func Put(pathExp string, handlerFunc HandlerFunc) *Route {
 	return &Route{
 		HttpMethod: "PUT",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
+// Patch is a shortcut method that instantiates a PATCH route.  See the Route object the parameters definitions.
+// Equivalent to &Route{"PATCH", pathExp, handlerFunc}
+func Patch(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "PATCH",
 		PathExp:    pathExp,
 		Func:       handlerFunc,
 	}
