@@ -66,6 +66,11 @@ func TestShortcutMethods(t *testing.T) {
 		t.Errorf("expected PUT, got %s", r.HttpMethod)
 	}
 
+	r = Patch("/", nil)
+	if r.HttpMethod != "PATCH" {
+		t.Errorf("expected PATCH, got %s", r.HttpMethod)
+	}
+
 	r = Delete("/", nil)
 	if r.HttpMethod != "DELETE" {
 		t.Errorf("expected DELETE, got %s", r.HttpMethod)
