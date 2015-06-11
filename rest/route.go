@@ -37,6 +37,16 @@ func (route *Route) MakePath(pathParams map[string]string) string {
 	return path
 }
 
+// Head is a shortcut method that instantiates a HEAD route. See the Route object the parameters definitions.
+// Equivalent to &Route{"HEAD", pathExp, handlerFunc}
+func Head(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "HEAD",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
 // Get is a shortcut method that instantiates a GET route. See the Route object the parameters definitions.
 // Equivalent to &Route{"GET", pathExp, handlerFunc}
 func Get(pathExp string, handlerFunc HandlerFunc) *Route {
@@ -81,6 +91,16 @@ func Patch(pathExp string, handlerFunc HandlerFunc) *Route {
 func Delete(pathExp string, handlerFunc HandlerFunc) *Route {
 	return &Route{
 		HttpMethod: "DELETE",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
+// Options is a shortcut method that instantiates an OPTIONS route.  See the Route object the parameters definitions.
+// Equivalent to &Route{"OPTIONS", pathExp, handlerFunc}
+func Options(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "OPTIONS",
 		PathExp:    pathExp,
 		Func:       handlerFunc,
 	}
