@@ -76,6 +76,7 @@
 <li><a href="#graceful-shutdown">Graceful Shutdown</a></li>
 <li><a href="#spdy">SPDY</a></li>
 <li><a href="#gae">Google App Engine</a></li>
+<li><a href="#websocket">Websocket</a></li>
 </ul>
 </li>
 </ul>
@@ -201,6 +202,10 @@ where this library code is copied in your repository at a specific revision.
 <tr>
 <td><strong><a href="https://github.com/StephanDollberg/go-json-rest-middleware-jwt">JWT</a></strong></td>
 <td>Provides authentication via Json Web Tokens</td>
+</tr>
+<tr>
+<td><strong><a href="https://github.com/grayj/go-json-rest-middleware-tokenauth">AuthToken</a></strong></td>
+<td>Provides a Token Auth implementation</td>
 </tr>
 </tbody>
 </table>
@@ -1290,12 +1295,13 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 }
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
-    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
-    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
-    api.<span class="pl-c1">Use</span>(SemVerMiddleware{
+
+    <span class="pl-smi">svmw</span> <span class="pl-k">:=</span> SemVerMiddleware{
         MinVersion: <span class="pl-s"><span class="pl-pds">"</span>1.0.0<span class="pl-pds">"</span></span>,
         MaxVersion: <span class="pl-s"><span class="pl-pds">"</span>3.0.0<span class="pl-pds">"</span></span>,
-    })
+    }
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
     <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
         rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/#version/message<span class="pl-pds">"</span></span>, svmw.<span class="pl-c1">MiddlewareFunc</span>(
             <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, req *rest.<span class="pl-smi">Request</span>) {
@@ -1594,6 +1600,63 @@ and that the GAE SDK is also installed.</p>
 }
 </pre></div>
 
+<h4>
+<a id="websocket" class="anchor" href="#websocket" aria-hidden="true"><span class="octicon octicon-link"></span></a>Websocket</h4>
+
+<p>Demonstrate how to run websocket in go-json-rest</p>
+
+<p>go client demo:</p>
+
+<div class="highlight highlight-go"><pre><span class="pl-smi">origin</span> <span class="pl-k">:=</span> <span class="pl-s"><span class="pl-pds">"</span>http://localhost:8080/<span class="pl-pds">"</span></span>
+<span class="pl-smi">url</span> <span class="pl-k">:=</span> <span class="pl-s"><span class="pl-pds">"</span>ws://localhost:8080/ws<span class="pl-pds">"</span></span>
+<span class="pl-smi">ws</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> websocket.<span class="pl-c1">Dial</span>(url, <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, origin)
+<span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+    log.<span class="pl-c1">Fatal</span>(err)
+}
+<span class="pl-k">if</span> <span class="pl-smi">_</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> ws.<span class="pl-c1">Write</span>([]<span class="pl-k">byte</span>(<span class="pl-s"><span class="pl-pds">"</span>hello, world<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>)); err != <span class="pl-c1">nil</span> {
+    log.<span class="pl-c1">Fatal</span>(err)
+}
+<span class="pl-k">var</span> <span class="pl-smi">msg</span> = <span class="pl-c1">make</span>([]<span class="pl-k">byte</span>, <span class="pl-c1">512</span>)
+<span class="pl-k">var</span> <span class="pl-smi">n</span> <span class="pl-k">int</span>
+<span class="pl-k">if</span> n, err = ws.<span class="pl-c1">Read</span>(msg); err != <span class="pl-c1">nil</span> {
+    log.<span class="pl-c1">Fatal</span>(err)
+}
+log.<span class="pl-c1">Printf</span>(<span class="pl-s"><span class="pl-pds">"</span>Received: <span class="pl-c1">%s</span>.<span class="pl-pds">"</span></span>, msg[:n])</pre></div>
+
+<p>code:</p>
+
+<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s"><span class="pl-pds">"</span>io<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>golang.org/x/net/websocket<span class="pl-pds">"</span></span>
+)
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    <span class="pl-smi">wsHandler</span> <span class="pl-k">:=</span> websocket.<span class="pl-c1">Handler</span>(<span class="pl-k">func</span>(ws *websocket.<span class="pl-smi">Conn</span>) {
+        io.<span class="pl-c1">Copy</span>(ws, ws)
+    })
+
+    <span class="pl-smi">router</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">MakeRouter</span>(
+        rest.<span class="pl-c1">Get</span>(<span class="pl-s"><span class="pl-pds">"</span>/ws<span class="pl-pds">"</span></span>, <span class="pl-c1">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+            wsHandler.<span class="pl-c1">ServeHTTP</span>(w.(http.<span class="pl-smi">ResponseWriter</span>), r.<span class="pl-smi">Request</span>)
+        }),
+    )
+    <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
+        log.<span class="pl-c1">Fatal</span>(err)
+    }
+
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
+    api.<span class="pl-c1">SetApp</span>(router)
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
+}
+</pre></div>
+
 <h2>
 <a id="external-documentation" class="anchor" href="#external-documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>External Documentation</h2>
 
@@ -1809,6 +1872,8 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 <li><a href="https://github.com/yannk">Yann Kerhervé</a></li>
 <li><a href="https://github.com/abh">Ask Bjørn Hansen</a></li>
 <li><a href="https://github.com/Quantisan">Paul Lam</a></li>
+<li><a href="https://github.com/wingyplus">Thanabodee Charoenpiriyakij</a></li>
+<li><a href="https://github.com/sebest">Sebastien Estienne</a></li>
 </ul>
 
 <p>Copyright (c) 2013-2015 Antoine Imbert</p>
