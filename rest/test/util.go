@@ -45,7 +45,7 @@ func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
 // HeaderIs tests the first value for the given headerKey
 func HeaderIs(t *testing.T, r *httptest.ResponseRecorder, headerKey, expectedValue string) {
 	value := r.HeaderMap.Get(headerKey)
-	if value != expectedValue {
+	if !strings.HasPrefix(value, expectedValue) {
 		t.Errorf(
 			"%s: %s expected, got: %s",
 			headerKey,
