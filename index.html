@@ -5,7 +5,7 @@
     <title>Go-json-rest by ant0ine</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
@@ -207,6 +207,10 @@ where this library code is copied in your repository at a specific revision.
 <td><strong><a href="https://github.com/grayj/go-json-rest-middleware-tokenauth">AuthToken</a></strong></td>
 <td>Provides a Token Auth implementation</td>
 </tr>
+<tr>
+<td><strong><a href="https://github.com/clyphub/go-json-rest-middleware">SecureRedirect</a></strong></td>
+<td>Redirect clients from HTTP to HTTPS</td>
+</tr>
 </tbody>
 </table>
 
@@ -229,11 +233,11 @@ where this library code is copied in your repository at a specific revision.
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/</pre></div>
+<div class="highlight highlight-source-shell"><pre>curl -i http://127.0.0.1:8080/</pre></div>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -265,7 +269,7 @@ curl -i http://127.0.0.1:8080/lookup/notadomain
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -321,7 +325,7 @@ curl -i http://127.0.0.1:8080/countries
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -437,7 +441,7 @@ curl -i http://127.0.0.1:8080/users
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
@@ -573,7 +577,7 @@ curl -i http://127.0.0.1:8080/static/main.go
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -624,7 +628,7 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -762,7 +766,7 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -822,12 +826,12 @@ curl -i -X DELETE http://127.0.0.1:8080/reminders/1
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/
+<div class="highlight highlight-source-shell"><pre>curl -i http://127.0.0.1:8080/
 curl -i http://127.0.0.1:8080/<span class="pl-k">?</span>cb=parseResponse</pre></div>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -861,7 +865,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -925,7 +929,7 @@ curl -i http://127.0.0.1:8080/.status
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -968,7 +972,7 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -1038,13 +1042,13 @@ curl -i -u admin:admin http://127.0.0.1:8080/.status
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -d <span class="pl-s"><span class="pl-pds">'</span>{"username": "admin", "password": "admin"}<span class="pl-pds">'</span></span> -H <span class="pl-s"><span class="pl-pds">"</span>Content-Type:application/json<span class="pl-pds">"</span></span> http://localhost:8080/api/login
+<div class="highlight highlight-source-shell"><pre>curl -d <span class="pl-s"><span class="pl-pds">'</span>{"username": "admin", "password": "admin"}<span class="pl-pds">'</span></span> -H <span class="pl-s"><span class="pl-pds">"</span>Content-Type:application/json<span class="pl-pds">"</span></span> http://localhost:8080/api/login
 curl -H <span class="pl-s"><span class="pl-pds">"</span>Authorization:Bearer TOKEN_RETURNED_FROM_ABOVE<span class="pl-pds">"</span></span> http://localhost:8080/api/auth_test
 curl -H <span class="pl-s"><span class="pl-pds">"</span>Authorization:Bearer TOKEN_RETURNED_FROM_ABOVE<span class="pl-pds">"</span></span> http://localhost:8080/api/refresh_token</pre></div>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
@@ -1117,7 +1121,7 @@ Transfer-Encoding: chunked
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
@@ -1188,7 +1192,7 @@ is enough. As shown in this example.</p>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -1224,7 +1228,7 @@ is enough. As shown in this example.</p>
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/api/1.0.0/message
+<div class="highlight highlight-source-shell"><pre>curl -i http://127.0.0.1:8080/api/1.0.0/message
 curl -i http://127.0.0.1:8080/api/2.0.0/message
 curl -i http://127.0.0.1:8080/api/2.0.1/message
 curl -i http://127.0.0.1:8080/api/0.0.1/message
@@ -1233,7 +1237,7 @@ curl -i http://127.0.0.1:8080/api/4.0.1/message
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -1336,7 +1340,7 @@ This middleware is based on the <a href="https://github.com/peterbourgon/g2s">g2
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre><span class="pl-c"># start statsd server</span>
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># start statsd server</span>
 <span class="pl-c"># monitor network</span>
 ngrep -d any port 8125
 
@@ -1346,7 +1350,7 @@ curl -i http://127.0.0.1:8080/doesnotexist
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest-middleware-statsd<span class="pl-pds">"</span></span>
@@ -1378,11 +1382,11 @@ curl -i http://127.0.0.1:8080/doesnotexist
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/</pre></div>
+<div class="highlight highlight-source-shell"><pre>curl -i http://127.0.0.1:8080/</pre></div>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -1445,11 +1449,11 @@ You can play with these numbers to show that the server waits for the responses 
 
 <p>curl demo:</p>
 
-<div class="highlight highlight-sh"><pre>curl -i http://127.0.0.1:8080/message</pre></div>
+<div class="highlight highlight-source-shell"><pre>curl -i http://127.0.0.1:8080/message</pre></div>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>fmt<span class="pl-pds">"</span></span>
@@ -1512,7 +1516,7 @@ You can play with these numbers to show that the server waits for the responses 
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -1576,7 +1580,7 @@ and that the GAE SDK is also installed.</p>
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> gaehelloworld
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> gaehelloworld
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
@@ -1607,7 +1611,7 @@ and that the GAE SDK is also installed.</p>
 
 <p>go client demo:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-smi">origin</span> <span class="pl-k">:=</span> <span class="pl-s"><span class="pl-pds">"</span>http://localhost:8080/<span class="pl-pds">"</span></span>
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">origin</span> <span class="pl-k">:=</span> <span class="pl-s"><span class="pl-pds">"</span>http://localhost:8080/<span class="pl-pds">"</span></span>
 <span class="pl-smi">url</span> <span class="pl-k">:=</span> <span class="pl-s"><span class="pl-pds">"</span>ws://localhost:8080/ws<span class="pl-pds">"</span></span>
 <span class="pl-smi">ws</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> websocket.<span class="pl-c1">Dial</span>(url, <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>, origin)
 <span class="pl-k">if</span> err != <span class="pl-c1">nil</span> {
@@ -1625,7 +1629,7 @@ log.<span class="pl-c1">Printf</span>(<span class="pl-s"><span class="pl-pds">"<
 
 <p>code:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">package</span> main
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
 
 <span class="pl-k">import</span> (
     <span class="pl-s"><span class="pl-pds">"</span>io<span class="pl-pds">"</span></span>
@@ -1687,7 +1691,7 @@ log.<span class="pl-c1">Printf</span>(<span class="pl-s"><span class="pl-pds">"<
 <h3>
 <a id="here-is-for-instance-the-new-minimal-hello-world" class="anchor" href="#here-is-for-instance-the-new-minimal-hello-world" aria-hidden="true"><span class="octicon octicon-link"></span></a>Here is for instance the new minimal "Hello World!"</h3>
 
-<div class="highlight highlight-go"><pre><span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
 api.<span class="pl-c1">Use</span>(rest.<span class="pl-smi">DefaultDevStack</span>...)
 api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
         w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
@@ -1770,13 +1774,13 @@ In fact the internal code of <strong>go-json-rest</strong> is itself implemented
 
 <p>This:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">import</span> (
+<div class="highlight highlight-source-go"><pre><span class="pl-k">import</span> (
         <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest<span class="pl-pds">"</span></span>
 )</pre></div>
 
 <p>has to be changed to this:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">import</span> (
+<div class="highlight highlight-source-go"><pre><span class="pl-k">import</span> (
         <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
 )</pre></div>
 
@@ -1788,13 +1792,13 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 
 <p>This:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">func</span> (<span class="pl-v">w</span> *<span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">req</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<div class="highlight highlight-source-go"><pre><span class="pl-k">func</span> (<span class="pl-v">w</span> *<span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">req</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
         ...
 }</pre></div>
 
 <p>has to be changed to this:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">func</span> (<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">req</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
+<div class="highlight highlight-source-go"><pre><span class="pl-k">func</span> (<span class="pl-v">w</span> <span class="pl-v">rest</span>.<span class="pl-v">ResponseWriter</span>, <span class="pl-v">req</span> *<span class="pl-v">rest</span>.<span class="pl-v">Request</span>) {
         ...
 }</pre></div>
 
@@ -1805,7 +1809,7 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 
 <p>This:</p>
 
-<div class="highlight highlight-go"><pre>handler.<span class="pl-c1">SetRoutes</span>(
+<div class="highlight highlight-source-go"><pre>handler.<span class="pl-c1">SetRoutes</span>(
         rest.<span class="pl-smi">Route</span>{
               <span class="pl-c">// ...</span>
         },
@@ -1813,7 +1817,7 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 
 <p>has to be changed to this:</p>
 
-<div class="highlight highlight-go"><pre>handler.<span class="pl-c1">SetRoutes</span>(
+<div class="highlight highlight-source-go"><pre>handler.<span class="pl-c1">SetRoutes</span>(
         &amp;rest.<span class="pl-smi">Route</span>{
               <span class="pl-c">// ...</span>
         },
@@ -1824,7 +1828,7 @@ This is much more powerful, and allows the creation of Middlewares that wrap the
 
 <p>A middleware is an object satisfying this interface:</p>
 
-<div class="highlight highlight-go"><pre><span class="pl-k">type</span> <span class="pl-v">Middleware</span> <span class="pl-k">interface</span> {
+<div class="highlight highlight-source-go"><pre><span class="pl-k">type</span> <span class="pl-v">Middleware</span> <span class="pl-k">interface</span> {
     <span class="pl-c1">MiddlewareFunc</span>(handler <span class="pl-v">HandlerFunc</span>) <span class="pl-v">HandlerFunc</span>
 }</pre></div>
 
@@ -1839,11 +1843,11 @@ Regarding these features, a rest.ResponseWriter now behaves exactly as the http.
 
 <p>This:</p>
 
-<div class="highlight highlight-go"><pre>writer.<span class="pl-c1">Flush</span>()</pre></div>
+<div class="highlight highlight-source-go"><pre>writer.<span class="pl-c1">Flush</span>()</pre></div>
 
 <p>has to be changed to this:</p>
 
-<div class="highlight highlight-go"><pre>writer.(http.<span class="pl-smi">Flusher</span>).<span class="pl-c1">Flush</span>()</pre></div>
+<div class="highlight highlight-source-go"><pre>writer.(http.<span class="pl-smi">Flusher</span>).<span class="pl-c1">Flush</span>()</pre></div>
 
 <h4>
 <a id="the-status-endpoint-is-not-created-automatically-anymore" class="anchor" href="#the-status-endpoint-is-not-created-automatically-anymore" aria-hidden="true"><span class="octicon octicon-link"></span></a>The /.status endpoint is not created automatically anymore</h4>
@@ -1901,4 +1905,3 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 
   </body>
 </html>
-
