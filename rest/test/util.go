@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -56,7 +57,23 @@ func HeaderIs(t *testing.T, r *httptest.ResponseRecorder, headerKey, expectedVal
 }
 
 func ContentTypeIsJson(t *testing.T, r *httptest.ResponseRecorder) {
-	HeaderIs(t, r, "Content-Type", "application/json")
+
+	mediaType, params, _ := mime.ParseMediaType(r.HeaderMap.Get("Content-Type"))
+	charset := params["charset"]
+
+	if mediaType != "application/json" {
+		t.Errorf(
+			"Content-Type media type: application/json expected, got: %s",
+			mediaType,
+		)
+	}
+
+	if charset != "" && strings.ToUpper(charset) != "UTF-8" {
+		t.Errorf(
+			"Content-Type charset: utf-8 or no charset expected, got: %s",
+			charset,
+		)
+	}
 }
 
 func ContentEncodingIsGzip(t *testing.T, r *httptest.ResponseRecorder) {
@@ -103,7 +120,7 @@ func (rd *Recorded) HeaderIs(headerKey, expectedValue string) {
 }
 
 func (rd *Recorded) ContentTypeIsJson() {
-	rd.HeaderIs("Content-Type", "application/json")
+	ContentTypeIsJson(rd.T, rd.Recorder)
 }
 
 func (rd *Recorded) ContentEncodingIsGzip() {

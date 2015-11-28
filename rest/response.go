@@ -66,7 +66,11 @@ type responseWriter struct {
 
 func (w *responseWriter) WriteHeader(code int) {
 	if w.Header().Get("Content-Type") == "" {
-		w.Header().Set("Content-Type", "application/json")
+		// Per spec, UTF-8 is the default, and the charset parameter should not
+		// be necessary. But some clients (eg: Chrome) think otherwise.
+		// Since json.Marshal produces UTF-8, setting the charset parameter is a
+		// safe option.
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	}
 	w.ResponseWriter.WriteHeader(code)
 	w.wroteHeader = true
