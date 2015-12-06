@@ -39,4 +39,10 @@ func TestContentTypeCheckerMiddleware(t *testing.T) {
 	req.Header.Set("Content-Type", "text/x-json")
 	recorded = test.RunRequest(t, handler, req)
 	recorded.CodeIs(415)
+
+	// JSON payload with correct content type but incorrect charset
+	req = test.MakeSimpleRequest("POST", "http://localhost/", map[string]string{"Id": "123"})
+	req.Header.Set("Content-Type", "application/json; charset=ISO-8859-1")
+	recorded = test.RunRequest(t, handler, req)
+	recorded.CodeIs(415)
 }
