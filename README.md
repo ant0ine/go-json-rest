@@ -166,10 +166,6 @@ import (
 	"net/http"
 )
 
-type Message struct {
-	Body string
-}
-
 func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
