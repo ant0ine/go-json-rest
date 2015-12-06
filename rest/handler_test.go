@@ -28,10 +28,6 @@ func TestHandler(t *testing.T) {
 			}
 			w.WriteJson(data)
 		}),
-		Get("/auto-fails", func(w ResponseWriter, r *Request) {
-			a := []int{}
-			_ = a[0]
-		}),
 		Get("/user-error", func(w ResponseWriter, r *Request) {
 			Error(w, "My error", 500)
 		}),
@@ -57,12 +53,6 @@ func TestHandler(t *testing.T) {
 	recorded.CodeIs(404)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Resource not found"}`)
-
-	// auto 500 on unhandled userecorder error
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/auto-fails", nil))
-	recorded.CodeIs(500)
-	recorded.ContentTypeIsJson()
-	recorded.BodyIs(`{"Error":"Internal Server Error"}`)
 
 	// userecorder error
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-error", nil))
