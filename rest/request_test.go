@@ -68,7 +68,7 @@ func TestRequestUrlForQueryString(t *testing.T) {
 	req := defaultRequest("GET", "http://localhost", nil, t)
 
 	params := map[string][]string{
-		"id": []string{"foo", "bar"},
+		"id": {"foo", "bar"},
 	}
 
 	urlObj := req.UrlFor("/foo/bar", params)

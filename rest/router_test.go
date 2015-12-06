@@ -12,7 +12,7 @@ func TestFindRouteAPI(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/",
 			},
@@ -105,7 +105,7 @@ func TestEmptyPathExp(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "",
 			},
@@ -122,7 +122,7 @@ func TestInvalidPathExp(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "invalid",
 			},
@@ -139,7 +139,7 @@ func TestUrlEncodedFind(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/with space", // not urlencoded
 			},
@@ -168,7 +168,7 @@ func TestWithQueryString(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/r/:id",
 			},
@@ -200,7 +200,7 @@ func TestNonUrlEncodedFind(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/with%20space", // urlencoded
 			},
@@ -229,11 +229,11 @@ func TestDuplicatedRoute(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/",
 			},
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/",
 			},
@@ -250,7 +250,7 @@ func TestSplatUrlEncoded(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/r/*rest",
 			},
@@ -282,11 +282,11 @@ func TestRouteOrder(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/r/:id",
 			},
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/r/*rest",
 			},
@@ -321,11 +321,11 @@ func TestRelaxedPlaceholder(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/r/:id",
 			},
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/r/#filename",
 			},
@@ -360,11 +360,11 @@ func TestSimpleExample(t *testing.T) {
 
 	r := router{
 		Routes: []*Route{
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/resources/:id",
 			},
-			&Route{
+			{
 				HttpMethod: "GET",
 				PathExp:    "/resources",
 			},
