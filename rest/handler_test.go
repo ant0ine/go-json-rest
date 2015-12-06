@@ -28,12 +28,6 @@ func TestHandler(t *testing.T) {
 			}
 			w.WriteJson(data)
 		}),
-		Get("/user-error", func(w ResponseWriter, r *Request) {
-			Error(w, "My error", 500)
-		}),
-		Get("/user-notfound", func(w ResponseWriter, r *Request) {
-			NotFound(w, r)
-		}),
 	)
 
 	// valid get resource
@@ -50,18 +44,6 @@ func TestHandler(t *testing.T) {
 
 	// auto 404 on undefined route (wrong path)
 	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/s/123", nil))
-	recorded.CodeIs(404)
-	recorded.ContentTypeIsJson()
-	recorded.BodyIs(`{"Error":"Resource not found"}`)
-
-	// userecorder error
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-error", nil))
-	recorded.CodeIs(500)
-	recorded.ContentTypeIsJson()
-	recorded.BodyIs(`{"Error":"My error"}`)
-
-	// userecorder notfound
-	recorded = test.RunRequest(t, &handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/user-notfound", nil))
 	recorded.CodeIs(404)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Resource not found"}`)
