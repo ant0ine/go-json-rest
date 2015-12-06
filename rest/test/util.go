@@ -70,7 +70,7 @@ func ContentTypeIsJson(t *testing.T, r *httptest.ResponseRecorder) {
 
 	if charset != "" && strings.ToUpper(charset) != "UTF-8" {
 		t.Errorf(
-			"Content-Type charset: utf-8 or no charset expected, got: %s",
+			"Content-Type charset: must be empty or UTF-8, got: %s",
 			charset,
 		)
 	}
