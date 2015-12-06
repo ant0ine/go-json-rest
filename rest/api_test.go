@@ -14,7 +14,7 @@ func TestApiNoAppNoMiddleware(t *testing.T) {
 
 	handler := api.MakeHandler()
 	if handler == nil {
-		t.Fatal("the http.Handler must be have been create")
+		t.Fatal("the http.Handler must have been created")
 	}
 
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
@@ -30,7 +30,7 @@ func TestApiSimpleAppNoMiddleware(t *testing.T) {
 
 	handler := api.MakeHandler()
 	if handler == nil {
-		t.Fatal("the http.Handler must be have been create")
+		t.Fatal("the http.Handler must have been created")
 	}
 
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
@@ -49,7 +49,7 @@ func TestDevStack(t *testing.T) {
 
 	handler := api.MakeHandler()
 	if handler == nil {
-		t.Fatal("the http.Handler must be have been create")
+		t.Fatal("the http.Handler must have been created")
 	}
 
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
@@ -68,7 +68,7 @@ func TestProdStack(t *testing.T) {
 
 	handler := api.MakeHandler()
 	if handler == nil {
-		t.Fatal("the http.Handler must be have been create")
+		t.Fatal("the http.Handler must have been created")
 	}
 
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
@@ -87,7 +87,7 @@ func TestCommonStack(t *testing.T) {
 
 	handler := api.MakeHandler()
 	if handler == nil {
-		t.Fatal("the http.Handler must be have been create")
+		t.Fatal("the http.Handler must have been created")
 	}
 
 	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
