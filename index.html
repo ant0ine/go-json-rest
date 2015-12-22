@@ -59,6 +59,7 @@
 <li><a href="#cors">CORS</a></li>
 <li><a href="#jsonp">JSONP</a></li>
 <li><a href="#basic-auth">Basic Auth</a></li>
+<li><a href="#forcessl">Force HTTPS</a></li>
 <li><a href="#status">Status</a></li>
 <li><a href="#status-auth">Status Auth</a></li>
 </ul>
@@ -208,6 +209,10 @@ where this library code is copied in your repository at a specific revision.
 <td>Provides a Token Auth implementation</td>
 </tr>
 <tr>
+<td><strong><a href="https://github.com/jadengore/go-json-rest-middleware-force-ssl">ForceSSL</a></strong></td>
+<td>Forces SSL on requests</td>
+</tr>
+<tr>
 <td><strong><a href="https://github.com/clyphub/go-json-rest-middleware">SecureRedirect</a></strong></td>
 <td>Redirect clients from HTTP to HTTPS</td>
 </tr>
@@ -277,10 +282,6 @@ curl -i http://127.0.0.1:8080/lookup/notadomain
     <span class="pl-s"><span class="pl-pds">"</span>net<span class="pl-pds">"</span></span>
     <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
 )
-
-<span class="pl-k">type</span> <span class="pl-v">Message</span> <span class="pl-k">struct</span> {
-    <span class="pl-v">Body</span> <span class="pl-k">string</span>
-}
 
 <span class="pl-k">func</span> <span class="pl-en">main</span>() {
     <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
@@ -888,6 +889,48 @@ curl -i -u admin:admin http://127.0.0.1:8080/
     api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
         w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>Body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
     }))
+    log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
+}
+</pre></div>
+
+<h4>
+<a id="forcessl" class="anchor" href="#forcessl" aria-hidden="true"><span class="octicon octicon-link"></span></a>ForceSSL</h4>
+
+<p>Demonstrate how to use the <a href="https://github.com/jadengore/go-json-rest-middleware-force-ssl">ForceSSL Middleware</a> to force HTTPS on requests to a <code>go-json-rest</code> API.</p>
+
+<p>For the purposes of this demo, we are using HTTP for all requests and checking the <code>X-Forwarded-Proto</code> header to see if it is set to HTTPS (many routers set this to show what type of connection the client is using, such as Heroku). To do a true HTTPS test, make sure and use <a href="https://golang.org/pkg/net/http/#ListenAndServeTLS"><code>http.ListenAndServeTLS</code></a> with a valid certificate and key file.</p>
+
+<p>Additional documentation for the ForceSSL middleware can be found <a href="https://github.com/jadengore/go-json-rest-middleware-force-ssl">here</a>.</p>
+
+<p>curl demo:</p>
+
+<div class="highlight highlight-source-shell"><pre>curl -i 127.0.0.1:8080/
+curl -H <span class="pl-s"><span class="pl-pds">"</span>X-Forwarded-Proto:https<span class="pl-pds">"</span></span> -i 127.0.0.1:8080/</pre></div>
+
+<p>code:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-k">package</span> main
+
+<span class="pl-k">import</span> (
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/ant0ine/go-json-rest/rest<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>github.com/jadengore/go-json-rest-middleware-force-ssl<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>log<span class="pl-pds">"</span></span>
+    <span class="pl-s"><span class="pl-pds">"</span>net/http<span class="pl-pds">"</span></span>
+)
+
+<span class="pl-k">func</span> <span class="pl-en">main</span>() {
+    <span class="pl-smi">api</span> <span class="pl-k">:=</span> rest.<span class="pl-c1">NewApi</span>()
+    api.<span class="pl-c1">Use</span>(&amp;forceSSL.<span class="pl-smi">Middleware</span>{
+        TrustXFPHeader:     <span class="pl-c1">true</span>,
+        Enable301Redirects: <span class="pl-c1">false</span>,
+    })
+    api.<span class="pl-c1">SetApp</span>(rest.<span class="pl-c1">AppSimple</span>(<span class="pl-k">func</span>(w rest.<span class="pl-smi">ResponseWriter</span>, r *rest.<span class="pl-smi">Request</span>) {
+        w.<span class="pl-c1">WriteJson</span>(<span class="pl-k">map</span>[<span class="pl-k">string</span>]<span class="pl-k">string</span>{<span class="pl-s"><span class="pl-pds">"</span>body<span class="pl-pds">"</span></span>: <span class="pl-s"><span class="pl-pds">"</span>Hello World!<span class="pl-pds">"</span></span>})
+    }))
+
+    <span class="pl-c">// For the purposes of this demo, only HTTP connections accepted.</span>
+    <span class="pl-c">// For true HTTPS, use ListenAndServeTLS.</span>
+    <span class="pl-c">// https://golang.org/pkg/net/http/#ListenAndServeTLS</span>
     log.<span class="pl-c1">Fatal</span>(http.<span class="pl-c1">ListenAndServe</span>(<span class="pl-s"><span class="pl-pds">"</span>:8080<span class="pl-pds">"</span></span>, api.<span class="pl-c1">MakeHandler</span>()))
 }
 </pre></div>
@@ -1878,6 +1921,7 @@ See for instance how to <a href="https://github.com/ant0ine/go-json-rest-example
 <li><a href="https://github.com/Quantisan">Paul Lam</a></li>
 <li><a href="https://github.com/wingyplus">Thanabodee Charoenpiriyakij</a></li>
 <li><a href="https://github.com/sebest">Sebastien Estienne</a></li>
+<li><a href="https://github.com/jadengore">Edward Bramanti</a></li>
 </ul>
 
 <p>Copyright (c) 2013-2015 Antoine Imbert</p>
