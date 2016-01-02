@@ -1798,7 +1798,7 @@ Overall, they provide the same features, but with two methods instead of three, 
 - [Edward Bramanti](https://github.com/jadengore)
 
 
-Copyright (c) 2013-2015 Antoine Imbert
+Copyright (c) 2013-2016 Antoine Imbert
 
 [MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
 
