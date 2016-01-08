@@ -71,7 +71,7 @@ This package is "go-gettable", just do:
 
 The recommended way of using this library in your project is to use the **"vendoring"** method,
 where this library code is copied in your repository at a specific revision.
-[This page](http://nathany.com/go-packages/) is a good summary of package management in Go.
+[This page](https://nathany.com/go-packages/) is a good summary of package management in Go.
 
 
 ## Middlewares
@@ -1243,7 +1243,7 @@ func main() {
 			func(w rest.ResponseWriter, req *rest.Request) {
 				version := req.Env["VERSION"].(*semver.Version)
 				if version.Major == 2 {
-					// http://en.wikipedia.org/wiki/Second-system_effect
+					// https://en.wikipedia.org/wiki/Second-system_effect
 					w.WriteJson(map[string]string{
 						"Body": "Hello broken World!",
 					})
@@ -1311,7 +1311,7 @@ func main() {
 
 #### NewRelic
 
-NewRelic integration based on the GoRelic plugin: [github.com/yvasiyarov/gorelic](http://github.com/yvasiyarov/gorelic)
+NewRelic integration based on the GoRelic plugin: [github.com/yvasiyarov/gorelic](https://github.com/yvasiyarov/gorelic)
 
 curl demo:
 ``` sh
@@ -1376,7 +1376,7 @@ func main() {
 
 #### Graceful Shutdown
 
-This example uses [github.com/stretchr/graceful](https://github.com/stretchr/graceful) to try to be nice with the clients waiting for responses during a server shutdown (or restart).
+This example uses [github.com/stretchr/graceful](https://github.com/tylerb/graceful) to try to be nice with the clients waiting for responses during a server shutdown (or restart).
 The HTTP response takes 10 seconds to be completed, printing a message on the wire every second.
 10 seconds is also the timeout set for the graceful shutdown.
 You can play with these numbers to show that the server waits for the responses to complete.
@@ -1683,7 +1683,7 @@ In fact the internal code of **go-json-rest** is itself implemented with Middlew
 
 #### The import path has changed to `github.com/ant0ine/go-json-rest/rest`
 
-This is more conform to Go style, and makes [goimports](https://godoc.org/code.google.com/p/go.tools/cmd/goimports) work.
+This is more conform to Go style, and makes [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports) work.
 
 This:
 ``` go
