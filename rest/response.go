@@ -34,14 +34,26 @@ type ResponseWriter interface {
 // eg: rest.ErrorFieldName = "errorMessage"
 var ErrorFieldName = "Error"
 
+// Private customErrorHandler used for defining custom error response payloads.
+type customErrorHandler func(ResponseWriter, int)
+
+// ErrorHandler allows to customize the error response payload entirely.
+// It default to nil, resulting in the default error respone payload to be displayed.
+// eg: rest.ErrorHandler = func (w api.ResponseWriter, code int) { w.WriteJson(code) }
+var ErrorHandler customErrorHandler
+
 // Error produces an error response in JSON with the following structure, '{"Error":"My error message"}'
 // The standard plain text net/http Error helper can still be called like this:
 // http.Error(w, "error message", code)
 func Error(w ResponseWriter, error string, code int) {
-	w.WriteHeader(code)
-	err := w.WriteJson(map[string]string{ErrorFieldName: error})
-	if err != nil {
-		panic(err)
+	if ErrorHandler != nil {
+		ErrorHandler(w, code)
+	} else {
+		w.WriteHeader(code)
+		err := w.WriteJson(map[string]string{ErrorFieldName: error})
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
