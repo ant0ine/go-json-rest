@@ -4,6 +4,7 @@
 *A quick and easy way to setup a RESTful JSON API*
 
 [![godoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ant0ine/go-json-rest/rest) [![license](https://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ant0ine/go-json-rest/master/LICENSE) [![build](https://img.shields.io/travis/ant0ine/go-json-rest.svg?style=flat)](https://travis-ci.org/ant0ine/go-json-rest)
+[![codebeat](https://codebeat.co/badges/498f631a-e33f-4605-abfb-bddf4608e552)](https://codebeat.co/projects/github-com-ant0ine-go-json-rest)
 
 
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast and scalable request routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for functionalities like CORS, Auth, Gzip, Status ...
