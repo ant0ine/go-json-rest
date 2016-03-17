@@ -57,7 +57,7 @@ type AccessLogApacheMiddleware struct {
 
 	// Logger points to the logger object used by this middleware, it defaults to
 	// log.New(os.Stderr, "", 0).
-	Logger *log.Logger
+	Logger Logger
 
 	// Format defines the format of the access log record. See AccessLogFormat for the details.
 	// It defaults to DefaultLogFormat.

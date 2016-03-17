@@ -15,7 +15,7 @@ type RecoverMiddleware struct {
 
 	// Custom logger used for logging the panic errors,
 	// optional, defaults to log.New(os.Stderr, "", 0)
-	Logger *log.Logger
+	Logger Logger
 
 	// If true, the log records will be printed as JSON. Convenient for log parsing.
 	EnableLogAsJson bool
