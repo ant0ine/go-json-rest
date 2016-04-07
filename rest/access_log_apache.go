@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strings"
 	"text/template"
@@ -195,8 +196,9 @@ func (u *accessLogUtil) StartTime() *time.Time {
 func (u *accessLogUtil) ApacheRemoteAddr() string {
 	remoteAddr := u.R.RemoteAddr
 	if remoteAddr != "" {
-		parts := strings.SplitN(remoteAddr, ":", 2)
-		return parts[0]
+		if ip, _, err := net.SplitHostPort(remoteAddr); err == nil {
+			return ip
+		}
 	}
 	return ""
 }
