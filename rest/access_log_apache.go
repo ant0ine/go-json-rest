@@ -132,7 +132,10 @@ func (mw *AccessLogApacheMiddleware) convertFormat() {
 			return fmt.Sprintf("%d", value)
 		},
 		"microseconds": func(dur *time.Duration) string {
-			return fmt.Sprintf("%d", dur.Nanoseconds()/1000)
+			if dur != nil {
+				return fmt.Sprintf("%d", dur.Nanoseconds()/1000)
+			}
+			return ""
 		},
 		"statusCodeColor": func(statusCode int) string {
 			if statusCode >= 400 && statusCode < 500 {
