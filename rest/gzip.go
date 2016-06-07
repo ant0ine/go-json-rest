@@ -21,6 +21,12 @@ func (mw *GzipMiddleware) MiddlewareFunc(h HandlerFunc) HandlerFunc {
 		canGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 		// client accepts gzip ?
 		writer := &gzipResponseWriter{w, false, canGzip, nil}
+		defer func() {
+			// need to close gzip writer
+			if writer.gzipWriter != nil {
+				writer.gzipWriter.Close()
+			}
+		}()
 		// call the handler with the wrapped writer
 		h(writer, r)
 	}

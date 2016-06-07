@@ -67,8 +67,8 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 			}
 			bytesWritten := r.Env["BYTES_WRITTEN"].(int64)
 			// Yes, the gzipped version actually takes more space.
-			if bytesWritten != 28 {
-				t.Errorf("BYTES_WRITTEN 28 expected, got %d", bytesWritten)
+			if bytesWritten != 41 {
+				t.Errorf("BYTES_WRITTEN 41 expected, got %d", bytesWritten)
 			}
 		}
 	}))
