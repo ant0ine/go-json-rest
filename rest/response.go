@@ -15,6 +15,9 @@ type ResponseWriter interface {
 	// Identical to the http.ResponseWriter interface
 	Header() http.Header
 
+	// Provided in order to implement the http.ResponseWriter interface.
+	Write(b []byte) (int, error)
+
 	// Use EncodeJson to generate the payload, write the headers with http.StatusOK if
 	// they are not already written, then write the payload.
 	// The Content-Type header is set to "application/json", unless already specified.
