@@ -24,12 +24,12 @@ func TestStatusMiddleware(t *testing.T) {
 	handler := api.MakeHandler()
 
 	// one request
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/1", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/1", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
 	// another request
-	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/2", nil))
+	recorded = resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/2", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 

@@ -30,9 +30,9 @@ func TestAccessLogApacheMiddleware(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	req := resttest.MakeSimpleRequest("GET", "http://localhost/", nil)
 	req.RemoteAddr = "127.0.0.1:1234"
-	recorded := test.RunRequest(t, handler, req)
+	recorded := resttest.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 
@@ -64,8 +64,8 @@ func TestAccessLogApacheMiddlewareMissingData(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
-	recorded := test.RunRequest(t, handler, req)
+	req := resttest.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := resttest.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 

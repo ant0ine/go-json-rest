@@ -30,13 +30,13 @@ func TestGzipEnabled(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/ok", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/ok", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
 	recorded.HeaderIs("Vary", "Accept-Encoding")
 
-	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/error", nil))
+	recorded = resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/error", nil))
 	recorded.CodeIs(500)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
@@ -60,7 +60,7 @@ func TestGzipDisabled(t *testing.T) {
 	api.SetApp(router)
 	handler := api.MakeHandler()
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/ok", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/ok", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.HeaderIs("Content-Encoding", "")

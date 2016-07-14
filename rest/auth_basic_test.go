@@ -34,23 +34,23 @@ func TestAuthBasic(t *testing.T) {
 	handler := apiFailure.MakeHandler()
 
 	// simple request fails
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
 	// auth with wrong cred and right method fails
-	wrongCredReq := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	wrongCredReq := resttest.MakeSimpleRequest("GET", "http://localhost/", nil)
 	encoded := base64.StdEncoding.EncodeToString([]byte("admin:AdmIn"))
 	wrongCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, handler, wrongCredReq)
+	recorded = resttest.RunRequest(t, handler, wrongCredReq)
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
 	// auth with right cred and wrong method fails
-	rightCredReq := test.MakeSimpleRequest("POST", "http://localhost/", nil)
+	rightCredReq := resttest.MakeSimpleRequest("POST", "http://localhost/", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, handler, rightCredReq)
+	recorded = resttest.RunRequest(t, handler, rightCredReq)
 	recorded.CodeIs(401)
 	recorded.ContentTypeIsJson()
 
@@ -69,10 +69,10 @@ func TestAuthBasic(t *testing.T) {
 	}))
 
 	// auth with right cred and right method succeeds
-	rightCredReq = test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	rightCredReq = resttest.MakeSimpleRequest("GET", "http://localhost/", nil)
 	encoded = base64.StdEncoding.EncodeToString([]byte("admin:admin"))
 	rightCredReq.Header.Set("Authorization", "Basic "+encoded)
-	recorded = test.RunRequest(t, apiSuccess.MakeHandler(), rightCredReq)
+	recorded = resttest.RunRequest(t, apiSuccess.MakeHandler(), rightCredReq)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 }

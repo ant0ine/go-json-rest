@@ -17,7 +17,7 @@ func TestApiNoAppNoMiddleware(t *testing.T) {
 		t.Fatal("the http.Handler must have been created")
 	}
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 }
 
@@ -33,7 +33,7 @@ func TestApiSimpleAppNoMiddleware(t *testing.T) {
 		t.Fatal("the http.Handler must have been created")
 	}
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Id":"123"}`)
@@ -52,7 +52,7 @@ func TestDevStack(t *testing.T) {
 		t.Fatal("the http.Handler must have been created")
 	}
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs("{\n  \"Id\": \"123\"\n}")
@@ -71,7 +71,7 @@ func TestProdStack(t *testing.T) {
 		t.Fatal("the http.Handler must have been created")
 	}
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.ContentEncodingIsGzip()
@@ -90,7 +90,7 @@ func TestCommonStack(t *testing.T) {
 		t.Fatal("the http.Handler must have been created")
 	}
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Id":"123"}`)
