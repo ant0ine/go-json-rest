@@ -30,4 +30,4 @@
 //              recorded.CodeIs(200)
 //              recorded.ContentTypeIsJson()
 //      }
-package test
+package resttest
