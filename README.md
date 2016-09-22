@@ -556,7 +556,7 @@ type Reminder struct {
 }
 
 type Impl struct {
-	DB gorm.DB
+	DB *gorm.DB
 }
 
 func (i *Impl) InitDB() {

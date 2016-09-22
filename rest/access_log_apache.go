@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strings"
 	"text/template"
@@ -131,7 +132,10 @@ func (mw *AccessLogApacheMiddleware) convertFormat() {
 			return fmt.Sprintf("%d", value)
 		},
 		"microseconds": func(dur *time.Duration) string {
-			return fmt.Sprintf("%d", dur.Nanoseconds()/1000)
+			if dur != nil {
+				return fmt.Sprintf("%d", dur.Nanoseconds()/1000)
+			}
+			return ""
 		},
 		"statusCodeColor": func(statusCode int) string {
 			if statusCode >= 400 && statusCode < 500 {
@@ -195,8 +199,9 @@ func (u *accessLogUtil) StartTime() *time.Time {
 func (u *accessLogUtil) ApacheRemoteAddr() string {
 	remoteAddr := u.R.RemoteAddr
 	if remoteAddr != "" {
-		parts := strings.SplitN(remoteAddr, ":", 2)
-		return parts[0]
+		if ip, _, err := net.SplitHostPort(remoteAddr); err == nil {
+			return ip
+		}
 	}
 	return ""
 }
