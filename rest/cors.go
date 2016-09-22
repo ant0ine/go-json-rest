@@ -103,9 +103,6 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 
 			// check the request headers
 			for _, requestedHeader := range corsInfo.AccessControlRequestHeaders {
-				if len(requestedHeader) == 0 {
-					continue
-				}
 				if mw.allowedHeaders[requestedHeader] == false {
 					Error(writer, "Invalid Preflight Request", http.StatusForbidden)
 					return
