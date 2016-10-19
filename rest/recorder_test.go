@@ -1,8 +1,9 @@
 package rest
 
 import (
-	"github.com/ant0ine/go-json-rest/rest/test"
 	"testing"
+
+	"github.com/ant0ine/go-json-rest/rest/test"
 )
 
 func TestRecorderMiddleware(t *testing.T) {
@@ -89,5 +90,45 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 	// "Accept-Encoding", "gzip" is set by test.MakeSimpleRequest
 	recorded := test.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
+	recorded.ContentTypeIsJson()
+}
+
+//Underlying net/http only allows you to set the status code once
+func TestRecorderMiddlewareReportsSameStatusCodeAsResponse(t *testing.T) {
+	api := NewApi()
+	const firstCode = 400
+	const secondCode = 500
+
+	// a middleware carrying the Env tests
+	api.Use(MiddlewareSimple(func(handler HandlerFunc) HandlerFunc {
+		return func(w ResponseWriter, r *Request) {
+
+			handler(w, r)
+
+			if r.Env["STATUS_CODE"] == nil {
+				t.Error("STATUS_CODE is nil")
+			}
+			statusCode := r.Env["STATUS_CODE"].(int)
+			if statusCode != firstCode {
+				t.Errorf("STATUS_CODE = %d expected, got %d", firstCode, statusCode)
+			}
+		}
+	}))
+
+	// the middleware to test
+	api.Use(&RecorderMiddleware{})
+
+	// a simple app
+	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		w.WriteHeader(firstCode)
+		w.WriteHeader(secondCode)
+	}))
+
+	// wrap all
+	handler := api.MakeHandler()
+
+	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := test.RunRequest(t, handler, req)
+	recorded.CodeIs(firstCode)
 	recorded.ContentTypeIsJson()
 }
