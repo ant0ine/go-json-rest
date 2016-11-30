@@ -148,3 +148,41 @@ func TestCorsInfoPreflightCors(t *testing.T) {
 		t.Error("OriginUrl must be set")
 	}
 }
+
+func TestCorsInfoEmptyAccessControlRequestHeaders(t *testing.T) {
+	req := defaultRequest("OPTIONS", "http://localhost", nil, t)
+	req.Request.Header.Set("Origin", "http://another.host")
+
+	// make it a preflight request
+	req.Request.Header.Set("Access-Control-Request-Method", "PUT")
+
+	// WebKit based browsers may send `Access-Control-Request-Headers:` with
+	// no value, in which case, the header will be present in requests
+	// Header map, but its value is an empty string.
+	req.Request.Header.Set("Access-Control-Request-Headers", "")
+	corsInfo := req.GetCorsInfo()
+	if corsInfo == nil {
+		t.Error("Expected non nil CorsInfo")
+	}
+	if corsInfo.IsCors == false {
+		t.Error("This is a CORS request")
+	}
+	if len(corsInfo.AccessControlRequestHeaders) > 0 {
+		t.Error("Access-Control-Request-Headers should have been removed")
+	}
+
+	req.Request.Header.Set("Access-Control-Request-Headers", "")
+	corsInfo = req.GetCorsInfo()
+	if corsInfo == nil {
+		t.Error("Expected non nil CorsInfo")
+	}
+	if corsInfo.IsCors == false {
+		t.Error("This is a CORS request")
+	}
+	if corsInfo.IsPreflight == false {
+		t.Error("This is a Preflight request")
+	}
+	if len(corsInfo.AccessControlRequestHeaders) > 0 {
+		t.Error("Empty Access-Control-Request-Headers header should have been removed")
+	}
+}

@@ -120,6 +120,9 @@ func (r *Request) GetCorsInfo() *CorsInfo {
 	reqHeaders := []string{}
 	rawReqHeaders := r.Header[http.CanonicalHeaderKey("Access-Control-Request-Headers")]
 	for _, rawReqHeader := range rawReqHeaders {
+		if len(rawReqHeader) == 0 {
+			continue
+		}
 		// net/http does not handle comma delimited headers for us
 		for _, reqHeader := range strings.Split(rawReqHeader, ",") {
 			reqHeaders = append(reqHeaders, http.CanonicalHeaderKey(strings.TrimSpace(reqHeader)))
