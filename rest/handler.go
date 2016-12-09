@@ -25,6 +25,7 @@ type ResourceHandler struct {
 	internalRouter   *router
 	statusMiddleware *statusMiddleware
 	handlerFunc      http.HandlerFunc
+	handlerPath	     string
 
 	// If true, and if the client accepts the Gzip encoding, the response payloads
 	// will be compressed using gzip, and the corresponding response header will set.
@@ -181,6 +182,15 @@ func (rh *ResourceHandler) app() HandlerFunc {
 			return
 		}
 
+		// remove handler path from URL
+		var path = request.URL.Path
+		if strings.HasPrefix(path, rh.handlerPath) {
+			path = "/"+strings.TrimPrefix(path, rh.handlerPath)
+		} else {
+			Error(writer, "Handler path is not set up correctly", http.StatusInternalServerError)
+		}
+		request.URL.Path = path
+
 		// find the route
 		route, params, pathMatched := rh.internalRouter.findRouteFromURL(request.Method, request.URL)
 		if route == nil {
@@ -214,4 +224,10 @@ func (rh *ResourceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // GetStatus returns a Status object. EnableStatusService must be true.
 func (rh *ResourceHandler) GetStatus() *Status {
 	return rh.statusMiddleware.getStatus()
+}
+
+// Set up http handler
+func (rh *ResourceHandler) Handle(path string) {
+	rh.handlerPath = path
+	http.Handle(rh.handlerPath, rh)
 }
