@@ -55,9 +55,9 @@ func (r *Request) BaseUrl() *url.URL {
 		scheme = "http"
 	}
 
-	// HTTP/2.0 gives the default scheme as HTTP even when used with TLS
-	// Check if version 2.0 and TLS is not nil and given back https scheme
-	if scheme == "http" && r.ProtoMajor >= 2 && r.TLS != nil {
+	// HTTP sometimes gives the default scheme as HTTP even when used with TLS
+	// Check if TLS is not nil and given back https scheme
+	if scheme == "http" && r.TLS != nil {
 		scheme = "https"
 	}
 
