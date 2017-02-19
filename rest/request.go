@@ -55,6 +55,12 @@ func (r *Request) BaseUrl() *url.URL {
 		scheme = "http"
 	}
 
+	// HTTP sometimes gives the default scheme as HTTP even when used with TLS
+	// Check if TLS is not nil and given back https scheme
+	if scheme == "http" && r.TLS != nil {
+		scheme = "https"
+	}
+
 	host := r.Host
 	if len(host) > 0 && host[len(host)-1] == '/' {
 		host = host[:len(host)-1]
