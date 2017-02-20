@@ -96,6 +96,15 @@ func Delete(pathExp string, handlerFunc HandlerFunc) *Route {
 	}
 }
 
+// Trace is a shortcut method that instantiates a TRACE route. Equivalent to &Route{"TRACE", pathExp, handlerFunc}
+func Trace(pathExp string, handlerFunc HandlerFunc) *Route {
+	return &Route{
+		HttpMethod: "TRACE",
+		PathExp:    pathExp,
+		Func:       handlerFunc,
+	}
+}
+
 // Options is a shortcut method that instantiates an OPTIONS route.  See the Route object the parameters definitions.
 // Equivalent to &Route{"OPTIONS", pathExp, handlerFunc}
 func Options(pathExp string, handlerFunc HandlerFunc) *Route {
