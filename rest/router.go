@@ -19,6 +19,10 @@ type router struct {
 // MakeRouter returns the router app. Given a set of Routes, it dispatches the request to the
 // HandlerFunc of the first route that matches. The order of the Routes matters.
 func MakeRouter(routes ...*Route) (App, error) {
+	return prepareRoutes(routes)
+}
+
+func prepareRoutes(routes []*Route) (App, error) {
 	r := &router{
 		Routes: routes,
 	}
@@ -28,6 +32,25 @@ func MakeRouter(routes ...*Route) (App, error) {
 	}
 	return r, nil
 }
+
+func MakeRouterSimply(routes ... interface{})(App, error) {
+	result := []*Route{}
+	for _, name := range routes {
+		switch v := name.(type) {
+		case Get:
+			result = append(result, &Route{"GET", v.PathExp, v.Func})
+		case Post:
+			result = append(result, &Route{"POST", v.PathExp, v.Func})
+		case Put:
+			result = append(result, &Route{"PUT", v.PathExp, v.Func})
+		case Delete:
+			result = append(result, &Route{"DELETE", v.PathExp, v.Func})
+		}
+	}
+
+	return prepareRoutes(result)
+}
+
 
 // Handle the REST routing and run the user code.
 func (rt *router) AppFunc() HandlerFunc {
