@@ -41,6 +41,7 @@ func (r *Request) DecodeJsonPayload(v interface{}) error {
 		return ErrJsonPayloadEmpty
 	}
 	err = json.Unmarshal(content, v)
+	r.Env["content"] = v
 	if err != nil {
 		return err
 	}
