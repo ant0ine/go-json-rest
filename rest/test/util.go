@@ -8,8 +8,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"testing"
 )
+
+// A TestReporter is an interface that is used to report errors in tests.
+// It can be satisfied with *testing.T.
+type TestReporter interface {
+	Errorf(format string, args ...interface{})
+}
 
 // MakeSimpleRequest returns a http.Request. The returned request object can be
 // further prepared by adding headers and query string parmaters, for instance.
@@ -37,14 +42,14 @@ func MakeSimpleRequest(method string, urlStr string, payload interface{}) *http.
 }
 
 // CodeIs compares the rescorded status code
-func CodeIs(t *testing.T, r *httptest.ResponseRecorder, expectedCode int) {
+func CodeIs(t TestReporter, r *httptest.ResponseRecorder, expectedCode int) {
 	if r.Code != expectedCode {
 		t.Errorf("Code %d expected, got: %d", expectedCode, r.Code)
 	}
 }
 
 // HeaderIs tests the first value for the given headerKey
-func HeaderIs(t *testing.T, r *httptest.ResponseRecorder, headerKey, expectedValue string) {
+func HeaderIs(t TestReporter, r *httptest.ResponseRecorder, headerKey, expectedValue string) {
 	value := r.HeaderMap.Get(headerKey)
 	if value != expectedValue {
 		t.Errorf(
@@ -56,7 +61,7 @@ func HeaderIs(t *testing.T, r *httptest.ResponseRecorder, headerKey, expectedVal
 	}
 }
 
-func ContentTypeIsJson(t *testing.T, r *httptest.ResponseRecorder) {
+func ContentTypeIsJson(t TestReporter, r *httptest.ResponseRecorder) {
 
 	mediaType, params, _ := mime.ParseMediaType(r.HeaderMap.Get("Content-Type"))
 	charset := params["charset"]
@@ -76,11 +81,11 @@ func ContentTypeIsJson(t *testing.T, r *httptest.ResponseRecorder) {
 	}
 }
 
-func ContentEncodingIsGzip(t *testing.T, r *httptest.ResponseRecorder) {
+func ContentEncodingIsGzip(t TestReporter, r *httptest.ResponseRecorder) {
 	HeaderIs(t, r, "Content-Encoding", "gzip")
 }
 
-func BodyIs(t *testing.T, r *httptest.ResponseRecorder, expectedBody string) {
+func BodyIs(t TestReporter, r *httptest.ResponseRecorder, expectedBody string) {
 	body := r.Body.String()
 	if body != expectedBody {
 		t.Errorf("Body '%s' expected, got: '%s'", expectedBody, body)
@@ -100,12 +105,12 @@ func DecodeJsonPayload(r *httptest.ResponseRecorder, v interface{}) error {
 }
 
 type Recorded struct {
-	T        *testing.T
+	T        TestReporter
 	Recorder *httptest.ResponseRecorder
 }
 
 // RunRequest runs a HTTP request through the given handler
-func RunRequest(t *testing.T, handler http.Handler, request *http.Request) *Recorded {
+func RunRequest(t TestReporter, handler http.Handler, request *http.Request) *Recorded {
 	recorder := httptest.NewRecorder()
 	handler.ServeHTTP(recorder, request)
 	return &Recorded{t, recorder}
