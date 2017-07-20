@@ -46,8 +46,8 @@ func TestRecorderMiddleware(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
-	recorded := test.RunRequest(t, handler, req)
+	req := resttest.MakeSimpleRequest("GET", "http://localhost/", nil)
+	recorded := resttest.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 }
@@ -86,9 +86,9 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	req := test.MakeSimpleRequest("GET", "http://localhost/", nil)
-	// "Accept-Encoding", "gzip" is set by test.MakeSimpleRequest
-	recorded := test.RunRequest(t, handler, req)
+	req := resttest.MakeSimpleRequest("GET", "http://localhost/", nil)
+	// "Accept-Encoding", "gzip" is set by resttest.MakeSimpleRequest
+	recorded := resttest.RunRequest(t, handler, req)
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 }

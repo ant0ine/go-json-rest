@@ -419,19 +419,19 @@ func TestHttpResponseLayer(t *testing.T) {
 	handler := api.MakeHandler()
 
 	// valid get resource
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/r/123", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://1.2.3.4/r/123", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Id":"123"}`)
 
 	// auto 405 on undefined route (wrong method)
-	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("DELETE", "http://1.2.3.4/r/123", nil))
+	recorded = resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("DELETE", "http://1.2.3.4/r/123", nil))
 	recorded.CodeIs(405)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Method not allowed"}`)
 
 	// auto 404 on undefined route (wrong path)
-	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://1.2.3.4/s/123", nil))
+	recorded = resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://1.2.3.4/s/123", nil))
 	recorded.CodeIs(404)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs(`{"Error":"Resource not found"}`)

@@ -31,14 +31,14 @@ func TestJsonpMiddleware(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/ok?callback=parseResponse", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/ok?callback=parseResponse", nil))
 	recorded.CodeIs(200)
 	recorded.HeaderIs("Content-Type", "text/javascript")
 	recorded.HeaderIs("Content-Disposition", "filename=f.txt")
 	recorded.HeaderIs("X-Content-Type-Options", "nosniff")
 	recorded.BodyIs("/**/parseResponse({\"Id\":\"123\"})")
 
-	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/error?callback=parseResponse", nil))
+	recorded = resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/error?callback=parseResponse", nil))
 	recorded.CodeIs(500)
 	recorded.HeaderIs("Content-Type", "text/javascript")
 	recorded.HeaderIs("Content-Disposition", "filename=f.txt")

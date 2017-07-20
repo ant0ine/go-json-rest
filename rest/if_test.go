@@ -39,12 +39,12 @@ func TestIfMiddleware(t *testing.T) {
 	// wrap all
 	handler := api.MakeHandler()
 
-	recorded := test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs("{\"FALSE_MIDDLEWARE\":true}")
 
-	recorded = test.RunRequest(t, handler, test.MakeSimpleRequest("GET", "http://localhost/true", nil))
+	recorded = resttest.RunRequest(t, handler, resttest.MakeSimpleRequest("GET", "http://localhost/true", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs("{\"TRUE_MIDDLEWARE\":true}")

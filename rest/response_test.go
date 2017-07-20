@@ -35,7 +35,7 @@ func TestWriteJsonResponse(t *testing.T) {
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))
 
-	recorded := test.RunRequest(t, api.MakeHandler(), test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, api.MakeHandler(), resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(200)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs("{\"Id\":\"123\"}")
@@ -48,7 +48,7 @@ func TestErrorResponse(t *testing.T) {
 		Error(w, "test", 500)
 	}))
 
-	recorded := test.RunRequest(t, api.MakeHandler(), test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, api.MakeHandler(), resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(500)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs("{\"Error\":\"test\"}")
@@ -61,7 +61,7 @@ func TestNotFoundResponse(t *testing.T) {
 		NotFound(w, r)
 	}))
 
-	recorded := test.RunRequest(t, api.MakeHandler(), test.MakeSimpleRequest("GET", "http://localhost/", nil))
+	recorded := resttest.RunRequest(t, api.MakeHandler(), resttest.MakeSimpleRequest("GET", "http://localhost/", nil))
 	recorded.CodeIs(404)
 	recorded.ContentTypeIsJson()
 	recorded.BodyIs("{\"Error\":\"Resource not found\"}")
