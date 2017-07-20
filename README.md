@@ -1603,8 +1603,8 @@ func main() {
 
 Old v1 blog posts:
 
-- [(Blog Post) Introducing Go-Json-Rest] (https://www.ant0ine.com/post/introducing-go-json-rest.html)
-- [(Blog Post) Better URL Routing ?] (https://www.ant0ine.com/post/better-url-routing-golang.html)
+- [(Blog Post) Introducing Go-Json-Rest](https://www.ant0ine.com/post/introducing-go-json-rest.html)
+- [(Blog Post) Better URL Routing ?](https://www.ant0ine.com/post/better-url-routing-golang.html)
 
 
 ## Version 3 release notes
