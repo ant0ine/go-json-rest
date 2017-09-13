@@ -14,7 +14,7 @@ type AccessLogJsonMiddleware struct {
 
 	// Logger points to the logger object used by this middleware, it defaults to
 	// log.New(os.Stderr, "", 0).
-	Logger *log.Logger
+	Logger Logger
 }
 
 // MiddlewareFunc makes AccessLogJsonMiddleware implement the Middleware interface.

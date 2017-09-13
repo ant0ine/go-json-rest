@@ -70,3 +70,11 @@ func adapterFunc(handler HandlerFunc) http.HandlerFunc {
 		handler(writer, request)
 	}
 }
+
+// Logging interface which *log.Logger uses. Allows injection of user specified loggers.
+type Logger interface {
+	Print(v ...interface{})
+	Printf(format string, v ...interface{})
+	Println(v ...interface{})
+	Fatalf(format string, v ...interface{})
+}
