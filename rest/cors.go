@@ -7,16 +7,16 @@ import (
 )
 
 // Possible improvements:
-// If AllowedMethods["*"] then Access-Control-Allow-Methods is set to the requested methods
-// If AllowedHeaderss["*"] then Access-Control-Allow-Headers is set to the requested headers
 // Put some presets in AllowedHeaders
 // Put some presets in AccessControlExposeHeaders
 
 // CorsMiddleware provides a configurable CORS implementation.
 type CorsMiddleware struct {
 	allowedMethods    map[string]bool
+	allowedMethodsAll bool
 	allowedMethodsCsv string
 	allowedHeaders    map[string]bool
+	allowedHeadersAll bool
 	allowedHeadersCsv string
 
 	// Reject non CORS requests if true. See CorsInfo.IsCors.
@@ -62,6 +62,7 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 		normedMethods = append(normedMethods, normed)
 	}
 	mw.allowedMethodsCsv = strings.Join(normedMethods, ",")
+	mw.allowedMethodsAll = mw.allowedMethodsCsv == "*"
 
 	mw.allowedHeaders = map[string]bool{}
 	normedHeaders := []string{}
@@ -71,6 +72,7 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 		normedHeaders = append(normedHeaders, normed)
 	}
 	mw.allowedHeadersCsv = strings.Join(normedHeaders, ",")
+	mw.allowedHeadersAll = mw.allowedHeadersCsv == "*"
 
 	return func(writer ResponseWriter, request *Request) {
 
@@ -95,22 +97,31 @@ func (mw *CorsMiddleware) MiddlewareFunc(handler HandlerFunc) HandlerFunc {
 
 		if corsInfo.IsPreflight {
 
+			allowedMethods := mw.allowedMethodsCsv
+			allowedHeaders := mw.allowedHeadersCsv
+
 			// check the request methods
-			if mw.allowedMethods[corsInfo.AccessControlRequestMethod] == false {
+			if mw.allowedMethodsAll {
+				allowedMethods = corsInfo.AccessControlRequestMethod
+			} else if mw.allowedMethods[corsInfo.AccessControlRequestMethod] == false {
 				Error(writer, "Invalid Preflight Request", http.StatusForbidden)
 				return
 			}
 
 			// check the request headers
-			for _, requestedHeader := range corsInfo.AccessControlRequestHeaders {
-				if mw.allowedHeaders[requestedHeader] == false {
-					Error(writer, "Invalid Preflight Request", http.StatusForbidden)
-					return
+			if mw.allowedHeadersAll {
+				allowedHeaders = strings.Join(corsInfo.AccessControlRequestHeaders, ",")
+			} else {
+				for _, requestedHeader := range corsInfo.AccessControlRequestHeaders {
+					if mw.allowedHeaders[requestedHeader] == false {
+						Error(writer, "Invalid Preflight Request", http.StatusForbidden)
+						return
+					}
 				}
 			}
 
-			writer.Header().Set("Access-Control-Allow-Methods", mw.allowedMethodsCsv)
-			writer.Header().Set("Access-Control-Allow-Headers", mw.allowedHeadersCsv)
+			writer.Header().Set("Access-Control-Allow-Methods", allowedMethods)
+			writer.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
 			writer.Header().Set("Access-Control-Allow-Origin", corsInfo.Origin)
 			if mw.AccessControlAllowCredentials == true {
 				writer.Header().Set("Access-Control-Allow-Credentials", "true")

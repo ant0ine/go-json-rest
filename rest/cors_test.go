@@ -41,3 +41,31 @@ func TestCorsMiddlewareEmptyAccessControlRequestHeaders(t *testing.T) {
 	recorded.HeaderIs("Access-Control-Allow-Headers", "Origin,Referer")
 	recorded.HeaderIs("Access-Control-Allow-Origin", "http://another.host")
 }
+
+func TestCorsMiddlewareWildcardAccessControlRequestHeaders(t *testing.T) {
+	api := NewApi()
+
+	// the middleware to test
+	api.Use(&CorsMiddleware{
+		OriginValidator: func(_ string, _ *Request) bool {
+			return true
+		},
+		AllowedMethods: []string{"*"},
+		AllowedHeaders: []string{"*"},
+	})
+
+	// wrap all
+	handler := api.MakeHandler()
+
+	req, _ := http.NewRequest("OPTIONS", "http://localhost", nil)
+	req.Header.Set("Origin", "http://another.host")
+	req.Header.Set("Access-Control-Request-Method", "GET,POST")
+	req.Header.Set("Access-Control-Request-Headers", "Origin,Referer")
+
+	recorded := test.RunRequest(t, handler, req)
+	t.Logf("recorded: %+v\n", recorded.Recorder)
+	recorded.CodeIs(200)
+	recorded.HeaderIs("Access-Control-Allow-Methods", "GET,POST")
+	recorded.HeaderIs("Access-Control-Allow-Headers", "Origin,Referer")
+	recorded.HeaderIs("Access-Control-Allow-Origin", "http://another.host")
+}
