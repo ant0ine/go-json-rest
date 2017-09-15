@@ -11,7 +11,6 @@ import (
 // Note, the responseWriter object instantiated by the framework also implements many other interfaces
 // accessible by type assertion: http.ResponseWriter, http.Flusher, http.CloseNotifier, http.Hijacker.
 type ResponseWriter interface {
-
 	// Identical to the http.ResponseWriter interface
 	Header() http.Header
 
@@ -34,12 +33,34 @@ type ResponseWriter interface {
 // eg: rest.ErrorFieldName = "errorMessage"
 var ErrorFieldName = "Error"
 
+// This allows to customize the error messages used in the error response payload.
+// It defaults to the ErrorFieldName method for compatibility reasons (only recieves error string and http code),
+// but can be changed before starting the server.
+//
+// Sends a json payload of the struct given. Be sure to define the json keys in the struct.
+// eg: rest.CustomErrorStruct = &MyCustomStruct{}
+var ErrorFunc func(*Request, string, int) interface{}
+
 // Error produces an error response in JSON with the following structure, '{"Error":"My error message"}'
 // The standard plain text net/http Error helper can still be called like this:
 // http.Error(w, "error message", code)
 func Error(w ResponseWriter, error string, code int) {
+	// Call new method to support backwards compat
+	ErrorWithRequest(nil, w, error, code)
+}
+
+// Error produces an error response in JSON with context of the request
+func ErrorWithRequest(r *Request, w ResponseWriter, error string, code int) {
 	w.WriteHeader(code)
-	err := w.WriteJson(map[string]string{ErrorFieldName: error})
+
+	var errPayload interface{}
+	if ErrorFunc != nil {
+		errPayload = ErrorFunc(r, error, code)
+	} else {
+		errPayload = map[string]string{ErrorFieldName: error}
+	}
+
+	err := w.WriteJson(errPayload)
 	if err != nil {
 		panic(err)
 	}

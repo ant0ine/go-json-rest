@@ -30,6 +30,7 @@
 	  - [Force HTTPS](#forcessl)
 	  - [Status](#status)
 	  - [Status Auth](#status-auth)
+	  - [Custom Error Responses](#custom-error-responses)
   - [Advanced](#advanced)
 	  - [JWT](#jwt)
 	  - [Streaming](#streaming)
@@ -443,6 +444,79 @@ func (u *Users) DeleteUser(w rest.ResponseWriter, r *rest.Request) {
 
 ```
 
+
+#### Custom Error Responses
+
+Demonstrate how to send custom error responses in go-json-rest
+
+curl demo:
+```sh
+curl -i http://127.0.0.1:8080/square/8675309
+```
+
+
+code:
+``` go
+package main
+
+import (
+	"./rest"
+	"log"
+	"net/http"
+	"strconv"
+)
+
+func MyCustomError(r *rest.Request, error string, code int) interface{} {
+	var header string
+	switch code {
+	case 400:
+		header = "Bad Input"
+		break
+	default:
+		header = "API Error"
+	}
+
+	// do whatever needed with the caught error
+	go log.Println("Error from", r.RemoteAddr, r.Method, r.URL)
+
+	return map[string]interface{}{
+		"error": map[string]interface{}{
+			"header":  header,
+			"code":    code,
+			"message": error,
+		},
+	}
+}
+
+func main() {
+	api := rest.NewApi()
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
+		rest.Get("/square/:number", Square),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	api.SetApp(router)
+	rest.ErrorFunc = MyCustomError
+
+	log.Fatal(http.ListenAndServe(":8081", api.MakeHandler()))
+}
+
+func Square(w rest.ResponseWriter, r *rest.Request) {
+	// parse 8-bit signed decimal
+	// -128 <= n <= 127
+	n, err := strconv.ParseInt(r.PathParam("number"), 10, 8)
+	if err != nil {
+		rest.ErrorWithRequest(r, w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteJson(n * n)
+}
+
+```
 
 ### Applications
 
