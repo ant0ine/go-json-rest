@@ -45,6 +45,16 @@ func Error(w ResponseWriter, error string, code int) {
 	}
 }
 
+// ErrorCustom produces a custom error response in JSON with the custom structure,
+// e.g. '{"Code": "1001", "Error":"My error message"}'
+func ErrorCustom(w ResponseWriter, error interface{}, code int) {
+	w.WriteHeader(code)
+	err := w.WriteJson(error)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // NotFound produces a 404 response with the following JSON, '{"Error":"Resource not found"}'
 // The standard plain text net/http NotFound helper can still be called like this:
 // http.NotFound(w, r.Request)
