@@ -83,6 +83,7 @@ Core Middlewares:
 | **AccessLogApache** | Access log inspired by Apache mod_log_config |
 | **AccessLogJson** | Access log with records as JSON |
 | **AuthBasic** | Basic HTTP auth |
+| **Casbin** | ACL, RBAC and ABAC authorization |
 | **ContentTypeChecker** | Verify the request content type |
 | **Cors** | CORS server side implementation |
 | **Gzip** | Compress the responses |
