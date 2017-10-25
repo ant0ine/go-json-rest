@@ -97,8 +97,10 @@ func (mw *StatusMiddleware) GetStatus() *Status {
 	uptime := now.Sub(mw.start)
 
 	totalCount := 0
-	for _, count := range mw.responseCounts {
+	statusCodeCounts := map[string]int{}
+	for code, count := range mw.responseCounts {
 		totalCount += count
+		statusCodeCounts[code] = count
 	}
 
 	totalResponseTime := mw.totalResponseTime.Sub(time.Time{})
@@ -115,7 +117,7 @@ func (mw *StatusMiddleware) GetStatus() *Status {
 		UpTimeSec:              uptime.Seconds(),
 		Time:                   now.String(),
 		TimeUnix:               now.Unix(),
-		StatusCodeCount:        mw.responseCounts,
+		StatusCodeCount:        statusCodeCounts,
 		TotalCount:             totalCount,
 		TotalResponseTime:      totalResponseTime.String(),
 		TotalResponseTimeSec:   totalResponseTime.Seconds(),
