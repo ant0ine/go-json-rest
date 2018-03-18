@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net"
 	"net/http"
+
+	"github.com/miolini/datacounter"
 )
 
 // A ResponseWriter interface dedicated to JSON HTTP response.
@@ -27,6 +29,9 @@ type ResponseWriter interface {
 	// Similar to the http.ResponseWriter interface, with additional JSON related
 	// headers set.
 	WriteHeader(int)
+
+	// Count of bytes written as response
+	Count() uint64
 }
 
 // This allows to customize the field name used in the error response payload.
@@ -124,4 +129,8 @@ func (w *responseWriter) CloseNotify() <-chan bool {
 func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker := w.ResponseWriter.(http.Hijacker)
 	return hijacker.Hijack()
+}
+
+func (w *responseWriter) Count() uint64 {
+	return w.ResponseWriter.(*datacounter.ResponseWriterCounter).Count()
 }
