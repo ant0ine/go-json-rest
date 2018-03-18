@@ -45,6 +45,7 @@ func TestTimerMiddleware(t *testing.T) {
 
 	// a simple app
 	api.SetApp(AppSimple(func(w ResponseWriter, r *Request) {
+		time.Sleep(time.Nanosecond * 1)
 		w.WriteJson(map[string]string{"Id": "123"})
 	}))
 
