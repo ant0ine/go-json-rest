@@ -40,6 +40,7 @@ func TestWrapMiddlewares(t *testing.T) {
 	r := &Request{
 		nil,
 		nil,
+		"",
 		map[string]interface{}{},
 	}
 
