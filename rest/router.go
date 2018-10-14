@@ -48,8 +48,9 @@ func (rt *router) AppFunc() HandlerFunc {
 			return
 		}
 
-		// a route was found, set the PathParams
+		// a route was found, set the PathParams and PathExp
 		request.PathParams = params
+		request.PathExp = route.PathExp
 
 		// run the user code
 		handler := route.Func

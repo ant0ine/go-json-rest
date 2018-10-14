@@ -21,6 +21,9 @@ type Request struct {
 	// Map of parameters that have been matched in the URL Path.
 	PathParams map[string]string
 
+	// The PathExp of the route that is safisfying this request
+	PathExp string
+
 	// Environment used by middlewares to communicate.
 	Env map[string]interface{}
 }
