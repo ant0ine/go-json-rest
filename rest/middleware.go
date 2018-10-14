@@ -58,6 +58,7 @@ func adapterFunc(handler HandlerFunc) http.HandlerFunc {
 		request := &Request{
 			origRequest,
 			nil,
+			"",
 			map[string]interface{}{},
 		}
 
