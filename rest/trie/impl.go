@@ -338,19 +338,19 @@ type Trie struct {
 	root *node
 }
 
-// Instanciate a Trie with an empty node as the root.
+// New: Instanciate a Trie with an empty node as the root.
 func New() *Trie {
 	return &Trie{
 		root: &node{},
 	}
 }
 
-// Insert the route in the Trie following or creating the nodes corresponding to the path.
+// AddRoute: Insert the route in the Trie following or creating the nodes corresponding to the path.
 func (t *Trie) AddRoute(httpMethod, pathExp string, route interface{}) error {
 	return t.root.addRoute(httpMethod, pathExp, route, []string{})
 }
 
-// Reduce the size of the tree, must be done after the last AddRoute.
+// Compress: Reduce the size of the tree, must be done after the last AddRoute.
 func (t *Trie) Compress() {
 	t.root.compress()
 }
@@ -362,7 +362,7 @@ func (t *Trie) printDebug() {
 	fmt.Print("</trie>\n")
 }
 
-// Given a path and an http method, return all the matching routes.
+// FindRoutes: Given a path and an http method, return all the matching routes.
 func (t *Trie) FindRoutes(httpMethod, path string) []*Match {
 	context := newFindContext()
 	matches := []*Match{}
@@ -382,7 +382,7 @@ func (t *Trie) FindRoutes(httpMethod, path string) []*Match {
 	return matches
 }
 
-// Same as FindRoutes, but return in addition a boolean indicating if the path was matched.
+// FindRoutesAndPathMatched: Same as FindRoutes, but return in addition a boolean indicating if the path was matched.
 // Useful to return 405
 func (t *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, bool) {
 	context := newFindContext()
@@ -405,7 +405,7 @@ func (t *Trie) FindRoutesAndPathMatched(httpMethod, path string) ([]*Match, bool
 	return matches, pathMatched
 }
 
-// Given a path, and whatever the http method, return all the matching routes.
+// FindRoutesForPath: Given a path, and whatever the http method, return all the matching routes.
 func (t *Trie) FindRoutesForPath(path string) []*Match {
 	context := newFindContext()
 	matches := []*Match{}

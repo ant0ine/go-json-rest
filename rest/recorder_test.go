@@ -52,7 +52,7 @@ func TestRecorderMiddleware(t *testing.T) {
 	recorded.ContentTypeIsJson()
 }
 
-// See how many bytes are written when gzipping
+// TestRecorderAndGzipMiddleware: See how many bytes are written when gzipping
 func TestRecorderAndGzipMiddleware(t *testing.T) {
 
 	api := NewApi()
@@ -93,7 +93,7 @@ func TestRecorderAndGzipMiddleware(t *testing.T) {
 	recorded.ContentTypeIsJson()
 }
 
-//Underlying net/http only allows you to set the status code once
+// TestRecorderMiddlewareReportsSameStatusCodeAsResponse: Underlying net/http only allows you to set the status code once
 func TestRecorderMiddlewareReportsSameStatusCodeAsResponse(t *testing.T) {
 	api := NewApi()
 	const firstCode = 400
