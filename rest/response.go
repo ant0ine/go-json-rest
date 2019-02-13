@@ -84,7 +84,7 @@ func (w *responseWriter) EncodeJson(v interface{}) ([]byte, error) {
 	return b, nil
 }
 
-// Encode the object in JSON and call Write.
+// WriteJson: Encode the object in JSON and call Write.
 func (w *responseWriter) WriteJson(v interface{}) error {
 	b, err := w.EncodeJson(v)
 	if err != nil {
@@ -97,7 +97,7 @@ func (w *responseWriter) WriteJson(v interface{}) error {
 	return nil
 }
 
-// Provided in order to implement the http.ResponseWriter interface.
+// Write: Provided in order to implement the http.ResponseWriter interface.
 func (w *responseWriter) Write(b []byte) (int, error) {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
@@ -105,7 +105,7 @@ func (w *responseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-// Provided in order to implement the http.Flusher interface.
+// Flush: Provided in order to implement the http.Flusher interface.
 func (w *responseWriter) Flush() {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
@@ -114,13 +114,13 @@ func (w *responseWriter) Flush() {
 	flusher.Flush()
 }
 
-// Provided in order to implement the http.CloseNotifier interface.
+// CloseNotify: Provided in order to implement the http.CloseNotifier interface.
 func (w *responseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
-// Provided in order to implement the http.Hijacker interface.
+// Hijack: Provided in order to implement the http.Hijacker interface.
 func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker := w.ResponseWriter.(http.Hijacker)
 	return hijacker.Hijack()

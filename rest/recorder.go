@@ -41,7 +41,7 @@ type recorderResponseWriter struct {
 	bytesWritten int64
 }
 
-// Record the status code.
+// WriteHeader: Record the status code.
 func (w *recorderResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 	if w.wroteHeader {
@@ -51,7 +51,7 @@ func (w *recorderResponseWriter) WriteHeader(code int) {
 	w.wroteHeader = true
 }
 
-// Make sure the local Write is called.
+// WriteJson: Make sure the local Write is called.
 func (w *recorderResponseWriter) WriteJson(v interface{}) error {
 	b, err := w.EncodeJson(v)
 	if err != nil {
@@ -64,7 +64,7 @@ func (w *recorderResponseWriter) WriteJson(v interface{}) error {
 	return nil
 }
 
-// Make sure the local WriteHeader is called, and call the parent Flush.
+// Flush: Make sure the local WriteHeader is called, and call the parent Flush.
 // Provided in order to implement the http.Flusher interface.
 func (w *recorderResponseWriter) Flush() {
 	if !w.wroteHeader {
@@ -74,20 +74,20 @@ func (w *recorderResponseWriter) Flush() {
 	flusher.Flush()
 }
 
-// Call the parent CloseNotify.
+// CloseNotify: Call the parent CloseNotify.
 // Provided in order to implement the http.CloseNotifier interface.
 func (w *recorderResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
-// Provided in order to implement the http.Hijacker interface.
+// Hijack: Provided in order to implement the http.Hijacker interface.
 func (w *recorderResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker := w.ResponseWriter.(http.Hijacker)
 	return hijacker.Hijack()
 }
 
-// Make sure the local WriteHeader is called, and call the parent Write.
+// Write: Make sure the local WriteHeader is called, and call the parent Write.
 // Provided in order to implement the http.ResponseWriter interface.
 func (w *recorderResponseWriter) Write(b []byte) (int, error) {
 	if !w.wroteHeader {
