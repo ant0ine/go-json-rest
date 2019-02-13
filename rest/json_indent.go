@@ -50,7 +50,7 @@ type jsonIndentResponseWriter struct {
 	indent      string
 }
 
-// Replace the parent EncodeJson to provide indentation.
+// EncodeJson replaces the parent EncodeJson to provide indentation.
 func (w *jsonIndentResponseWriter) EncodeJson(v interface{}) ([]byte, error) {
 	b, err := json.MarshalIndent(v, w.prefix, w.indent)
 	if err != nil {
@@ -59,7 +59,7 @@ func (w *jsonIndentResponseWriter) EncodeJson(v interface{}) ([]byte, error) {
 	return b, nil
 }
 
-// Make sure the local EncodeJson and local Write are called.
+// WriteJson: Make sure the local EncodeJson and local Write are called.
 // Does not call the parent WriteJson.
 func (w *jsonIndentResponseWriter) WriteJson(v interface{}) error {
 	b, err := w.EncodeJson(v)
@@ -73,13 +73,13 @@ func (w *jsonIndentResponseWriter) WriteJson(v interface{}) error {
 	return nil
 }
 
-// Call the parent WriteHeader.
+// WriteHeader: Call the parent WriteHeader.
 func (w *jsonIndentResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 	w.wroteHeader = true
 }
 
-// Make sure the local WriteHeader is called, and call the parent Flush.
+// Flush: Make sure the local WriteHeader is called, and call the parent Flush.
 // Provided in order to implement the http.Flusher interface.
 func (w *jsonIndentResponseWriter) Flush() {
 	if !w.wroteHeader {
@@ -89,20 +89,20 @@ func (w *jsonIndentResponseWriter) Flush() {
 	flusher.Flush()
 }
 
-// Call the parent CloseNotify.
+// CloseNotify: Call the parent CloseNotify.
 // Provided in order to implement the http.CloseNotifier interface.
 func (w *jsonIndentResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
-// Provided in order to implement the http.Hijacker interface.
+// Hijack: Provided in order to implement the http.Hijacker interface.
 func (w *jsonIndentResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker := w.ResponseWriter.(http.Hijacker)
 	return hijacker.Hijack()
 }
 
-// Make sure the local WriteHeader is called, and call the parent Write.
+// Write: Make sure the local WriteHeader is called, and call the parent Write.
 // Provided in order to implement the http.ResponseWriter interface.
 func (w *jsonIndentResponseWriter) Write(b []byte) (int, error) {
 	if !w.wroteHeader {

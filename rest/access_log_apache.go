@@ -171,7 +171,7 @@ type accessLogUtil struct {
 	R *Request
 }
 
-// As stored by the auth middlewares.
+// RemoteUser: As stored by the auth middlewares.
 func (u *accessLogUtil) RemoteUser() string {
 	if u.R.Env["REMOTE_USER"] != nil {
 		return u.R.Env["REMOTE_USER"].(string)
@@ -179,7 +179,7 @@ func (u *accessLogUtil) RemoteUser() string {
 	return ""
 }
 
-// If qs exists then return it with a leadin "?", apache log style.
+// ApacheQueryString: If qs exists then return it with a leadin "?", apache log style.
 func (u *accessLogUtil) ApacheQueryString() string {
 	if u.R.URL.RawQuery != "" {
 		return "?" + u.R.URL.RawQuery
@@ -187,7 +187,7 @@ func (u *accessLogUtil) ApacheQueryString() string {
 	return ""
 }
 
-// When the request entered the timer middleware.
+// StartTime: When the request entered the timer middleware.
 func (u *accessLogUtil) StartTime() *time.Time {
 	if u.R.Env["START_TIME"] != nil {
 		return u.R.Env["START_TIME"].(*time.Time)
@@ -195,7 +195,7 @@ func (u *accessLogUtil) StartTime() *time.Time {
 	return nil
 }
 
-// If remoteAddr is set then return is without the port number, apache log style.
+// ApacheRemoteAddr: If remoteAddr is set then return is without the port number, apache log style.
 func (u *accessLogUtil) ApacheRemoteAddr() string {
 	remoteAddr := u.R.RemoteAddr
 	if remoteAddr != "" {
@@ -206,7 +206,7 @@ func (u *accessLogUtil) ApacheRemoteAddr() string {
 	return ""
 }
 
-// As recorded by the recorder middleware.
+// StatusCode: As recorded by the recorder middleware.
 func (u *accessLogUtil) StatusCode() int {
 	if u.R.Env["STATUS_CODE"] != nil {
 		return u.R.Env["STATUS_CODE"].(int)
@@ -214,7 +214,7 @@ func (u *accessLogUtil) StatusCode() int {
 	return 0
 }
 
-// As mesured by the timer middleware.
+// ResponseTime: As mesured by the timer middleware.
 func (u *accessLogUtil) ResponseTime() *time.Duration {
 	if u.R.Env["ELAPSED_TIME"] != nil {
 		return u.R.Env["ELAPSED_TIME"].(*time.Duration)
@@ -222,12 +222,12 @@ func (u *accessLogUtil) ResponseTime() *time.Duration {
 	return nil
 }
 
-// Process id.
+// Pid: Process id.
 func (u *accessLogUtil) Pid() int {
 	return os.Getpid()
 }
 
-// As recorded by the recorder middleware.
+// BytesWritten: As recorded by the recorder middleware.
 func (u *accessLogUtil) BytesWritten() int64 {
 	if u.R.Env["BYTES_WRITTEN"] != nil {
 		return u.R.Env["BYTES_WRITTEN"].(int64)

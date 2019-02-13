@@ -29,7 +29,7 @@ func MakeRouter(routes ...*Route) (App, error) {
 	return r, nil
 }
 
-// Handle the REST routing and run the user code.
+// AppFunc handles the REST routing and run the user code.
 func (rt *router) AppFunc() HandlerFunc {
 	return func(writer ResponseWriter, request *Request) {
 

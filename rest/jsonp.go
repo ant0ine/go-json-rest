@@ -55,7 +55,7 @@ type jsonpResponseWriter struct {
 	callbackName string
 }
 
-// Overwrite the Content-Type to be text/javascript
+// WriteHeader: Overwrite the Content-Type to be text/javascript
 func (w *jsonpResponseWriter) WriteHeader(code int) {
 
 	w.Header().Set("Content-Type", "text/javascript")
@@ -64,7 +64,7 @@ func (w *jsonpResponseWriter) WriteHeader(code int) {
 	w.wroteHeader = true
 }
 
-// Make sure the local Write is called.
+// WriteJson: Make sure the local Write is called.
 func (w *jsonpResponseWriter) WriteJson(v interface{}) error {
 	b, err := w.EncodeJson(v)
 	if err != nil {
@@ -79,7 +79,7 @@ func (w *jsonpResponseWriter) WriteJson(v interface{}) error {
 	return nil
 }
 
-// Make sure the local WriteHeader is called, and call the parent Flush.
+// Flush: Make sure the local WriteHeader is called, and call the parent Flush.
 // Provided in order to implement the http.Flusher interface.
 func (w *jsonpResponseWriter) Flush() {
 	if !w.wroteHeader {
@@ -89,20 +89,20 @@ func (w *jsonpResponseWriter) Flush() {
 	flusher.Flush()
 }
 
-// Call the parent CloseNotify.
+// CloseNotify: Call the parent CloseNotify.
 // Provided in order to implement the http.CloseNotifier interface.
 func (w *jsonpResponseWriter) CloseNotify() <-chan bool {
 	notifier := w.ResponseWriter.(http.CloseNotifier)
 	return notifier.CloseNotify()
 }
 
-// Provided in order to implement the http.Hijacker interface.
+// Hijack: Provided in order to implement the http.Hijacker interface.
 func (w *jsonpResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	hijacker := w.ResponseWriter.(http.Hijacker)
 	return hijacker.Hijack()
 }
 
-// Make sure the local WriteHeader is called.
+// Write: Make sure the local WriteHeader is called.
 // Provided in order to implement the http.ResponseWriter interface.
 func (w *jsonpResponseWriter) Write(b []byte) (int, error) {
 
