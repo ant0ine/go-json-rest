@@ -2,7 +2,7 @@ package rest
 
 import (
 	"errors"
-	"github.com/ant0ine/go-json-rest/rest/trie"
+	"github.com/Cleanshelf/go-json-rest/trie"
 	"net/http"
 	"net/url"
 	"strings"

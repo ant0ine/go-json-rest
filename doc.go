@@ -12,7 +12,7 @@
 //      package main
 //
 //      import (
-//              "github.com/ant0ine/go-json-rest/rest"
+//              "github.com/Cleanshelf/go-json-rest"
 //              "log"
 //              "net/http"
 //      )

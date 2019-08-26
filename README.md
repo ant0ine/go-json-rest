@@ -3,7 +3,7 @@
 
 *A quick and easy way to setup a RESTful JSON API*
 
-[![godoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/ant0ine/go-json-rest/rest) [![license](https://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ant0ine/go-json-rest/master/LICENSE) [![build](https://img.shields.io/travis/ant0ine/go-json-rest.svg?style=flat)](https://travis-ci.org/ant0ine/go-json-rest)
+[![godoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/Cleanshelf/go-json-rest) [![license](https://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/ant0ine/go-json-rest/master/LICENSE) [![build](https://img.shields.io/travis/ant0ine/go-json-rest.svg?style=flat)](https://travis-ci.org/ant0ine/go-json-rest)
 
 
 **Go-Json-Rest** is a thin layer on top of `net/http` that helps building RESTful JSON APIs easily. It provides fast and scalable request routing using a Trie based implementation, helpers to deal with JSON requests and responses, and middlewares for functionalities like CORS, Auth, Gzip, Status ...
@@ -64,7 +64,7 @@
 
 This package is "go-gettable", just do:
 
-    go get github.com/ant0ine/go-json-rest/rest
+    go get github.com/Cleanshelf/go-json-rest
 
 
 ## Vendoring
@@ -98,7 +98,7 @@ Third Party Middlewares:
 
 | Name | Description |
 |------|-------------|
-| **[Statsd](https://github.com/ant0ine/go-json-rest-middleware-statsd)** | Send stats to a statsd server |
+| **[Statsd](https://github.com/Cleanshelf/go-json-rest-middleware-statsd)** | Send stats to a statsd server |
 | **[JWT](https://github.com/StephanDollberg/go-json-rest-middleware-jwt)** | Provides authentication via Json Web Tokens |
 | **[AuthToken](https://github.com/grayj/go-json-rest-middleware-tokenauth)** | Provides a Token Auth implementation |
 | **[ForceSSL](https://github.com/jadengore/go-json-rest-middleware-force-ssl)** | Forces SSL on requests |
@@ -109,7 +109,7 @@ Third Party Middlewares:
 
 ## Examples
 
-All the following examples can be found in dedicated examples repository: https://github.com/ant0ine/go-json-rest-examples
+All the following examples can be found in dedicated examples repository: https://github.com/Cleanshelf/go-json-rest-examples
 
 ### Basics
 
@@ -130,7 +130,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -162,7 +162,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net"
 	"net/http"
@@ -214,7 +214,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 	"sync"
@@ -331,7 +331,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 	"sync"
@@ -466,7 +466,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -517,7 +517,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"log"
@@ -655,7 +655,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -721,7 +721,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -755,7 +755,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -799,7 +799,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"github.com/jadengore/go-json-rest-middleware-force-ssl"
 	"log"
 	"net/http"
@@ -862,7 +862,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -905,7 +905,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -987,7 +987,7 @@ import (
 	"time"
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 )
 
 func handle_auth(w rest.ResponseWriter, r *rest.Request) {
@@ -1056,7 +1056,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 	"time"
@@ -1126,7 +1126,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -1172,7 +1172,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"github.com/coreos/go-semver/semver"
 	"log"
 	"net/http"
@@ -1267,7 +1267,7 @@ func main() {
 
 #### Statsd
 
-Demonstrate how to use the [Statsd Middleware](https://github.com/ant0ine/go-json-rest-middleware-statsd) to collect statistics about the requests/reponses.
+Demonstrate how to use the [Statsd Middleware](https://github.com/Cleanshelf/go-json-rest-middleware-statsd) to collect statistics about the requests/reponses.
 This middleware is based on the [g2s](https://github.com/peterbourgon/g2s) statsd client.
 
 curl demo:
@@ -1286,8 +1286,8 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest-middleware-statsd"
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest-middleware-statsd"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 	"time"
@@ -1323,7 +1323,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"github.com/yvasiyarov/go-metrics"
 	"github.com/yvasiyarov/gorelic"
 	"log"
@@ -1392,7 +1392,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
         "gopkg.in/tylerb/graceful.v1"
 	"log"
 	"net/http"
@@ -1454,7 +1454,7 @@ code:
 package main
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"github.com/shykes/spdy-go"
 	"log"
 )
@@ -1501,8 +1501,8 @@ Setup:
  * copy this examples/gae/ dir outside of the go-json-rest/ tree
  * cd gae/
  * mkdir -p github.com/ant0ine
- * cp -r $GOPATH/src/github.com/ant0ine/go-json-rest github.com/ant0ine/go-json-rest
- * rm -rf github.com/ant0ine/go-json-rest/examples/
+ * cp -r $GOPATH/src/github.com/Cleanshelf/go-json-rest github.com/Cleanshelf/go-json-rest
+ * rm -rf github.com/Cleanshelf/go-json-rest/examples/
  * path/to/google_appengine/dev_appserver.py .
 
 curl demo:
@@ -1515,7 +1515,7 @@ code:
 package gaehelloworld
 
 import (
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"log"
 	"net/http"
 )
@@ -1569,7 +1569,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/Cleanshelf/go-json-rest"
 	"golang.org/x/net/websocket"
 )
 
@@ -1599,7 +1599,7 @@ func main() {
 
 ## External Documentation
 
-- [Online Documentation (godoc.org)](https://godoc.org/github.com/ant0ine/go-json-rest/rest)
+- [Online Documentation (godoc.org)](https://godoc.org/github.com/Cleanshelf/go-json-rest)
 
 Old v1 blog posts:
 
@@ -1627,13 +1627,13 @@ api.SetApp(rest.AppSimple(func(w rest.ResponseWriter, r *rest.Request) {
 http.ListenAndServe(":8080", api.MakeHandler())
 ```
 
-*All 19 examples have been updated to use the new API. [See here](https://github.com/ant0ine/go-json-rest#examples)*
+*All 19 examples have been updated to use the new API. [See here](https://github.com/Cleanshelf/go-json-rest#examples)*
 
 ### Deprecating the ResourceHandler
 
 V3 is about deprecating the ResourceHandler in favor of a new API that exposes the Middlewares. As a consequence, all the Middlewares are now public, and the new Api object helps putting them together as a stack. Some default stack configurations are offered. The router is now an App that sits on top of the stack of Middlewares. Which means that the router is no longer required to use Go-Json-Rest.
 
-*Design ideas and discussion [See here](https://github.com/ant0ine/go-json-rest/issues/110)*
+*Design ideas and discussion [See here](https://github.com/Cleanshelf/go-json-rest/issues/110)*
 
 
 ## Migration guide from v2 to v3
@@ -1681,20 +1681,20 @@ In fact the internal code of **go-json-rest** is itself implemented with Middlew
 **Go-Json-Rest** follows [Semver](http://semver.org/) and a few breaking changes have been introduced with the v2.
 
 
-#### The import path has changed to `github.com/ant0ine/go-json-rest/rest`
+#### The import path has changed to `github.com/Cleanshelf/go-json-rest`
 
 This is more conform to Go style, and makes [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports) work.
 
 This:
 ``` go
 import (
-        "github.com/ant0ine/go-json-rest"
+        "github.com/Cleanshelf/go-json-rest"
 )
 ```
 has to be changed to this:
 ``` go
 import (
-        "github.com/ant0ine/go-json-rest/rest"
+        "github.com/Cleanshelf/go-json-rest"
 )
 ```
 
@@ -1750,7 +1750,7 @@ type Middleware interface {
 ```
 
 Code using PreRoutingMiddleware will have to be adapted to provide a list of Middleware objects.
-See the [Basic Auth example](https://github.com/ant0ine/go-json-rest-examples/blob/master/auth-basic/main.go).
+See the [Basic Auth example](https://github.com/Cleanshelf/go-json-rest-examples/blob/master/auth-basic/main.go).
 
 
 #### Flush(), CloseNotify() and Write() are not directly exposed anymore
@@ -1771,9 +1771,9 @@ writer.(http.Flusher).Flush()
 #### The /.status endpoint is not created automatically anymore
 
 The route has to be manually defined.
-See the [Status example](https://github.com/ant0ine/go-json-rest-examples/blob/master/status/main.go).
+See the [Status example](https://github.com/Cleanshelf/go-json-rest-examples/blob/master/status/main.go).
 This is more flexible (the route is customizable), and allows combination with Middlewarres.
-See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/ant0ine/go-json-rest-examples/blob/master/status-auth/main.go).
+See for instance how to [protect this status endpoint with the AuthBasic middleware](https://github.com/Cleanshelf/go-json-rest-examples/blob/master/status-auth/main.go).
 
 
 #### Request utility methods have changed
@@ -1800,7 +1800,7 @@ Overall, they provide the same features, but with two methods instead of three, 
 
 Copyright (c) 2013-2016 Antoine Imbert
 
-[MIT License](https://github.com/ant0ine/go-json-rest/blob/master/LICENSE)
+[MIT License](https://github.com/Cleanshelf/go-json-rest/blob/master/LICENSE)
 
 [![Analytics](https://ga-beacon.appspot.com/UA-309210-4/go-json-rest/master/readme)](https://github.com/igrigorik/ga-beacon)
 

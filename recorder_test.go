@@ -3,7 +3,7 @@ package rest
 import (
 	"testing"
 
-	"github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/Cleanshelf/go-json-rest/test"
 )
 
 func TestRecorderMiddleware(t *testing.T) {
